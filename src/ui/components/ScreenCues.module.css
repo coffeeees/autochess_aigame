@@ -1,0 +1,245 @@
+/* ROUND 안내: 화면 전체를 덮고 클릭을 막는다(v0.15.18 round-cover) */
+.round {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #f3e8ce;
+  background: radial-gradient(ellipse at 50% 46%, #26334dfb, #090e1b 75%);
+  animation: wipe var(--cue-ms) ease-out forwards;
+}
+.round section {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+  padding: 30px;
+  animation: rise var(--cue-ms) ease-out forwards;
+}
+.round span {
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #a7b2ca;
+}
+.round strong {
+  font-size: clamp(40px, 7vw, 100px);
+  line-height: 1.15;
+  letter-spacing: 7px;
+  color: #f9e5ad;
+  text-shadow: 0 0 40px #d8bb6855;
+}
+.round b {
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: #d2d7e5;
+}
+@keyframes wipe {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 1;
+  }
+  30% {
+    clip-path: inset(0 0% 0 0);
+    opacity: 1;
+  }
+  80% {
+    clip-path: inset(0 0% 0 0);
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0% 0 0);
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  0% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+
+/* STAGE 안내: 클릭을 막지 않는 글자만 */
+.stage {
+  position: fixed;
+  top: 35%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 40;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  color: #fff;
+  animation: fade var(--cue-ms) ease-out forwards;
+}
+.stage strong {
+  font-size: clamp(36px, 5vw, 72px);
+  letter-spacing: 6px;
+  text-shadow:
+    0 0 24px #6a8fd8aa,
+    0 3px 6px #000;
+}
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 전투 뒤 하트 체력 변화(누르면 건너뜀) */
+.impact {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse, #090f1873, transparent 58%);
+  cursor: pointer;
+}
+.heartBody {
+  position: relative;
+  width: 150px;
+  text-align: center;
+  color: #effff8;
+  filter: drop-shadow(0 0 20px #66ffc466);
+  animation: pop var(--cue-ms) ease-out forwards;
+}
+.impact[data-win='false'] .heartBody {
+  filter: drop-shadow(0 0 20px #ff5b7466);
+}
+.heartBody svg {
+  width: 150px;
+  height: 150px;
+}
+.heartBody strong {
+  display: block;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.delta {
+  position: absolute;
+  inset: -30px 0 auto;
+  color: #aaffdc;
+  font-size: 22px;
+}
+.impact[data-win='false'] .delta {
+  color: #ff9aae;
+}
+.ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid #aaffdc;
+  border-radius: 50%;
+  opacity: 0;
+  animation: ring 450ms 500ms;
+}
+.impact[data-win='false'] .ring {
+  border-color: #ff829b;
+}
+.dot {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  background: #c5ffe9;
+  opacity: 0;
+  animation: spray var(--life) var(--delay) linear;
+}
+.impact[data-win='false'] .dot {
+  background: #ff98a6;
+}
+@keyframes pop {
+  0% {
+    transform: translateY(90px) scale(0.2);
+  }
+  11.5% {
+    transform: translateY(-8px) scale(1.08);
+  }
+  17.25% {
+    transform: translateY(0) scale(1);
+  }
+  93.3% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.05);
+  }
+}
+@keyframes ring {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@keyframes spray {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+/* 합성: 재료가 날아가는 복제본과 섬광 */
+.flight {
+  position: fixed;
+  z-index: 35;
+  pointer-events: none;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 0 8px #d9beff88);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.flare {
+  position: fixed;
+  z-index: 36;
+  pointer-events: none;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffdecdc, #ffe7a56b 22%, #b89bff44 44%, transparent 70%);
+  mix-blend-mode: screen;
+  filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .round,
+  .round section {
+    animation-name: fade;
+  }
+  .heartBody {
+    animation: none;
+  }
+}

@@ -11,6 +11,8 @@ import { BondsPanel } from './BondsPanel.tsx';
 import { InventoryPanel, ItemDetail } from './Items.tsx';
 import { UnitDetail } from './UnitDetail.tsx';
 import { Modals } from './Modals.tsx';
+import { ScreenCues } from './ScreenCues.tsx';
+import { HealthCounter } from './VitalEffects.tsx';
 import { SpeedButton, LiveDamage } from './CombatControls.tsx';
 import W from '../../core/encounters.js';
 import { boardArt } from '../art/board.ts';
@@ -26,9 +28,7 @@ export function Game({ ui, actions }: GameProps) {
       <aside class={styles.left}>
         <div class={styles.vitals}>
           <small>난이도 {W.difficulty(run.difficulty).level}</small>
-          <b>
-            <span aria-hidden="true">♥</span> {run.health}
-          </b>
+          <HealthCounter value={run.health} />
         </div>
         <BondsPanel ui={ui} actions={actions} />
       </aside>
@@ -47,6 +47,7 @@ export function Game({ ui, actions }: GameProps) {
       <ReserveBar ui={ui} actions={actions} />
       <DragLayer ui={ui} actions={actions} kind={ui.drag?.kind} />
       <Modals ui={ui} actions={actions} />
+      <ScreenCues ui={ui} actions={actions} />
     </div>
   );
 }

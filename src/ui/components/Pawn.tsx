@@ -5,6 +5,8 @@ import type { ArtContext } from '../art/characters.ts';
 import styles from './Pawn.module.css';
 
 type Props = {
+  /** 원정 캐릭터 uid(합성 연출이 위치를 찾을 때 씀) */
+  uid?: number;
   id: string;
   star: number;
   context: ArtContext;
@@ -22,6 +24,7 @@ type Props = {
 };
 
 export function Pawn({
+  uid,
   id,
   star,
   context,
@@ -40,6 +43,7 @@ export function Pawn({
   return (
     <Tag
       class={styles.pawn}
+      data-unit-uid={uid}
       data-enemy={enemy}
       data-selected={selected}
       style={{ '--cost-color': costColor(cost) }}

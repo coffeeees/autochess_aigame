@@ -1,5 +1,4 @@
-// 게임 진입점(index.html). 기존 UI는 legacy.html에 비교용으로 남겨 둔다
-// (6단계에서 연출을 옮긴 뒤 제거).
+// 게임 진입점(index.html).
 import { render } from 'preact';
 import './styles/tokens.css';
 import './styles/base.css';
@@ -23,6 +22,10 @@ const store = createStore({
   storage: localStorage,
   newSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
   combat,
+  // 화면 연출(전투 끝 장면·하트 체력·라운드 안내·합성)을 켠다
+  presentation: {
+    reduced: () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+  },
 });
 store.load();
 render(<App store={store} />, document.getElementById('app')!);
