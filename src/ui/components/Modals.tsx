@@ -1,5 +1,6 @@
 // 라운드 흐름 창: 보급 선택, 증강 선택, 결과(딜 그래프·6-5 선택), 배치 부족 확인,
 // 원정 완료 요약. 문구와 항목은 v0.15.18 content-ui / stage-ui / run-flow-ui와 같다.
+import { percentNumber } from '../../core/format.ts';
 import { useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import P from '../../core/progression.js';
@@ -59,7 +60,7 @@ function Supply({ ui, actions }: GameProps) {
       <div class={styles.odds}>
         {odds.map((n, i) => (
           <span key={i}>
-            {i + 1}티어 {n}%
+            {i + 1}티어 {percentNumber(n)}%
           </span>
         ))}
       </div>

@@ -82,7 +82,8 @@ test('design includes exactly45 unique character sections with every stat and un
   }
   a(doc.includes('provisional=true'));
 });
-test('catalogs in docs cover28 bonds40 items36 augments and locked list12 without promoting draft skills', () => {
+test('문서 도감: 유대 16종(사용자 확인)·아이템·증강·캐릭터가 모두 실리고 초안 스킬은 올리지 않는다', () => {
+  a.equal(D.synergies.length, 16);
   const design = docs[files[0]],
     missing = docs[files[2]],
     glossary = docs[files[1]];

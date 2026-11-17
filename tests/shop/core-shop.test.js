@@ -189,3 +189,18 @@ test('전투 준비: 장비를 반영한 배치 캐릭터, 캐시된 적 편성,
   a.deepEqual(battleSetup(s).enemies, setup.enemies);
   V.normalize(s);
 });
+
+test('B1: 퍼센트 표기는 소수점 오차 없이 둘째 자리까지, 뒤의 0은 뗀다', async () => {
+  const { percent, percentNumber } = await import('../../src/core/format.ts');
+  a.equal(percent(0.07), '7');
+  a.equal(percent(0.075), '7.5');
+  a.equal(percentNumber(72.22222222), '72.22');
+  a.equal(percentNumber(-0.001), '0');
+  const texts = JSON.stringify(D.evaluateSynergies([]));
+  a(!/\d\.\d{4,}/.test(texts), '유대 설명에 긴 소수 없음');
+  a(texts.includes('아군 사망 시 AD/AP +7%'));
+  // 상점 확률은 재정규화로 소수가 생겨도 둘째 자리까지
+  const s = run();
+  s.level = 4;
+  for (const p of V.shopOdds(s)) a(/^\d+(\.\d{1,2})?$/.test(percentNumber(p)));
+});
