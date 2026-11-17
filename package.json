@@ -9,15 +9,17 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
-    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
-    "baseline:check": "node tools/combat-baseline.mjs --check"
+    "format": "prettier --write \"src/**/*.{js,ts,css}\" \"tests/**/*.js\" \"tools/*.{cjs,mjs,js}\" vite.config.js",
+    "format:check": "prettier --check \"src/**/*.{js,ts,css}\" \"tests/**/*.js\" \"tools/*.{cjs,mjs,js}\" vite.config.js",
+    "baseline:check": "node tools/combat-baseline.mjs --check",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22.18"
   },
   "devDependencies": {
     "prettier": "3.3.3",
+    "typescript": "5.7.3",
     "vite": "6.4.5",
     "vitest": "3.2.6"
   }

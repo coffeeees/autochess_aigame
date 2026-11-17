@@ -5,9 +5,9 @@ import AF from './augment-effects.js';
 import I from '../items.js';
 import Bonds from './bond-effects.js';
 import F from './item-effects.js';
-import { storedRng } from '../rng.js';
-import { enableHooks } from './hooks.js';
-import { distance } from './geometry.js';
+import { storedRng } from '../rng.ts';
+import { enableHooks } from './hooks.ts';
+import { distance } from './geometry.ts';
 import skills from './skills/index.js';
 
 const clone = (x) => JSON.parse(JSON.stringify(x));

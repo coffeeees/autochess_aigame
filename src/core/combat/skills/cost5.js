@@ -1,6 +1,6 @@
 // Skills of cost-5 characters (C42-C45), moved unchanged from
 // the switch in Battle#cast. Called as skill.call(battle, caster, target, stats).
-import { distance } from '../geometry.js';
+import { distance } from '../geometry.ts';
 
 export default {
   C42(u, target, s) {

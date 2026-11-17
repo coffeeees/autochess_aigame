@@ -1,7 +1,7 @@
 import D from './data/units.js';
 import P from './progression.js';
 import I from './items.js';
-import { runRng } from './rng.js';
+import { runRng } from './rng.ts';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
 function normalize(s) {

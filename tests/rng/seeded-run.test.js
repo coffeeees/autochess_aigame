@@ -4,7 +4,7 @@ import { test, afterEach } from 'vitest';
 import a from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import R, { createRng, storedRng, runRng, seedFrom } from '../../src/core/rng.js';
+import R, { createRng, storedRng, runRng, seedFrom } from '../../src/core/rng.ts';
 import P from '../../src/core/progression.js';
 import V from '../../src/core/preparation.js';
 import W from '../../src/core/encounters.js';
@@ -125,12 +125,12 @@ test('core never calls Math.random: a run start, supply, shop, encounter and bat
       .flatMap((e) =>
         e.isDirectory()
           ? sources(path.join(dir, e.name))
-          : e.name.endsWith('.js')
+          : /\.(js|ts)$/.test(e.name)
             ? [path.join(dir, e.name)]
             : [],
       );
   for (const file of sources('src/core'))
-    if (!file.endsWith('rng.js')) a(!/Math\.random/.test(fs.readFileSync(file, 'utf8')), file);
+    if (!file.endsWith('rng.ts')) a(!/Math\.random/.test(fs.readFileSync(file, 'utf8')), file);
 });
 
 test('seeded battles repeat exactly and continue identically after transfer to the worker', () => {

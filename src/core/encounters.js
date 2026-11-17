@@ -1,6 +1,6 @@
 import D from './data/units.js';
 import P from './progression.js';
-import { runRng } from './rng.js';
+import { runRng } from './rng.ts';
 
 const config = {
   bonusEncounterChance: 0.1,

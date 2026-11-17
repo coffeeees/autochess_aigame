@@ -4,7 +4,7 @@
 import Engine from '../core/combat/battle.js';
 import Clock from '../core/combat/clock.js';
 import VfxEvents from '../core/combat/vfx-events.js';
-import { storedRng } from '../core/rng.js';
+import { storedRng } from '../core/rng.ts';
 
 // A seeded battle (rngState) continues its own sequence; battles created with an
 // explicit rng function cannot carry it over, so they use the injected random.

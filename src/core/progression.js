@@ -2,7 +2,7 @@ import B from './board.js';
 import D from './data/units.js';
 import A from './augments.js';
 import I from './items.js';
-import { runRng, nextSeed } from './rng.js';
+import { runRng, nextSeed } from './rng.ts';
 
 const config = {
   roundsPerStage: 5,

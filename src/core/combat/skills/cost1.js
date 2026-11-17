@@ -1,6 +1,6 @@
 // Skills of cost-1 characters (C01-C12), moved unchanged from
 // the switch in Battle#cast. Called as skill.call(battle, caster, target, stats).
-import { distance } from '../geometry.js';
+import { distance } from '../geometry.ts';
 
 export default {
   C01(u, target, s) {

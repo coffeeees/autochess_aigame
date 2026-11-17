@@ -4,7 +4,7 @@ import a from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import Engine from '../../src/core/combat/battle.js';
-import { AROUND } from '../../src/core/combat/hooks.js';
+import { AROUND } from '../../src/core/combat/hooks.ts';
 import F from '../../src/core/combat/item-effects.js';
 import AF from '../../src/core/combat/augment-effects.js';
 import Bonds from '../../src/core/combat/bond-effects.js';
@@ -106,7 +106,7 @@ test('subclass extensions do not leak into the base class; use() is idempotent',
   a.deepEqual(run(WithVfx), run(Battle));
 });
 
-test('core code never assigns Battle.prototype methods outside hooks.js', () => {
+test('core code never assigns Battle.prototype methods outside hooks.ts', () => {
   for (const name of AROUND) a.equal(typeof Battle.prototype[name], 'function');
   a.deepEqual(Object.keys(Battle.coreMethods).sort(), [...AROUND].sort());
   const files = (dir) =>
@@ -115,12 +115,12 @@ test('core code never assigns Battle.prototype methods outside hooks.js', () => 
       .flatMap((e) =>
         e.isDirectory()
           ? files(path.join(dir, e.name))
-          : e.name.endsWith('.js')
+          : /\.(js|ts)$/.test(e.name)
             ? [path.join(dir, e.name)]
             : [],
       );
   for (const file of [...files('src/core'), ...files('src/worker')]) {
-    if (file.endsWith('hooks.js')) continue;
+    if (file.endsWith('hooks.ts')) continue;
     a(!/\.prototype\.\w+\s*=/.test(fs.readFileSync(file, 'utf8')), file);
   }
 });
