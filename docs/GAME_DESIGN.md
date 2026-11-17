@@ -167,7 +167,7 @@
 
 DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시간갱신(일부amount갱신),다른시전자DOT중첩.시전자사망후에도units에남아있어기존DOT는지속할수있습니다. harmful상태하나정화는배열의첫항목.
 
-[src/core/combat/battle.js:1018](../src/core/combat/battle.js#L1018) · `tick(dt=`, [src/core/combat/battle.js:247](../src/core/combat/battle.js#L247) · `deal(source,target`, [src/core/combat/battle.js:216](../src/core/combat/battle.js#L216) · `heal(target,amount`, [src/core/items.js:602](../src/core/items.js#L602) · `function applyStats`, [src/core/augments.js:129](../src/core/augments.js#L129) · `function applyStats`.
+[src/core/combat/battle.js:1017](../src/core/combat/battle.js#L1017) · `tick(dt=`, [src/core/combat/battle.js:246](../src/core/combat/battle.js#L246) · `deal(source,target`, [src/core/combat/battle.js:215](../src/core/combat/battle.js#L215) · `heal(target,amount`, [src/core/items.js:602](../src/core/items.js#L602) · `function applyStats`, [src/core/augments.js:129](../src/core/augments.js#L129) · `function applyStats`.
 
 ### 전투 공통 임시 설정 원문값
 
@@ -262,7 +262,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:144](../src/core/data/units.js#L144) · `C01:`, [src/core/combat/battle.js:544](../src/core/combat/battle.js#L544) · `case 'C01'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:144](../src/core/data/units.js#L144) · `C01:`, [src/core/combat/battle.js:543](../src/core/combat/battle.js#L543) · `case 'C01'`.
 
 ### C02 · 아즈칼
 
@@ -280,7 +280,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 역병충 HP180×성급배율,AS0.8,RNG1,8초,최대2,AD=시전자AP×0.4. 독=AP×0.12/초×3초(임시).
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:149](../src/core/data/units.js#L149) · `C02:`, [src/core/combat/battle.js:548](../src/core/combat/battle.js#L548) · `case 'C02'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:149](../src/core/data/units.js#L149) · `C02:`, [src/core/combat/battle.js:547](../src/core/combat/battle.js#L547) · `case 'C02'`.
 
 ### C03 · 태건
 
@@ -298,7 +298,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:154](../src/core/data/units.js#L154) · `C03:`, [src/core/combat/battle.js:551](../src/core/combat/battle.js#L551) · `case 'C03'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:154](../src/core/data/units.js#L154) · `C03:`, [src/core/combat/battle.js:550](../src/core/combat/battle.js#L550) · `case 'C03'`.
 
 ### C04 · 리엔
 
@@ -316,7 +316,7 @@ AD 200% 물리 피해, 이 공격의 치명타 확률 +20%p. 치명타 시 AD 50
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:159](../src/core/data/units.js#L159) · `C04:`, [src/core/combat/battle.js:555](../src/core/combat/battle.js#L555) · `case 'C04'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:159](../src/core/data/units.js#L159) · `C04:`, [src/core/combat/battle.js:554](../src/core/combat/battle.js#L554) · `case 'C04'`.
 
 ### C05 · 루아
 
@@ -334,7 +334,7 @@ HP 비율이 가장 낮은 아군 AP 180% 회복. 해로운 상태이상 1개 �
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:164](../src/core/data/units.js#L164) · `C05:`, [src/core/combat/battle.js:563](../src/core/combat/battle.js#L563) · `case 'C05'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:164](../src/core/data/units.js#L164) · `C05:`, [src/core/combat/battle.js:562](../src/core/combat/battle.js#L562) · `case 'C05'`.
 
 ### C06 · 카인
 
@@ -352,7 +352,7 @@ HP 비율이 가장 낮은 아군 AP 180% 회복. 해로운 상태이상 1개 �
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:169](../src/core/data/units.js#L169) · `C06:`, [src/core/combat/battle.js:577](../src/core/combat/battle.js#L577) · `case 'C06'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:169](../src/core/data/units.js#L169) · `C06:`, [src/core/combat/battle.js:576](../src/core/combat/battle.js#L576) · `case 'C06'`.
 
 ### C07 · 유하
 
@@ -370,7 +370,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 사용자승인:전장내주대상거리/UID순다른적최대2,각AD70%마법.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:174](../src/core/data/units.js#L174) · `C07:`, [src/core/combat/battle.js:590](../src/core/combat/battle.js#L590) · `case 'C07'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:174](../src/core/data/units.js#L174) · `C07:`, [src/core/combat/battle.js:589](../src/core/combat/battle.js#L589) · `case 'C07'`.
 
 ### C08 · 벨모르
 
@@ -388,7 +388,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:179](../src/core/data/units.js#L179) · `C08:`, [src/core/combat/battle.js:627](../src/core/combat/battle.js#L627) · `case 'C08'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:179](../src/core/data/units.js#L179) · `C08:`, [src/core/combat/battle.js:626](../src/core/combat/battle.js#L626) · `case 'C08'`.
 
 ### C09 · 라칸
 
@@ -406,7 +406,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 기존BFS돌진,칸당시전지연0.12초.막히면인접도달한경우만공격.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:184](../src/core/data/units.js#L184) · `C09:`, [src/core/combat/battle.js:631](../src/core/combat/battle.js#L631) · `case 'C09'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:184](../src/core/data/units.js#L184) · `C09:`, [src/core/combat/battle.js:630](../src/core/combat/battle.js#L630) · `case 'C09'`.
 
 ### C10 · 울프릭
 
@@ -424,7 +424,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:189](../src/core/data/units.js#L189) · `C10:`, [src/core/combat/battle.js:650](../src/core/combat/battle.js#L650) · `case 'C10'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:189](../src/core/data/units.js#L189) · `C10:`, [src/core/combat/battle.js:649](../src/core/combat/battle.js#L649) · `case 'C10'`.
 
 ### C11 · 둔가르
 
@@ -442,7 +442,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 화염정령 HP220×성급배율,AS0.7,RNG3,8초,최대1.소멸폭발반경2(임시).
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:194](../src/core/data/units.js#L194) · `C11:`, [src/core/combat/battle.js:666](../src/core/combat/battle.js#L666) · `case 'C11'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:194](../src/core/data/units.js#L194) · `C11:`, [src/core/combat/battle.js:665](../src/core/combat/battle.js#L665) · `case 'C11'`.
 
 ### C12 · 엘리엘
 
@@ -460,7 +460,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:199](../src/core/data/units.js#L199) · `C12:`, [src/core/combat/battle.js:669](../src/core/combat/battle.js#L669) · `case 'C12'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:199](../src/core/data/units.js#L199) · `C12:`, [src/core/combat/battle.js:668](../src/core/combat/battle.js#L668) · `case 'C12'`.
 
 ### C13 · 브룬
 
@@ -478,7 +478,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:4](../src/core/data/higher-cost-drafts.js#L4) · `"id": "C13"`, [src/core/combat/battle.js:672](../src/core/combat/battle.js#L672) · `case 'C13'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:4](../src/core/data/higher-cost-drafts.js#L4) · `"id": "C13"`, [src/core/combat/battle.js:671](../src/core/combat/battle.js#L671) · `case 'C13'`.
 
 ### C14 · 적호
 
@@ -496,7 +496,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:33](../src/core/data/higher-cost-drafts.js#L33) · `"id": "C14"`, [src/core/combat/battle.js:680](../src/core/combat/battle.js#L680) · `case 'C14'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:33](../src/core/data/higher-cost-drafts.js#L33) · `"id": "C14"`, [src/core/combat/battle.js:679](../src/core/combat/battle.js#L679) · `case 'C14'`.
 
 ### C15 · 베스퍼
 
@@ -514,7 +514,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:62](../src/core/data/higher-cost-drafts.js#L62) · `"id": "C15"`, [src/core/combat/battle.js:684](../src/core/combat/battle.js#L684) · `case 'C15'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:62](../src/core/data/higher-cost-drafts.js#L62) · `"id": "C15"`, [src/core/combat/battle.js:683](../src/core/combat/battle.js#L683) · `case 'C15'`.
 
 ### C16 · 토비
 
@@ -532,7 +532,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 전격늑대 HP260×성급배율,AD=AP×0.55,AS0.85,RNG2,8초,최대2. engine.summon의 인라인 테스트값.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:91](../src/core/data/higher-cost-drafts.js#L91) · `"id": "C16"`, [src/core/combat/battle.js:700](../src/core/combat/battle.js#L700) · `case 'C16'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:91](../src/core/data/higher-cost-drafts.js#L91) · `"id": "C16"`, [src/core/combat/battle.js:699](../src/core/combat/battle.js#L699) · `case 'C16'`.
 
 ### C17 · 이그니스
 
@@ -550,7 +550,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 스킬HP비용은 현재HP8%,최소1유지. HP흡수는 실제피해20%. HP비용기준: currentHP.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:123](../src/core/data/higher-cost-drafts.js#L123) · `"id": "C17"`, [src/core/combat/battle.js:703](../src/core/combat/battle.js#L703) · `case 'C17'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:123](../src/core/data/higher-cost-drafts.js#L123) · `"id": "C17"`, [src/core/combat/battle.js:702](../src/core/combat/battle.js#L702) · `case 'C17'`.
 
 ### C18 · 아우라
 
@@ -568,7 +568,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:153](../src/core/data/higher-cost-drafts.js#L153) · `"id": "C18"`, [src/core/combat/battle.js:709](../src/core/combat/battle.js#L709) · `case 'C18'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:153](../src/core/data/higher-cost-drafts.js#L153) · `"id": "C18"`, [src/core/combat/battle.js:708](../src/core/combat/battle.js#L708) · `case 'C18'`.
 
 ### C19 · 설아
 
@@ -586,7 +586,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:182](../src/core/data/higher-cost-drafts.js#L182) · `"id": "C19"`, [src/core/combat/battle.js:717](../src/core/combat/battle.js#L717) · `case 'C19'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:182](../src/core/data/higher-cost-drafts.js#L182) · `"id": "C19"`, [src/core/combat/battle.js:716](../src/core/combat/battle.js#L716) · `case 'C19'`.
 
 ### C20 · 진무
 
@@ -604,7 +604,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 현재HP6%소모,최소1유지. 추가기본타는별도bonusBasic 출처. HP비용기준: currentHP.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:214](../src/core/data/higher-cost-drafts.js#L214) · `"id": "C20"`, [src/core/combat/battle.js:727](../src/core/combat/battle.js#L727) · `case 'C20'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:214](../src/core/data/higher-cost-drafts.js#L214) · `"id": "C20"`, [src/core/combat/battle.js:726](../src/core/combat/battle.js#L726) · `case 'C20'`.
 
 ### C21 · 오르페
 
@@ -622,7 +622,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:244](../src/core/data/higher-cost-drafts.js#L244) · `"id": "C21"`, [src/core/combat/battle.js:739](../src/core/combat/battle.js#L739) · `case 'C21'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:244](../src/core/data/higher-cost-drafts.js#L244) · `"id": "C21"`, [src/core/combat/battle.js:738](../src/core/combat/battle.js#L738) · `case 'C21'`.
 
 ### C22 · 골룸바
 
@@ -640,7 +640,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:273](../src/core/data/higher-cost-drafts.js#L273) · `"id": "C22"`, [src/core/combat/battle.js:749](../src/core/combat/battle.js#L749) · `case 'C22'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:273](../src/core/data/higher-cost-drafts.js#L273) · `"id": "C22"`, [src/core/combat/battle.js:748](../src/core/combat/battle.js#L748) · `case 'C22'`.
 
 ### C23 · 로제트
 
@@ -658,7 +658,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:302](../src/core/data/higher-cost-drafts.js#L302) · `"id": "C23"`, [src/core/combat/battle.js:761](../src/core/combat/battle.js#L761) · `case 'C23'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:302](../src/core/data/higher-cost-drafts.js#L302) · `"id": "C23"`, [src/core/combat/battle.js:760](../src/core/combat/battle.js#L760) · `case 'C23'`.
 
 ### C24 · 유키나
 
@@ -676,7 +676,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:HP비율낮은아군2명.각아군의마지막생존기본공격자를시전시1회둔화.없는경우생략.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:334](../src/core/data/higher-cost-drafts.js#L334) · `"id": "C24"`, [src/core/combat/battle.js:767](../src/core/combat/battle.js#L767) · `case 'C24'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:334](../src/core/data/higher-cost-drafts.js#L334) · `"id": "C24"`, [src/core/combat/battle.js:766](../src/core/combat/battle.js#L766) · `case 'C24'`.
 
 ### C25 · 지그
 
@@ -694,7 +694,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:현재대상부터가까운서로다른적3명으로연쇄.동률UID.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:366](../src/core/data/higher-cost-drafts.js#L366) · `"id": "C25"`, [src/core/combat/battle.js:778](../src/core/combat/battle.js#L778) · `case 'C25'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:366](../src/core/data/higher-cost-drafts.js#L366) · `"id": "C25"`, [src/core/combat/battle.js:777](../src/core/combat/battle.js#L777) · `case 'C25'`.
 
 ### C26 · 흐로드
 
@@ -712,7 +712,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 추가70%AD조건은첫타격전대상HP40%이하.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:395](../src/core/data/higher-cost-drafts.js#L395) · `"id": "C26"`, [src/core/combat/battle.js:792](../src/core/combat/battle.js#L792) · `case 'C26'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:395](../src/core/data/higher-cost-drafts.js#L395) · `"id": "C26"`, [src/core/combat/battle.js:791](../src/core/combat/battle.js#L791) · `case 'C26'`.
 
 ### C27 · 비올라
 
@@ -730,7 +730,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:424](../src/core/data/higher-cost-drafts.js#L424) · `"id": "C27"`, [src/core/combat/battle.js:798](../src/core/combat/battle.js#L798) · `case 'C27'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:424](../src/core/data/higher-cost-drafts.js#L424) · `"id": "C27"`, [src/core/combat/battle.js:797](../src/core/combat/battle.js#L797) · `case 'C27'`.
 
 ### C28 · 시그룬
 
@@ -748,7 +748,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:시전자에서가장먼생존적.기존BFS돌진;막히면공격/약화없음.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:453](../src/core/data/higher-cost-drafts.js#L453) · `"id": "C28"`, [src/core/combat/battle.js:802](../src/core/combat/battle.js#L802) · `case 'C28'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:453](../src/core/data/higher-cost-drafts.js#L453) · `"id": "C28"`, [src/core/combat/battle.js:801](../src/core/combat/battle.js#L801) · `case 'C28'`.
 
 ### C29 · 카르도
 
@@ -766,7 +766,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:485](../src/core/data/higher-cost-drafts.js#L485) · `"id": "C29"`, [src/core/combat/battle.js:819](../src/core/combat/battle.js#L819) · `case 'C29'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:485](../src/core/data/higher-cost-drafts.js#L485) · `"id": "C29"`, [src/core/combat/battle.js:818](../src/core/combat/battle.js#L818) · `case 'C29'`.
 
 ### C30 · 네레이드
 
@@ -784,7 +784,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:자신제외상하좌우인접아군중HP비율낮은2명.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:514](../src/core/data/higher-cost-drafts.js#L514) · `"id": "C30"`, [src/core/combat/battle.js:823](../src/core/combat/battle.js#L823) · `case 'C30'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:514](../src/core/data/higher-cost-drafts.js#L514) · `"id": "C30"`, [src/core/combat/battle.js:822](../src/core/combat/battle.js#L822) · `case 'C30'`.
 
 ### C31 · 홍련
 
@@ -802,7 +802,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 이름이도약이지만별도순간이동없음.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:543](../src/core/data/higher-cost-drafts.js#L543) · `"id": "C31"`, [src/core/combat/battle.js:831](../src/core/combat/battle.js#L831) · `case 'C31'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:543](../src/core/data/higher-cost-drafts.js#L543) · `"id": "C31"`, [src/core/combat/battle.js:830](../src/core/combat/battle.js#L830) · `case 'C31'`.
 
 ### C32 · 제피로
 
@@ -820,7 +820,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:대상과상하좌우인접적.띄우기는stun 키의행동/이동불가,무적없음.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:572](../src/core/data/higher-cost-drafts.js#L572) · `"id": "C32"`, [src/core/combat/battle.js:835](../src/core/combat/battle.js#L835) · `case 'C32'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:572](../src/core/data/higher-cost-drafts.js#L572) · `"id": "C32"`, [src/core/combat/battle.js:834](../src/core/combat/battle.js#L834) · `case 'C32'`.
 
 ### C33 · 아그니
 
@@ -838,7 +838,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 승인판정:현재대상+그대상에가까운다른적1명.치유감소는기존수치와큰값우선.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:604](../src/core/data/higher-cost-drafts.js#L604) · `"id": "C33"`, [src/core/combat/battle.js:847](../src/core/combat/battle.js#L847) · `case 'C33'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:604](../src/core/data/higher-cost-drafts.js#L604) · `"id": "C33"`, [src/core/combat/battle.js:846](../src/core/combat/battle.js#L846) · `case 'C33'`.
 
 ### C34 · 아스텔
 
@@ -856,7 +856,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:636](../src/core/data/higher-cost-drafts.js#L636) · `"id": "C34"`, [src/core/combat/battle.js:866](../src/core/combat/battle.js#L866) · `case 'C34'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:636](../src/core/data/higher-cost-drafts.js#L636) · `"id": "C34"`, [src/core/combat/battle.js:865](../src/core/combat/battle.js#L865) · `case 'C34'`.
 
 ### C35 · 메두라
 
@@ -874,7 +874,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:665](../src/core/data/higher-cost-drafts.js#L665) · `"id": "C35"`, [src/core/combat/battle.js:875](../src/core/combat/battle.js#L875) · `case 'C35'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:665](../src/core/data/higher-cost-drafts.js#L665) · `"id": "C35"`, [src/core/combat/battle.js:874](../src/core/combat/battle.js#L874) · `case 'C35'`.
 
 ### C36 · 참월
 
@@ -892,7 +892,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:694](../src/core/data/higher-cost-drafts.js#L694) · `"id": "C36"`, [src/core/combat/battle.js:881](../src/core/combat/battle.js#L881) · `case 'C36'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:694](../src/core/data/higher-cost-drafts.js#L694) · `"id": "C36"`, [src/core/combat/battle.js:880](../src/core/combat/battle.js#L880) · `case 'C36'`.
 
 ### C37 · 카르미나
 
@@ -910,7 +910,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
  HP비용기준: currentHP.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:723](../src/core/data/higher-cost-drafts.js#L723) · `"id": "C37"`, [src/core/combat/battle.js:885](../src/core/combat/battle.js#L885) · `case 'C37'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:723](../src/core/data/higher-cost-drafts.js#L723) · `"id": "C37"`, [src/core/combat/battle.js:884](../src/core/combat/battle.js#L884) · `case 'C37'`.
 
 ### C38 · 오르딘
 
@@ -928,7 +928,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:753](../src/core/data/higher-cost-drafts.js#L753) · `"id": "C38"`, [src/core/combat/battle.js:889](../src/core/combat/battle.js#L889) · `case 'C38'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:753](../src/core/data/higher-cost-drafts.js#L753) · `"id": "C38"`, [src/core/combat/battle.js:888](../src/core/combat/battle.js#L888) · `case 'C38'`.
 
 ### C39 · 글라시아
 
@@ -946,7 +946,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:785](../src/core/data/higher-cost-drafts.js#L785) · `"id": "C39"`, [src/core/combat/battle.js:893](../src/core/combat/battle.js#L893) · `case 'C39'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:785](../src/core/data/higher-cost-drafts.js#L785) · `"id": "C39"`, [src/core/combat/battle.js:892](../src/core/combat/battle.js#L892) · `case 'C39'`.
 
 ### C40 · 월하
 
@@ -964,7 +964,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:817](../src/core/data/higher-cost-drafts.js#L817) · `"id": "C40"`, [src/core/combat/battle.js:897](../src/core/combat/battle.js#L897) · `case 'C40'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:817](../src/core/data/higher-cost-drafts.js#L817) · `"id": "C40"`, [src/core/combat/battle.js:896](../src/core/combat/battle.js#L896) · `case 'C40'`.
 
 ### C41 · 뇌진
 
@@ -982,7 +982,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:846](../src/core/data/higher-cost-drafts.js#L846) · `"id": "C41"`, [src/core/combat/battle.js:905](../src/core/combat/battle.js#L905) · `case 'C41'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:846](../src/core/data/higher-cost-drafts.js#L846) · `"id": "C41"`, [src/core/combat/battle.js:904](../src/core/combat/battle.js#L904) · `case 'C41'`.
 
 ### C42 · 바하무트
 
@@ -1000,7 +1000,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:878](../src/core/data/higher-cost-drafts.js#L878) · `"id": "C42"`, [src/core/combat/battle.js:935](../src/core/combat/battle.js#L935) · `case 'C42'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:878](../src/core/data/higher-cost-drafts.js#L878) · `"id": "C42"`, [src/core/combat/battle.js:934](../src/core/combat/battle.js#L934) · `case 'C42'`.
 
 ### C43 · 라이진
 
@@ -1018,7 +1018,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:907](../src/core/data/higher-cost-drafts.js#L907) · `"id": "C43"`, [src/core/combat/battle.js:941](../src/core/combat/battle.js#L941) · `case 'C43'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:907](../src/core/data/higher-cost-drafts.js#L907) · `"id": "C43"`, [src/core/combat/battle.js:940](../src/core/combat/battle.js#L940) · `case 'C43'`.
 
 ### C44 · 백야
 
@@ -1036,7 +1036,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:936](../src/core/data/higher-cost-drafts.js#L936) · `"id": "C44"`, [src/core/combat/battle.js:946](../src/core/combat/battle.js#L946) · `case 'C44'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:936](../src/core/data/higher-cost-drafts.js#L936) · `"id": "C44"`, [src/core/combat/battle.js:945](../src/core/combat/battle.js#L945) · `case 'C44'`.
 
 ### C45 · 아바돈
 
@@ -1054,7 +1054,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:968](../src/core/data/higher-cost-drafts.js#L968) · `"id": "C45"`, [src/core/combat/battle.js:969](../src/core/combat/battle.js#L969) · `case 'C45'`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:968](../src/core/data/higher-cost-drafts.js#L968) · `"id": "C45"`, [src/core/combat/battle.js:968](../src/core/combat/battle.js#L968) · `case 'C45'`.
 
 ## 11. 장비40종·획득·장착
 
@@ -1138,7 +1138,7 @@ T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성�
 
 모든아이템고유효과는비소환수장착자만(has가summon제외).피해출처ITEM_PROC와itemProcDepth가다른고유효과연쇄재귀를차단합니다. 세부확정여부는원문아이템명세의가정과구분해테스트해야합니다.
 
-[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:55](../src/core/combat/item-effects.js#L55) · `function install`, [src/core/progression.js:307](../src/core/progression.js#L307) · `function beginSupply`.
+[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:307](../src/core/progression.js#L307) · `function beginSupply`.
 
 ### 이전세이브장비
 

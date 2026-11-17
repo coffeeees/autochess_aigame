@@ -274,7 +274,17 @@ function update(b) {
       if (r.pulseShield) b.shield(target, target.stats.HP * r.pulseShield, 5, source);
     }
 }
+/** Battle hooks for bond effects: start/update events (see combat/hooks.js). */
+const extension = {
+  name: 'bond-effects',
+  on: {
+    // through `api` so a replaced api.init/api.update (tests) is used
+    start: { order: 10, run: (b) => api.init(b) },
+    update: { order: 30, run: (b) => api.update(b) },
+  },
+};
 const api = {
+  extension,
   init,
   stats,
   healPower,

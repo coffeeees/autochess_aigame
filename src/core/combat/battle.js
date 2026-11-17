@@ -6,6 +6,7 @@ import I from '../items.js';
 import Bonds from './bond-effects.js';
 import F from './item-effects.js';
 import { storedRng } from '../rng.js';
+import { enableHooks } from './hooks.js';
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function distance(a, b, columns = D.prototypeConfig.board.columns) {
@@ -75,9 +76,7 @@ class Battle {
         this.units.push(this.makeUnit(entry, team));
       }
     if (!allies.length || !enemies.length) throw Error('양쪽 진영에 캐릭터가 필요합니다.');
-    Bonds.init(this);
-    F.start(this);
-    AF.start(this);
+    this.emit('start'); // bond -> item -> augment effects (combat/hooks.js)
     this.log('system', '전투 시작 · 유대 단계는 전투 종료까지 고정됩니다.');
   }
   makeUnit(entry, team) {
@@ -1019,9 +1018,7 @@ class Battle {
     if (this.result) return this.result;
     this.events = [];
     this.time += dt;
-    F.update(this);
-    AF.update(this);
-    Bonds.update(this);
+    this.emit('update'); // item -> augment -> bond effects (combat/hooks.js)
     // Timed effects happen before actions. Units act sequentially in stable uid order.
     for (const u of [...this.units]) {
       if (u.dead) continue;
@@ -1124,8 +1121,10 @@ class Battle {
     return this.result;
   }
 }
-F.install(Battle);
-AF.install(Battle);
+enableHooks(Battle);
+Battle.use(F.extension);
+Battle.use(AF.extension);
+Battle.use(Bonds.extension);
 const api = { Battle, distance, mitigatedDamage };
 
 export default api;

@@ -188,6 +188,6 @@
 
 ## 7. 저장 및 소스 위치
 
-[src/core/data/units.js:67](../src/core/data/units.js#L67) · `const statKeys=`; [src/core/combat/battle.js:73](../src/core/combat/battle.js#L73) · `makeUnit(entry,team)`; [src/core/progression.js:452](../src/core/progression.js#L452) · `const receipt=`; [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
+[src/core/data/units.js:67](../src/core/data/units.js#L67) · `const statKeys=`; [src/core/combat/battle.js:74](../src/core/combat/battle.js#L74) · `makeUnit(entry,team)`; [src/core/progression.js:452](../src/core/progression.js#L452) · `const receipt=`; [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
 
 문서의정의에없는프로젝트고유약어를새로추측해추가하지않았습니다. 임시숫자/상태차이는 [미구현](UNIMPLEMENTED.md) 및 [불일치](CHANGELOG.md) 참조.

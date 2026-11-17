@@ -35,6 +35,6 @@
     "dist/board.js": "cbb38e944600dc409bba85a21c2e1aed244004a43052c291fd99785f7d238d7c",
     "dist/encounters.js": "aea232426370144801f81fa61374937d2019129b3745d3cb5c845f90ad2a513c",
     "dist/augments.js": "f85c59aaa5b22b83bd3423d7d9fd18155dc0615e73da5ca94c9f69358638a986",
-    "dist/augment-effects.js": "63e2bbacd31bb16b325ef8ba04ea68c2fed869fa959485b02f01ae5da15631a5"
+    "dist/augment-effects.js": "b896de469c87481b50219f6092a3e84b1746da4aafa07c1797643599c38831a5"
   }
 }

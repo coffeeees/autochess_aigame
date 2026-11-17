@@ -48,82 +48,94 @@ function preventDeath(b, target) {
   b.log('augment', '불멸의 군대 · HP1 생존', { source: target.uid });
   return true;
 }
-function install(Battle) {
-  const p = Battle.prototype;
-  if (p.augmentEffectsInstalled) return;
-  p.augmentEffectsInstalled = true;
-  const stats = p.stats;
-  p.stats = function (u) {
-    const s = stats.call(this, u),
-      st = u.augmentState;
-    if (u.team === 'ally' && st) {
-      if (st.heat) {
-        const ratio = 1 + effect('G07').heat.ratio * st.heat;
-        s.AD *= ratio;
-        s.AP *= ratio;
-      }
-      if (st.dominion) {
-        const d = effect('P06').dominion;
-        s.AD *= 1 + d.power;
-        s.AP *= 1 + d.power;
-        s.AS *= 1 + d.as;
-      }
-    }
-    return s;
-  };
-  const summon = p.summon;
-  p.summon = function (owner, kind) {
-    const pet = summon.call(this, owner, kind);
-    if (pet) {
-      pet.augmentState = {};
-      if (pet.team === 'ally') {
-        pet.stats = A.applyStats(pet.stats, this.augmentIds);
-        pet.hp = pet.stats.HP;
-      }
-    }
-    return pet;
-  };
-  const cast = p.cast;
-  p.cast = function (u, target) {
-    if (!alive(u) || !alive(target)) return;
-    const eligible = u.team === 'ally' && has(this, 'G08') && !this.itemProcDepth;
-    const result = cast.call(this, u, target);
-    if (eligible && alive(u) && this.time + 1e-8 >= (u.augmentState.nextMana || 0)) {
-      const e = effect('G08').manaReturn;
-      u.augmentState.nextMana = this.time + e.cooldown;
-      u.mp = Math.min(u.stats.MP, u.mp + u.stats.MP * e.ratio);
-      this.log('augment', '마나 순환', { source: u.uid });
-    }
-    return result;
-  };
-  const deal = p.deal;
-  p.deal = function (source, target, amount, type = 'physical', opts = {}) {
-    const valid = alive(target),
-      normal = source?.team === 'ally' && !this.itemProcDepth && !opts.itemProc,
-      kind = opts.kind || 'skill';
-    const result = deal.call(this, source, target, amount, type, opts);
-    if (
-      normal &&
-      valid &&
-      alive(source) &&
-      result.damage > 0 &&
-      ['basic', 'skill'].includes(kind)
-    ) {
-      const ratio =
-        (kind === 'basic' && has(this, 'G06') ? effect('G06').basicLeech : 0) +
-        (has(this, 'P05') ? effect('P05').attackLeech : 0);
-      if (ratio > 0) {
-        this.itemProcDepth = (this.itemProcDepth || 0) + 1;
-        try {
-          this.heal(source, result.damage * ratio, source);
-        } finally {
-          this.itemProcDepth--;
+/** Battle hooks for augment-effects (see combat/hooks.js for ordering). */
+const extension = {
+  name: 'augment-effects',
+  order: 20,
+  around: {
+    stats(inner, u) {
+      const s = inner(u),
+        st = u.augmentState;
+      if (u.team === 'ally' && st) {
+        if (st.heat) {
+          const ratio = 1 + effect('G07').heat.ratio * st.heat;
+          s.AD *= ratio;
+          s.AP *= ratio;
+        }
+        if (st.dominion) {
+          const d = effect('P06').dominion;
+          s.AD *= 1 + d.power;
+          s.AP *= 1 + d.power;
+          s.AS *= 1 + d.as;
         }
       }
-    }
-    return result;
-  };
+      return s;
+    },
+    summon(inner, owner, kind) {
+      const pet = inner(owner, kind);
+      if (pet) {
+        pet.augmentState = {};
+        if (pet.team === 'ally') {
+          pet.stats = A.applyStats(pet.stats, this.augmentIds);
+          pet.hp = pet.stats.HP;
+        }
+      }
+      return pet;
+    },
+    cast(inner, u, target) {
+      if (!alive(u) || !alive(target)) return;
+      const eligible = u.team === 'ally' && has(this, 'G08') && !this.itemProcDepth;
+      const result = inner(u, target);
+      if (eligible && alive(u) && this.time + 1e-8 >= (u.augmentState.nextMana || 0)) {
+        const e = effect('G08').manaReturn;
+        u.augmentState.nextMana = this.time + e.cooldown;
+        u.mp = Math.min(u.stats.MP, u.mp + u.stats.MP * e.ratio);
+        this.log('augment', '마나 순환', { source: u.uid });
+      }
+      return result;
+    },
+    deal(inner, source, target, amount, type = 'physical', opts = {}) {
+      const valid = alive(target),
+        normal = source?.team === 'ally' && !this.itemProcDepth && !opts.itemProc,
+        kind = opts.kind || 'skill';
+      const result = inner(source, target, amount, type, opts);
+      if (
+        normal &&
+        valid &&
+        alive(source) &&
+        result.damage > 0 &&
+        ['basic', 'skill'].includes(kind)
+      ) {
+        const ratio =
+          (kind === 'basic' && has(this, 'G06') ? effect('G06').basicLeech : 0) +
+          (has(this, 'P05') ? effect('P05').attackLeech : 0);
+        if (ratio > 0) {
+          this.itemProcDepth = (this.itemProcDepth || 0) + 1;
+          try {
+            this.heal(source, result.damage * ratio, source);
+          } finally {
+            this.itemProcDepth--;
+          }
+        }
+      }
+      return result;
+    },
+  },
+  on: {
+    start: { order: 30, run: (b) => api.start(b) },
+    update: { order: 20, run: (b) => api.update(b) },
+  },
+};
+/** Register on a Battle class (kept for callers of the old API). */
+function install(Battle) {
+  Battle.use(extension);
 }
-const api = { start, update, preventDeath, install };
+const api = {
+  extension,
+  start,
+  update,
+  preventDeath,
+  install,
+};
 
 export default api;
