@@ -23,7 +23,7 @@
 | D07 | 데이터 콘셉트/실제 효과 차이 | 유대 concept/thresholds | 부활·정화·추가타·은신 등 복합 콘셉트 | v0.15.17에서 새16종 임시 밸런스 v1을 기본 적용. confirmedEffect=false는 최종 밸런스 미확정이며 효과 미구현을 뜻하지 않음. | [src/core/combat/battle.js:542](../src/core/combat/battle.js#L542) · `applyExperimental(){` |
 | D08 | 누적 패치 설명/현재 UI 차이 | dist/patch-notes.js history와 currentRules의 누적 UI 설명 | history의옛합성450/340·작은ROUND1100/400,누적currentRules의슬롯크기유지와최신축소구절이공존 | 현재 합성900/680ms,패널240px,일반/특수슬롯36×36px,라운드전환2200/600ms·스테이지텍스트1600/350ms. 역사 문단은 보존하고 최신UI 및 이 문서로 구분. | [src/legacy/screen-effects.js:56](../src/legacy/screen-effects.js#L56) · `const duration=` |
 | D09 | 효과 문구/코드 세부 예외 | I28불멸자의갑옷의치명피해생존설명 | 전투당1회치명피해를HP1로방지 | 현재I28은ITEM_PROC/아이템파생출처에서는발동하지않는가드가있음.P04는독립죽음방지.포괄적인문구의세부범위가의도와맞는지확인필요하며이번에수정하지않음. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
-| D10 | 이름 승인/구버전 안내 문구 | 캐릭터 도감·상세의 테스트용 이름 안내 | 이름·능력치·스킬 모두 테스트용 제안으로 표시 | 45명 표시 이름은0.15.9 사용자 지정 목록으로 변경됨. provisional 및 안내 문구는 남아 있어 이름 승인과 수치 임시 여부를 문서에서 분리. | [src/legacy/prototype.js:471](../src/legacy/prototype.js#L471) · `function showRoster` |
+| D10 | 이름 승인/구버전 안내 문구 | 캐릭터 도감·상세의 테스트용 이름 안내 | 이름·능력치·스킬 모두 테스트용 제안으로 표시 | 45명 표시 이름은0.15.9 사용자 지정 목록으로 변경됨. provisional 및 안내 문구는 남아 있어 이름 승인과 수치 임시 여부를 문서에서 분리. | [src/legacy/prototype.js:504](../src/legacy/prototype.js#L504) · `function showRoster` |
 | D11 | 기획과 연출 용어 구분 | C32 띄우기 | 공중에 띄우는 것으로 해석 가능 | 승인한 구현은 stun 키의1초 행동/이동 불가. 공중 좌표/무적/전용 도트 애니메이션은 없음. | [src/core/combat/skills/cost3.js:70](../src/core/combat/skills/cost3.js#L70) · `C32(u, target, s)` |
 | D12 | 기록용 안내/실제 기능 범위 | 7구간 이후 메타XP미지급 문구 | 1~6구간에서는 메타XP를 주는 것으로 오해 가능 | 현재는 모든 구간에서 메타 성장 지급 자체가 비활성.7구간 안내만 구현됨. 인게임 라운드XP2와는 별개. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
 | D13 | 이전 패치/현재 표시 정책 | dist/notice-audit.js의 원래41개 조사 문구 | 과거 발생 문구가 모두 현재도 표시되는 것으로 오해 가능 | 실제 notice-policy는13유지/27삭제/T28승인수정1. 이력과 현행 허용 목록을 구분. | [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=` |
@@ -774,3 +774,6 @@ v0.15.18 이후 재구축 작업. 단계별 계획은 [REBUILD_PLAN.md](REBUILD_
   무작위를 시드 RNG(`src/core/rng.ts`)로 통일하고 런 상태(`rngState`)와 전투(`seed`/`rngState`)에 저장. 확률·규칙은 그대로이고 난수의 출처만 바뀌었다.
   아이템·증강·유대·VFX 기록을 `Battle.prototype` 덮어쓰기 대신 훅(`combat/hooks.ts`)으로 등록. 스킬 45개를 `combat/skills/`의 레지스트리로 분리.
   데이터 타입(`src/core/types.ts`)과 TypeScript 검사(`npm run typecheck`) 도입.
+- 4단계: 저장을 `src/core/save.ts`로 분리(저장 키·버전, 이관표, 조건별 검증 11개). 검증은 v0.15.18의 한 줄 조건과 같은 결과를 냄(무작위 변형 3,000건으로 확인).
+  저장 실패 시 T42 알림(B2). 손상·검증 실패 저장은 `starlight-onecost-v1-backup-<시각>`에 백업 후 새 원정, T43 알림(B3).
+  D4 결정 (a): 전투 중 새로고침 시 준비 단계로 되돌리고 그 전투의 보너스 몬스터 보상(골드/아이템)을 회수, T44 알림. 저장 형식은 바뀌지 않아 v0.15.18 저장을 그대로 불러온다.

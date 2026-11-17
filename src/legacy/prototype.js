@@ -57,20 +57,53 @@ function fresh() {
   V.normalize(state);
 }
 
+// Load / save (core/save.ts validates, migrates, backs up and handles D4).
+// loadNotice is shown on the start screen and once in game (showLoadNotice).
+let saveFailed = false,
+  loadNotice = null;
 function load() {
-  // core/save.ts validates and migrates; an unusable save starts a new run
-  const result = AutoSave.loadSave(localStorage);
+  const result = AutoSave.loadSave(localStorage, new Date());
   if (result.status === 'loaded') {
     state = result.state;
     nextUid = result.nextUid;
+    if (result.reverted) {
+      const loot = result.reverted.loot;
+      loadNotice = {
+        id: 'T44',
+        text:
+          `전투 도중 종료되어 ${result.reverted.key} 전투를 취소했습니다.` +
+          (loot?.kind === 'gold' ? ` 이 전투에서 얻은 보너스 골드 ${loot.amount}G를 되돌렸습니다.` : '') +
+          (loot?.kind === 'item' ? ' 이 전투에서 얻은 보너스 아이템을 되돌렸습니다.' : '') +
+          ' 준비 단계에서 다시 시작하세요.',
+      };
+      save();
+    }
     return;
   }
   fresh();
+  if (result.status === 'invalid')
+    loadNotice = {
+      id: 'T43',
+      text: result.backupKey
+        ? `저장 데이터가 손상되어 새 원정을 시작했습니다. 기존 저장은 ${result.backupKey}에 백업했습니다.`
+        : '저장 데이터를 읽지 못해 새 원정을 시작했습니다. 기존 저장을 백업하지 못했습니다.',
+    };
+}
+function showLoadNotice() {
+  if (!loadNotice) return;
+  notify(loadNotice.id, loadNotice.text);
+  loadNotice = null;
 }
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {}
+    saveFailed = false;
+  } catch {
+    // tell once per failure streak (T42); a later successful save re-arms it
+    if (!saveFailed)
+      notify('T42', '진행 상황을 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인하세요.');
+    saveFailed = true;
+  }
 }
 let noticeTimer = null,
   noticeExitTimer = null;

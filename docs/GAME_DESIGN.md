@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/legacy/prototype.js:504](../src/legacy/prototype.js#L504) · `function startBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/legacy/prototype.js:537](../src/legacy/prototype.js#L537) · `function startBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외,판매후복귀.1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/legacy/drag-sales.js:2](../src/legacy/drag-sales.js#L2) · `function unitSalePrice`, [src/legacy/prototype.js:364](../src/legacy/prototype.js#L364) · `function merge`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
+[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/legacy/drag-sales.js:2](../src/legacy/drag-sales.js#L2) · `function unitSalePrice`, [src/legacy/prototype.js:397](../src/legacy/prototype.js#L397) · `function merge`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -1205,7 +1205,11 @@ legacy training/mana/funds는저장호환효과만유지하고신규선택풀에
 
 - 게임키starlight-onecost-v1의payload.version=2. 메타키autochess-meta-v1,폰트키autochess-ui-font. 브라우저로컬이며서버동기화확인되지않음.
 - 8열세이브는7열로좌표이관,잘린열은가까운빈칸으로이동.동료ID/장비UID/보상장부보존.중복아군ID배치는대기석으로수선.
-- 새로고침중combat은prepare로복귀하며실제전투중간시뮬레이션스냅샷은저장하지않음.적encounter캐시/이미지급보너스장부는남아중복지급방지.
+- 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
+- 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
+
+[src/core/save.ts:179](../src/core/save.ts#L179) · `function loadSave`, [src/core/save.ts:142](../src/core/save.ts#L142) · `function revertInterruptedBattle`, [src/legacy/prototype.js:97](../src/legacy/prototype.js#L97) · `function save`.
+
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
 - 피해숫자는실제HP피해,치명타/흡수/회피/회복/보호막을구분.소환딜은소유주에합산. 전투격자유지.
@@ -1213,9 +1217,9 @@ legacy training/mana/funds는저장호환효과만유지하고신규선택풀에
 - 중앙체력연출은 실제 HP/실제 증감 충격형 하트이며 네모/막대는 없습니다.전투마무리후3000ms/퇴장200ms/모션감소500ms,실제HP바뀌지않음.연출완료후결과모달.좌상단감소표시는1씩,기본80ms/전체최대1600ms.
 - 구간내1-1→1-2는STAGE 1-2텍스트1600ms/모션감소350ms(입력차단없음).1-5→2-1상위라운드에서만전체화면ROUND N이좌→우로채워짐2200ms/모션감소600ms페이드.결과확인과증강선택후재생.전체화면만native dialog입력차단,취소시상태보존.
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
-- 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 툴팁/결과/중앙연출은이토스트목록과별개.
+- 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/legacy/prototype.js:60](../src/legacy/prototype.js#L60) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/legacy/screen-effects.js:12](../src/legacy/screen-effects.js#L12) · `function create`, [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
+[src/legacy/prototype.js:64](../src/legacy/prototype.js#L64) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/legacy/screen-effects.js:12](../src/legacy/screen-effects.js#L12) · `function create`, [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
 
 ## 14. 남은 결정과 불일치
 

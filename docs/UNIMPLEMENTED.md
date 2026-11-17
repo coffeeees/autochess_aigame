@@ -17,7 +17,7 @@
 | U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
 | U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [index.html:1](../index.html#L1) · `id="homeGachaBtn"` |
 | U05 | 미구현 | 특수아이템2칸 | 예약UI aria-disabled만존재.일반아이템을넣는로직없음. | [index.html:5](../index.html#L5) · `class="special-inventory"` |
-| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [src/legacy/prototype.js:113](../src/legacy/prototype.js#L113) · `function icon` |
+| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [src/legacy/prototype.js:146](../src/legacy/prototype.js#L146) · `function icon` |
 | U07 | 범위밖/계획확인필요 | 픽셀자유이동/전투격자제거 | 0.15.9요청에서철회/보류.현재구현완료해야할결함으로분류하지않음. | [docs/AUTOCHESS_v0.15.9_Codex_수정지시서.md:55](archive/requests/AUTOCHESS_v0.15.9_Codex_수정지시서.md#L55) · `## 7.` |
 | U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [src/core/data/units.js:213](../src/core/data/units.js#L213) · `combat:` |
 | U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [src/core/data/units.js:251](../src/core/data/units.js#L251) · `run:` |
@@ -27,8 +27,8 @@
 | U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [src/core/combat/battle.js:598](../src/core/combat/battle.js#L598) · `if(u.regen&&u.hp>0)` |
 | U14 | 확인필요 | I28치명피해방지의출처예외 | ITEM_PROC/아이템파생피해에서는I28생존가드가제외됨.문구의포괄범위와최종의도확인필요.D09참조. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
 | U15 | 확인필요 | I38회피타중첩/I28파생피해예외 | 현재코드가회피판정전에연속기본공격중첩진행.고유효과의문구와세부조건검토필요. | [src/core/combat/item-effects.js:154](../src/core/combat/item-effects.js#L154) · `if(has(source,'I38'))` |
-| U16 | 확인필요 | 전투중재접속복원정책 | 진행전투를prepare로복구,중간전투상태저장없음.이미획득보너스는장부에남음.의도된재시도정책인지확인필요. | [src/core/save.ts:138](../src/core/save.ts#L138) · `function revertInterruptedBattle` |
-| U17 | 확인필요 | 저장실패표시/손상세이브복구 | save catch가무시,load검증실패시fresh.사용자복구/클라우드백업없음.이번에알림을추가하지않음. | [src/legacy/prototype.js:70](../src/legacy/prototype.js#L70) · `function save` |
+| U16 | 결정·구현 | 전투중재접속복원정책 | D4 결정(a): 준비 단계로 되돌리고 취소된 전투의 보너스 보상(골드/아이템)을 회수, 장부에서 삭제. 중간 전투 상태는 저장하지 않음. T44 알림. | [src/core/save.ts:142](../src/core/save.ts#L142) · `function revertInterruptedBattle` |
+| U17 | 구현 | 저장실패표시/손상세이브복구 | 저장 실패 T42 알림. 손상·검증 실패 저장은 `starlight-onecost-v1-backup-<시각>`에 백업 후 새 원정, T43 알림(시작 화면 표시). 클라우드 백업은 없음. | [src/core/save.ts:179](../src/core/save.ts#L179) · `function loadSave` |
 | U18 | 기획확인필요 | 정규기록/순위/최종클리어영구보상 | 6-5선택과로컬영수증있음.전역최고기록·온라인순위·완료보상규칙은구현확인안됨.새기획필요. | [src/legacy/run-flow-ui.js:13](../src/legacy/run-flow-ui.js#L13) · `function showCompletionSummary` |
 | U19 | 임시 | 7+구간무한밸런스 | 기존구간패턴반복,적scale상한없음/성급3상한,보상fallback유지.의도된장기수치밸런스미확정. | [src/core/encounters.js:86](../src/core/encounters.js#L86) · `const wave=` |
 | U20 | 범위밖/계획확인필요 | 온라인대전/서버저장/가챠운영 | 싱글로컬프로토타입에서관련경로확인안됨.요청없이기능을추정하지않음. | [src/legacy/prototype.js:7](../src/legacy/prototype.js#L7) · `KEY='starlight-onecost-v1'` |

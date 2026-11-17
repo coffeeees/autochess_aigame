@@ -91,6 +91,9 @@ function renderHome() {
       state.health +
       (battle ? ' · 전투 일시정지' : '')
     : '';
+  const homeNotice = $('homeNotice');
+  homeNotice.hidden = !loadNotice;
+  homeNotice.textContent = loadNotice?.text || '';
   $('metaLevel').textContent = '메타 레벨 ' + metaProfile.metaLevel;
   $('metaNote').textContent = '인게임 레벨과 별도 · 성장 규칙은 추후 적용';
 }
@@ -123,6 +126,7 @@ function enterGame() {
   $('homeView').hidden = true;
   $('gameView').hidden = false;
   render();
+  showLoadNotice();
   requestAnimationFrame(() => {
     performance.mark('autochess:field');
     performance.measure('autochess:enter-to-field', 'autochess:enter', 'autochess:field');

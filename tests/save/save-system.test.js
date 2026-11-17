@@ -12,6 +12,7 @@ import S, {
   validateSave,
   loadSave,
   revertInterruptedBattle,
+  backupKey,
 } from '../../src/core/save.ts';
 import { createRng } from '../../src/core/rng.ts';
 
@@ -216,24 +217,64 @@ test('validation is split into named checks equivalent to the original condition
   }
 });
 
-test('unusable saves are reported without touching storage', () => {
+test('damaged or invalid saves are backed up, removed and reported', () => {
   for (const raw of ['{not json', JSON.stringify({ version: 9 }), JSON.stringify(null)]) {
     const storage = memoryStorage({ [SAVE_KEY]: raw });
     const result = loadSave(storage, NOW);
     a.equal(result.status, 'invalid');
+    a.equal(result.backupKey, backupKey(NOW));
+    a.equal(result.backupKey, 'starlight-onecost-v1-backup-2026-11-17T08-30-00-123Z');
+    a.equal(storage.data.get(result.backupKey), raw, 'backup holds the exact original text');
+    a(!storage.data.has(SAVE_KEY), 'damaged save removed so it is not backed up again');
     a(result.problems.length > 0);
-    a.deepEqual([...storage.data.keys()], [SAVE_KEY]);
   }
+  // backup impossible: the original stays where it was
+  const stuck = memoryStorage({ [SAVE_KEY]: '{bad' }, { failSet: true });
+  const result = loadSave(stuck, NOW);
+  a.equal(result.status, 'invalid');
+  a.equal(result.backupKey, null);
+  a.match(result.backupError, /Quota/);
+  a.equal(stuck.data.get(SAVE_KEY), '{bad');
+  // unreadable storage and no save
   a.equal(loadSave(memoryStorage({}, { failGet: true })).status, 'invalid');
   a.deepEqual(loadSave(memoryStorage()), { status: 'empty' });
 });
 
-test('a save made during battle returns to preparation (as in v0.15.18)', () => {
-  const old = JSON.parse(fixture('mid-battle'));
-  const result = loadSave(memoryStorage({ [SAVE_KEY]: fixture('mid-battle') }), NOW);
+test('D4 (a): a save made during battle returns to preparation and takes back bonus rewards', () => {
+  const raw = fixture('mid-battle');
+  const old = JSON.parse(raw);
+  a.equal(old.roundPhase, 'combat');
+  // as captured: no bonus monster in that battle
+  let result = loadSave(memoryStorage({ [SAVE_KEY]: raw }), NOW);
+  a.equal(result.status, 'loaded');
   a.equal(result.state.roundPhase, 'prepare');
+  a.deepEqual(result.reverted, { key: P.label(old), loot: null });
   a.equal(result.state.gold, old.gold);
-  a.equal(revertInterruptedBattle(JSON.parse(fixture('prepare-with-augment'))), null);
+  // the same save with bonus gold paid during the battle
+  const withGold = clone(old);
+  withGold.gold += 4;
+  withGold.bonusLootLedger = { [P.label(old)]: { kind: 'gold', amount: 4, key: P.label(old) } };
+  result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(withGold) }), NOW);
+  a.equal(result.state.gold, old.gold);
+  a.deepEqual(result.state.bonusLootLedger, {});
+  a.deepEqual(result.reverted.loot, { kind: 'gold', amount: 4 });
+  // ... or a bonus item
+  const withItem = clone(old);
+  withItem.inventory.push({ uid: 'I99', id: 'I12', equippedTo: null });
+  withItem.bonusLootLedger = {
+    [P.label(old)]: { kind: 'item', itemId: 'I12', itemUid: 'I99', key: P.label(old) },
+  };
+  result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(withItem) }), NOW);
+  a.deepEqual(result.state.inventory, old.inventory);
+  a.deepEqual(result.reverted.loot, { kind: 'item', itemId: 'I12', itemUid: 'I99' });
+  // rewards of earlier rounds are untouched
+  const earlier = clone(withGold);
+  earlier.bonusLootLedger['1-1'] = { kind: 'gold', amount: 3, key: '1-1' };
+  result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(earlier) }), NOW);
+  a.deepEqual(Object.keys(result.state.bonusLootLedger), ['1-1']);
+  // not in battle: nothing to revert
+  const prepared = JSON.parse(fixture('prepare-with-augment'));
+  a.equal(revertInterruptedBattle(prepared), null);
 });
 
 test('migration table and version 1 saves', () => {

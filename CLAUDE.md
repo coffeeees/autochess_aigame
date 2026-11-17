@@ -3,10 +3,10 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~3단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~4단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
-- 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D7 과거 파일은 docs/archive에 보관.
-- 다음 작업: 4단계(저장 시스템 정비: `save.ts`에 스키마 버전·이관·검증 분리, 저장 실패 알림, 손상 저장 백업).
+- 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수, D7 과거 파일은 docs/archive에 보관.
+- 다음 작업: 5단계(UI 재작성: 디자인 토큰, Preact 컴포넌트, 상태 저장소 1개, `!important` 금지). 남은 결정: D5 기본 글꼴, D6 캐릭터 그림 방향.
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
@@ -17,7 +17,7 @@
 ## 코드 구조 (3단계 이후)
 - `src/core/`: 게임 로직 ES 모듈. 각 모듈의 기본 내보내기는 예전 `AutoXxx` 객체와 같은 API다.
   `data/units.js`(명단·스킬 설명·`prototypeConfig`), `data/bonds.js`, `data/higher-cost-drafts.js`, `items.js`, `augments.js`,
-  `progression.js`, `encounters.js`, `preparation.js`, `rng.ts`, `types.ts`,
+  `progression.js`, `encounters.js`, `preparation.js`, `rng.ts`, `types.ts`, `save.ts`(저장 키·버전·이관표·검증·백업·D4),
   `combat/battle.js`(전투 루프), `combat/hooks.ts`, `combat/skills/cost1~5.js`(스킬 본문), `combat/*-effects.js`, `combat/vfx-events.js`, `combat/clock.js`, `combat/geometry.ts`.
 - 무작위: 상태가 있는 함수는 기본값으로 `runRng(state)`(→ `state.rngState`)를 쓰고, 상태가 없는 함수(`items.draw`, `augments.draw`,
   `startingRoster`)는 `rng`를 반드시 받는다. 전투는 `seed`로 시작해 `rngState`를 들고 다닌다(Worker에서도 이어짐).
@@ -35,6 +35,9 @@
 - Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.
 - 문서의 소스 링크(`../src/core/x.js#L<n>`)는 줄 번호 기준이다. 코드를 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
 - `docs/specs/CORE_RULES_BASELINE_v0.15.10.json`의 `coreHashes`는 일부 core 모듈의 해시다. 그 모듈을 의도적으로 고쳤을 때만 갱신한다.
+- 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`)다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
+  `tests/fixtures/v0.15.18-*.json`은 원본 게임에서 받은 실제 저장이므로 고치지 않는다.
+- 새 알림은 `notice-policy.js`의 `added`(T42~)에 넣고 `notice-audit.js`에 행을 추가한다. T01~T41 목록은 v0.15.7 조사 기록이라 바꾸지 않는다.
 - `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.
 
 ## 기준 문서

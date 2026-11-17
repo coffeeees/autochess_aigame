@@ -17,8 +17,11 @@
   const deleted = Array.from({ length: 41 }, (_, i) => 'T' + String(i + 1).padStart(2, '0')).filter(
     (id) => !retained.includes(id) && id !== 'T28',
   );
+  // Added in the rebuild (stage 4, save system); not part of the v0.15.7 T01-T41 audit.
+  // T42 save failed, T43 damaged save backed up, T44 battle cancelled by reload (D4 a).
+  const added = ['T42', 'T43', 'T44'];
   function allows(id) {
-    return retained.includes(id) || id === 'T28';
+    return retained.includes(id) || id === 'T28' || added.includes(id);
   }
   function discardRefusal(state, uid) {
     if (state.done) return '원정이 종료되어 아이템을 버릴 수 없습니다.';
@@ -47,7 +50,7 @@
     if (kind === 'unit') return result.message?.startsWith('현재 레벨에서는 ') ? 'T16' : 'T12';
     return 'T25';
   }
-  const api = { retained, deleted, allows, discardRefusal, dragId, t28Approved: true };
+  const api = { retained, deleted, added, allows, discardRefusal, dragId, t28Approved: true };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.AutoNoticePolicy = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

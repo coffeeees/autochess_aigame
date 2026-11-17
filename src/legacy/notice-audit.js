@@ -275,6 +275,32 @@
   approvedT28.source = 'content-ui.js: discardSelectedItem → notice-policy.js: discardRefusal';
   approvedT28.repeat =
     '실패 원인별 문구 변경 승인 완료. P.discardItem의 기존 실패 검사/알림 발생 조건은 유지.';
+  rows.push(
+    {
+      id: 'T42',
+      condition: '진행 저장(localStorage) 실패: 저장 공간 부족, 비공개 모드 등',
+      message: '진행 상황을 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인하세요.',
+      source: 'prototype.js: save',
+      repeat: '실패가 이어지는 동안 1회. 저장이 한 번 성공한 뒤 다시 실패하면 다시 표시.',
+      status: '추가 · 재구축 4단계',
+    },
+    {
+      id: 'T43',
+      condition: '불러온 저장이 손상되었거나 검증 실패',
+      message: '저장 데이터가 손상되어 새 원정을 시작했습니다. 기존 저장은 백업했습니다.',
+      source: 'prototype.js: load → core/save.ts: loadSave',
+      repeat: '페이지를 열 때 1회. 시작 화면 이어하기 안내에도 표시.',
+      status: '추가 · 재구축 4단계',
+    },
+    {
+      id: 'T44',
+      condition: '전투 중 새로고침·종료 후 다시 열기 (D4: 준비 단계로 되돌리고 보너스 보상 회수)',
+      message: '전투 도중 종료되어 전투를 취소했습니다. 준비 단계에서 다시 시작하세요.',
+      source: 'prototype.js: load → core/save.ts: revertInterruptedBattle',
+      repeat: '페이지를 열 때 1회. 시작 화면 이어하기 안내에도 표시.',
+      status: '추가 · 재구축 4단계',
+    },
+  );
   rows.find((r) => r.id === 'T38').repeat =
     '이번부터 아군0명은 시작을 차단하며 기존 즉시 패배 경로/알림은 실행하지 않음.';
   rows.find((r) => r.id === 'T24').condition = '동일 T3 중복 장착 허용으로 거절 조건 제거';
@@ -299,7 +325,7 @@
       escape(behavior) +
       '</p><p>총 ' +
       rows.length +
-      '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1. 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
+      '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가3(T42~T44). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
       ['조건 / 사용자 행동', '화면 문구', '관련 코드', '중복·연속 발생 가능성', '현재 상태']
         .map((x) => '<th scope="col">' + x + '</th>')
         .join('') +

@@ -104,6 +104,18 @@
   color: #a89ab6;
   font-size: 11px;
 }
+/* load notice (damaged save backed up, battle cancelled by reload) */
+.home-notice {
+  margin-top: 17px;
+  width: 100%;
+  padding: 12px 16px;
+  background: #241f17;
+  border: 1px solid #6b5a35;
+  border-radius: 8px;
+  color: var(--gold);
+  font-size: 12px;
+  line-height: 1.5;
+}
 .home-footer {
   color: #72687f;
   font-size: 10px;

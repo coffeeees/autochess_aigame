@@ -134,11 +134,27 @@ export interface RevertedBattle {
   loot: { kind: 'gold'; amount: number } | { kind: 'item'; itemId: string; itemUid: string } | null;
 }
 
-/** A save made during a battle goes back to the preparation phase of that round. */
+/**
+ * D4 (a): a save made during a battle goes back to the preparation phase of that
+ * round, and the bonus-monster reward paid during the cancelled battle is taken
+ * back (gold, or the item), so the battle can be fought again for it.
+ */
 export function revertInterruptedBattle(state: RunState): RevertedBattle | null {
   if (state.roundPhase !== 'combat') return null;
+  const key = P.label(state);
+  const ledger = (state.bonusLootLedger || {}) as Record<string, any>;
+  const paid = ledger[key];
+  let loot: RevertedBattle['loot'] = null;
+  if (paid?.kind === 'gold') {
+    state.gold = Math.max(0, state.gold - paid.amount);
+    loot = { kind: 'gold', amount: paid.amount };
+  } else if (paid?.kind === 'item') {
+    state.inventory = state.inventory.filter((item) => item.uid !== paid.itemUid);
+    loot = { kind: 'item', itemId: paid.itemId, itemUid: paid.itemUid };
+  }
+  if (paid) delete ledger[key];
   state.roundPhase = 'prepare';
-  return { key: P.label(state), loot: null };
+  return { key, loot };
 }
 
 export type LoadResult =
@@ -155,7 +171,11 @@ export function backupKey(now: Date): string {
   return BACKUP_PREFIX + now.toISOString().replace(/[:.]/g, '-');
 }
 
-/** Read, validate and migrate the run save. */
+/**
+ * Read, validate and migrate the run save. Invalid data is copied to a backup key
+ * and then removed from SAVE_KEY (so it is not backed up again on every visit);
+ * if the backup cannot be written the original stays where it is.
+ */
 export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadResult {
   let raw: string | null;
   try {
@@ -194,7 +214,18 @@ export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadRes
       problems = ['저장 데이터를 이관하지 못했습니다: ' + String(error)];
     }
   }
-  return { status: 'invalid', problems, backupKey: null, backupError: null };
+  const key = backupKey(now);
+  try {
+    storage.setItem(key, raw);
+  } catch (error) {
+    return { status: 'invalid', problems, backupKey: null, backupError: String(error) };
+  }
+  try {
+    storage.removeItem(SAVE_KEY);
+  } catch {
+    // the backup exists; leaving the damaged save only means it is backed up again
+  }
+  return { status: 'invalid', problems, backupKey: key, backupError: null };
 }
 
 export default {
