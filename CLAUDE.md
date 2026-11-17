@@ -7,8 +7,8 @@
 - 기준선: `docs/archive/baseline-tests.txt`(23 스위트 / 337 검사), `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 엔진을 옮기거나 고친 뒤에는 `node tools/combat-baseline.cjs --check`로 전투 결과가 기준선과 같은지 확인한다.
   로직 파일 위치가 바뀌면 `AUTOCHESS_LOGIC_DIR=<경로>`로 지정한다.
-- 1단계 이전에는 기획 문서가 루트에 있다: `AUTOCHESS_GAME_DESIGN.md`, `AUTOCHESS_GLOSSARY.md`, `AUTOCHESS_UNIMPLEMENTED.md`, `AUTOCHESS_CHANGELOG.md`.
-  아래 규칙의 `docs/GAME_DESIGN.md` 등은 1단계 이후의 경로다.
+- 1단계 파일 정리 완료: 기획 문서 4종은 `docs/`, 테스트가 대조하는 원본 기획 데이터는 `docs/specs/`, 과거 보고서·지시서·일회성 스크립트는 `docs/archive/`.
+- `docs/archive/scripts/`의 스크립트는 실행하지 않는다(과거 문자열 치환 도구, 일부는 없는 파일을 참조).
 
 ## 기준 문서
 - 게임 규칙과 수치의 기준은 docs/GAME_DESIGN.md다. 코드와 문서가 다르면 수정하기 전에 사용자에게 묻는다.

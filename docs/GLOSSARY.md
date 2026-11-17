@@ -4,7 +4,7 @@
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
-[전체 기획](AUTOCHESS_GAME_DESIGN.md) · [용어집](AUTOCHESS_GLOSSARY.md) · [미구현/확인 필요](AUTOCHESS_UNIMPLEMENTED.md) · [변경 이력/불일치](AUTOCHESS_CHANGELOG.md)
+[전체 기획](GAME_DESIGN.md) · [용어집](GLOSSARY.md) · [미구현/확인 필요](UNIMPLEMENTED.md) · [변경 이력/불일치](CHANGELOG.md)
 
 ## 1. 능력치와 계산 단위
 
@@ -188,6 +188,6 @@
 
 ## 7. 저장 및 소스 위치
 
-[dist/data.js:14](dist/data.js#L14) · `const statKeys=`; [dist/engine.js:21](dist/engine.js#L21) · `makeUnit(entry,team)`; [dist/progression.js:68](dist/progression.js#L68) · `const receipt=`; [dist/notice-policy.js:2](dist/notice-policy.js#L2) · `const retained=`.
+[dist/data.js:14](../dist/data.js#L14) · `const statKeys=`; [dist/engine.js:21](../dist/engine.js#L21) · `makeUnit(entry,team)`; [dist/progression.js:68](../dist/progression.js#L68) · `const receipt=`; [dist/notice-policy.js:2](../dist/notice-policy.js#L2) · `const retained=`.
 
-문서의정의에없는프로젝트고유약어를새로추측해추가하지않았습니다. 임시숫자/상태차이는 [미구현](AUTOCHESS_UNIMPLEMENTED.md) 및 [불일치](AUTOCHESS_CHANGELOG.md) 참조.
+문서의정의에없는프로젝트고유약어를새로추측해추가하지않았습니다. 임시숫자/상태차이는 [미구현](UNIMPLEMENTED.md) 및 [불일치](CHANGELOG.md) 참조.
