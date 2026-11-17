@@ -11,9 +11,19 @@ type Props = {
   enemy?: boolean;
   selected?: boolean;
   onClick?: () => void;
+  /** pressing starts a drag of this unit (left button only) */
+  onDragStart?: (pointerId: number, x: number, y: number) => void;
 };
 
-export function Pawn({ id, star, context, enemy = false, selected = false, onClick }: Props) {
+export function Pawn({
+  id,
+  star,
+  context,
+  enemy = false,
+  selected = false,
+  onClick,
+  onDragStart,
+}: Props) {
   const { name: fullName, cost } = combatant(id);
   const name = fullName.split(' ').at(-1);
   const Tag = onClick ? 'button' : 'div';
@@ -24,6 +34,10 @@ export function Pawn({ id, star, context, enemy = false, selected = false, onCli
       data-selected={selected}
       style={{ '--cost-color': costColor(cost) }}
       onClick={onClick}
+      onPointerDown={
+        onDragStart &&
+        ((e: PointerEvent) => e.button === 0 && onDragStart(e.pointerId, e.clientX, e.clientY))
+      }
       title={fullName}
     >
       <span class={styles.stars} aria-label={`${star}성`}>

@@ -8,7 +8,7 @@ import Save, { type SaveStorage } from '../core/save.ts';
 import { buyUnit, sellUnit } from '../core/shop.ts';
 import { newRun } from '../core/run.ts';
 import W from '../core/encounters.js';
-import { allows, NOTICE_MS } from './notices.ts';
+import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
 export type View = 'home' | 'difficulty' | 'game';
 
@@ -16,6 +16,35 @@ export interface Notice {
   id: string;
   text: string;
   key: number; // changes for every notice, so the same text restarts its timer
+}
+
+/** Where a dragged unit can land: a board cell, a bench slot or a sell zone. */
+export type DropTarget =
+  | { kind: 'board'; pos: number }
+  | { kind: 'bench'; slot: number }
+  | { kind: 'sell'; side: 'left' | 'right' };
+
+/** data-drop attribute value -> target ("board:38", "bench:2", "sell:left"). */
+export function parseDrop(value: string | null | undefined): DropTarget | null {
+  const [kind, arg] = (value ?? '').split(':');
+  if (kind === 'board' && /^\d+$/.test(arg)) return { kind, pos: Number(arg) };
+  if (kind === 'bench' && /^\d+$/.test(arg)) return { kind, slot: Number(arg) };
+  if (kind === 'sell' && (arg === 'left' || arg === 'right')) return { kind, side: arg };
+  return null;
+}
+
+export interface DragState {
+  kind: 'unit';
+  uid: number;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  x: number;
+  y: number;
+  /** false until the pointer has travelled DRAG_THRESHOLD px */
+  active: boolean;
+  /** data-drop value under the pointer */
+  over: string | null;
 }
 
 export interface UiState {
@@ -29,6 +58,7 @@ export interface UiState {
   notice: Notice | null;
   /** shown on the start screen and once in game (damaged save, cancelled battle) */
   loadNotice: Omit<Notice, 'key'> | null;
+  drag: DragState | null;
   /** bumps on every change; core functions mutate `run` in place */
   version: number;
 }
@@ -53,8 +83,11 @@ export function createStore(env: StoreEnv) {
     shopOpen: false,
     notice: null,
     loadNotice: null,
+    drag: null,
     version: 0,
   };
+  let clickGuardUntil = 0;
+  const clock = () => (env.now?.() ?? new Date()).getTime();
   let nextUid = 0;
   let noticeKey = 0;
   let noticeTimer: unknown = null;
@@ -163,10 +196,70 @@ export function createStore(env: StoreEnv) {
       if (pending) notify(pending.id, pending.text);
     },
     select(uid: number | null) {
-      if (!editable()) return;
+      if (!editable() || clock() < clickGuardUntil) return;
       publish({ selected: state.selected === uid ? null : uid });
     },
     setShopOpen: (open: boolean) => publish({ shopOpen: open }),
+    /** Press on a unit: becomes a drag after DRAG_THRESHOLD px of travel. */
+    dragStart(uid: number, pointerId: number, x: number, y: number) {
+      clickGuardUntil = 0;
+      if (!editable()) return;
+      publish({
+        drag: {
+          kind: 'unit',
+          uid,
+          pointerId,
+          startX: x,
+          startY: y,
+          x,
+          y,
+          active: false,
+          over: null,
+        },
+      });
+    },
+    dragMove(pointerId: number, x: number, y: number, over: string | null) {
+      const drag = state.drag;
+      if (!drag || drag.pointerId !== pointerId) return;
+      if (!drag.active && Math.hypot(x - drag.startX, y - drag.startY) < DRAG_THRESHOLD) return;
+      // the first real move starts the drag: the selection clears and the sale zones show
+      const starting = !drag.active;
+      publish({
+        drag: { ...drag, active: true, x, y, over },
+        ...(starting ? { selected: null } : {}),
+      });
+    },
+    /** Release: sell on a sell zone, move on a cell/slot, otherwise keep the unit. */
+    dragEnd(pointerId: number, over: string | null) {
+      const drag = state.drag;
+      if (!drag || drag.pointerId !== pointerId) return;
+      if (!drag.active) return publish({ drag: null });
+      clickGuardUntil = clock() + DRAG_CLICK_GUARD_MS;
+      const target = parseDrop(over);
+      if (target?.kind === 'sell') {
+        publish({ drag: null });
+        if (state.run && sellUnit(run(), drag.uid).ok) changed({ selected: null });
+        return;
+      }
+      let result: { ok: boolean; message?: string } = {
+        ok: false,
+        message: '전장이나 대기석에 놓아주세요.',
+      };
+      if (target && state.run)
+        result =
+          target.kind === 'board'
+            ? V.moveUnit(run(), drag.uid, { location: 'board', pos: target.pos })
+            : V.moveUnit(run(), drag.uid, { location: 'bench', slot: target.slot });
+      if (result.ok) changed({ drag: null });
+      else publish({ drag: null });
+      notify(dragId('unit', result), result.message || '캐릭터 이동 완료');
+    },
+    /** Escape, window blur, pointer cancel: nothing is moved or sold. */
+    dragCancel() {
+      if (!state.drag) return;
+      if (state.drag.active) clickGuardUntil = clock() + DRAG_CLICK_GUARD_MS;
+      publish({ drag: null });
+    },
     buy(slot: number) {
       if (!state.run) return;
       const id = run().shop[slot];

@@ -26,3 +26,7 @@
 .cell[data-side='ally'] {
   box-shadow: inset 0 0 0 1px #6fb7ff55;
 }
+.cell[data-over='true'] {
+  background: #fff4c933;
+  box-shadow: inset 0 0 0 2px #fff4c9;
+}

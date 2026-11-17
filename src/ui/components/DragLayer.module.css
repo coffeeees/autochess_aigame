@@ -1,0 +1,43 @@
+.sellZone {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 20;
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: linear-gradient(90deg, #5a1a2acc, #5a1a2a00);
+  color: #ffd6de;
+}
+.sellZone[data-side='left'] {
+  left: 0;
+}
+.sellZone[data-side='right'] {
+  right: 0;
+  background: linear-gradient(270deg, #5a1a2acc, #5a1a2a00);
+}
+.sellZone[data-over='true'] {
+  background: #8a2a40dd;
+}
+.sellZone b {
+  font-size: var(--text-lg);
+}
+.sellZone strong {
+  font-size: 24px;
+  color: var(--color-gold);
+}
+.ghost {
+  position: fixed;
+  z-index: 30;
+  width: 64px;
+  height: 64px;
+  translate: -50% -50%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  opacity: 0.9;
+  pointer-events: none;
+  box-shadow: 0 6px 18px #000c;
+}

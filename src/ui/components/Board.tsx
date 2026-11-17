@@ -1,6 +1,6 @@
 // Battlefield (preparation view). The 7x8 grid follows the measured lines of the
-// board art. Enemy rows on top, ally rows below. Stage 5c: read-only formation;
-// clicking an ally selects it. Placement and dragging come in the next step.
+// board art. Enemy rows on top, ally rows below. Allies are moved by dragging
+// (DragLayer); every cell is a drop target and core/preparation decides.
 import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
 import { boardArt, tracks, playArea } from '../art/board.ts';
@@ -46,6 +46,8 @@ export function Board({ ui, actions }: GameProps) {
               key={pos}
               class={styles.cell}
               data-pos={pos}
+              data-drop={`board:${pos}`}
+              data-over={ui.drag?.active && ui.drag.over === `board:${pos}`}
               data-side={pos < COLUMNS * (ROWS / 2) ? 'enemy' : 'ally'}
             >
               {ally && (
@@ -55,6 +57,7 @@ export function Board({ ui, actions }: GameProps) {
                   selected={ui.selected === ally.uid}
                   context="field"
                   onClick={() => actions.select(ally.uid)}
+                  onDragStart={(id, x, y) => actions.dragStart(ally.uid, id, x, y)}
                 />
               )}
               {enemy && <Pawn id={enemy.id} star={enemy.star ?? 1} enemy context="field" />}

@@ -1,12 +1,12 @@
 // In-game screen layout: HUD on top, side panels, battlefield, reserve bar.
-// Stage 5c: HUD, bench and shop work; the board shows the formation read-only
-// (placement and dragging come in the next step).
+// Units are placed by dragging between board cells and bench slots.
 import type { Store, UiState } from '../store.ts';
 import { Hud } from './Hud.tsx';
 import { Board } from './Board.tsx';
 import { ReserveBar } from './ReserveBar.tsx';
 import { ShopPopover } from './ShopPopover.tsx';
 import { NoticeToast } from './NoticeToast.tsx';
+import { DragLayer } from './DragLayer.tsx';
 import W from '../../core/encounters.js';
 import { boardArt } from '../art/board.ts';
 import styles from './Game.module.css';
@@ -33,6 +33,7 @@ export function Game({ ui, actions }: GameProps) {
       </main>
       <aside class={styles.right} />
       <ReserveBar ui={ui} actions={actions} />
+      <DragLayer ui={ui} actions={actions} />
     </div>
   );
 }

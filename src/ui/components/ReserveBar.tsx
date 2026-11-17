@@ -37,7 +37,13 @@ export function ReserveBar({ ui, actions }: GameProps) {
         {Array.from({ length: C.board.benchSize }, (_, slot) => {
           const unit = bench.get(slot);
           return (
-            <li key={slot} class={styles.slot} data-slot={slot}>
+            <li
+              key={slot}
+              class={styles.slot}
+              data-slot={slot}
+              data-drop={`bench:${slot}`}
+              data-over={ui.drag?.active && ui.drag.over === `bench:${slot}`}
+            >
               {unit && (
                 <Pawn
                   id={unit.id}
@@ -45,6 +51,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
                   context="bench"
                   selected={ui.selected === unit.uid}
                   onClick={() => actions.select(unit.uid)}
+                  onDragStart={(id, x, y) => actions.dragStart(unit.uid, id, x, y)}
                 />
               )}
             </li>
