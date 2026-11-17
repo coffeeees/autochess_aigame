@@ -1,6 +1,9 @@
 // Migrated from the v0.15.18 suite test-v0159.cjs (tests for: skills).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $shopCore from '../../src/core/shop.ts';
+import $mergeCore from '../../src/core/merge.ts';
+import $runCore from '../../src/core/run.ts';
 import $bondEffects from '../../src/core/combat/bond-effects.js';
 import $data from '../../src/core/data/units.js';
 import $encounters from '../../src/core/encounters.js';
@@ -297,6 +300,9 @@ const ctx = vm.createContext({
   AutoProgression: P,
   AutoWorld: W,
   AutoPreparation: V,
+  AutoShop: $shopCore,
+  AutoMerge: $mergeCore,
+  AutoRun: $runCore,
   AutoNoticePolicy: require('../../src/legacy/notice-policy'),
   document: {
     getElementById: el,

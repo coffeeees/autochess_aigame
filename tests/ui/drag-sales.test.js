@@ -1,6 +1,9 @@
 // Migrated from the v0.15.18 suite test-drag-sales.cjs (tests for: ui).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $shopCore from '../../src/core/shop.ts';
+import $mergeCore from '../../src/core/merge.ts';
+import $runCore from '../../src/core/run.ts';
 import $data from '../../src/core/data/units.js';
 import $encounters from '../../src/core/encounters.js';
 import $preparation from '../../src/core/preparation.js';
@@ -113,6 +116,9 @@ const context = vm.createContext({
   AutoProgression: P,
   AutoWorld: $encounters,
   AutoPreparation: V,
+  AutoShop: $shopCore,
+  AutoMerge: $mergeCore,
+  AutoRun: $runCore,
   document,
   window,
   console,

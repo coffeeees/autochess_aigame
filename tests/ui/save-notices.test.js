@@ -1,6 +1,9 @@
 // Stage 4 UI: save failure (T42), damaged save (T43) and battle cancelled by a
 // reload (T44, D4 a) in prototype.js, run in a vm like the other UI tests.
 import { test } from 'vitest';
+import $shopCore from '../../src/core/shop.ts';
+import $mergeCore from '../../src/core/merge.ts';
+import $runCore from '../../src/core/run.ts';
 import a from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -51,6 +54,9 @@ function setup(initial = {}) {
     AutoProgression: P,
     AutoWorld: W,
     AutoPreparation: V,
+    AutoShop: $shopCore,
+    AutoMerge: $mergeCore,
+    AutoRun: $runCore,
     AutoNoticePolicy: Policy,
     AutoItems: I,
     AutoSave: Save,

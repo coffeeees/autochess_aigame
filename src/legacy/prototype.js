@@ -45,16 +45,8 @@ function fresh() {
   // each run has its own seed; all later randomness comes from state.rngState
   const seed =
     typeof AutoNewSeed === 'function' ? AutoNewSeed() : Math.floor(Math.random() * 4294967296);
-  const seedHolder = { rngState: seed };
-  state = P.initialize({
-    health: C.run.startingHealth,
-    gold: C.economy.startingGold,
-    units: V.startingRoster(P.runRng(seedHolder)).map((id) => make(id)),
-    shop: ['C02', 'C04', 'C09', 'C10', 'C11'],
-  });
-  state.rngState = seedHolder.rngState;
-  W.configureNewRun(state, selectedDifficulty);
-  V.normalize(state);
+  state = AutoRun.newRun({ seed, difficulty: selectedDifficulty, firstUid: nextUid + 1 });
+  nextUid += state.units.length;
 }
 
 // Load / save (core/save.ts validates, migrates, backs up and handles D4).
@@ -388,66 +380,41 @@ function render() {
   if (typeof flushMergeEffects === 'function') flushMergeEffects();
 }
 
-function chooseMergeAnchor(copies) {
-  return (
-    copies.find((u) => u.location === 'board') ||
-    copies.reduce((a, b) => ((a.benchSlot ?? Infinity) <= (b.benchSlot ?? Infinity) ? a : b))
-  );
-}
 function merge(origin = null) {
-  V.normalize(state);
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const id of D.playableIds) {
-      for (let star = 1; star < C.economy.maxStar; star++) {
-        const copies = state.units.filter((u) => u.id === id && u.star === star);
-        if (copies.length >= C.economy.mergeCopies) {
-          const keep = chooseMergeAnchor(copies),
-            remove = copies.filter((u) => u !== keep).slice(0, 2);
-          if (typeof queueMergeEffect === 'function') queueMergeEffect(keep, remove, origin);
-          P.releaseEquipment(
-            state,
-            remove.map((u) => u.uid),
-          );
-          state.units = state.units.filter((u) => !remove.includes(u));
-          keep.star++;
-          selected = null;
-          notify('T08', `${D.byId(id).name} ${keep.star}성 자동 합성`);
-          changed = true;
-          break;
-        }
-      }
-      if (changed) break;
-    }
+  const merges = AutoMerge.mergeAll(state, (keep, removed) => {
+    if (typeof queueMergeEffect === 'function') queueMergeEffect(keep, removed, origin);
+  });
+  announceMerges(merges);
+}
+function announceMerges(merges) {
+  for (const m of merges) {
+    selected = null;
+    notify('T08', `${D.byId(m.id).name} ${m.star}성 자동 합성`);
   }
 }
 function recruit(id, free = false, slot = -1) {
   const origin = document
     .querySelector?.(slot >= 0 ? '[data-buy="' + slot + '"]' : '[data-free="' + id + '"]')
     ?.getBoundingClientRect?.();
-  if (!V.shopPool(state).includes(id)) {
-    notify('T04', '이미 3성을 보유한 캐릭터는 판매 후 다시 영입할 수 있습니다.');
+  const result = AutoShop.buyUnit(state, id, {
+    uid: nextUid + 1,
+    free,
+    slot,
+    busy: !!battle,
+    beforeMerge: (keep, removed) => {
+      if (typeof queueMergeEffect === 'function') queueMergeEffect(keep, removed, origin);
+    },
+  });
+  if (!result.ok) {
+    if (result.notice === 'T04')
+      notify('T04', '이미 3성을 보유한 캐릭터는 판매 후 다시 영입할 수 있습니다.');
+    if (result.notice === 'T05') notify('T05', '대기석이 가득 찼습니다.');
+    if (result.notice === 'T06') notify('T06', '골드가 부족합니다.');
     return;
   }
-  if (battle || state.done || state.roundPhase !== 'prepare' || !D.playableIds.includes(id)) return;
-  const canMerge = state.units.filter((u) => u.id === id && u.star === 1).length >= 2;
-  if (state.units.filter((u) => u.location === 'bench').length >= C.board.benchSize && !canMerge) {
-    notify('T05', '대기석이 가득 찼습니다.');
-    return;
-  }
-  if (!free && state.gold < D.byId(id).cost) {
-    notify('T06', '골드가 부족합니다.');
-    return;
-  }
-  if (!free) state.gold -= D.byId(id).cost;
-  state.units.push(make(id));
-  V.normalize(state);
-  if (slot >= 0) state.shop[slot] = null;
+  nextUid++;
   notify('T07', `${D.byId(id).name} 영입${free ? ' · 무료 테스트' : ''}`);
-  merge(origin);
-  V.normalize(state);
-  V.refreshShop(state);
+  announceMerges(result.merges);
   save();
   render();
 }
@@ -572,19 +539,15 @@ function startBattle(confirmed = false) {
   selectedBattle = null;
   lastBattle = null;
   globalThis.performance?.mark('autochess:fight-click');
+  enemyFormation(); // caches the encounter (and saves) as before
+  const setup = AutoRun.battleSetup(state);
   battle = new E.Battle(
-    deployed().map((u) => ({
-      ...u,
-      bonuses: P.unitBonuses(state, u.uid),
-      itemIds: P.unitItemIds(state, u.uid),
-    })),
-    enemyFormation(),
+    setup.allies,
+    setup.enemies,
     {
       quickMana: $('quickMana').checked,
       experimental: $('experimental').checked,
-      seed: P.battleSeed(state),
-      allyModifiers: P.allyModifiers(state),
-      enemyDamageMultiplier: W.difficulty(state.difficulty).enemyDamageMultiplier,
+      ...setup.options,
       onUnitKilled: (unit, source) => {
         if (source?.team === 'ally') {
           const loot = W.claimBonusLoot(state, unit);

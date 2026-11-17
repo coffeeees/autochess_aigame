@@ -17,6 +17,9 @@ import BondEffects from './core/combat/bond-effects.js';
 import VfxEvents from './core/combat/vfx-events.js';
 import CombatClock from './core/combat/clock.js';
 import Save from './core/save.ts';
+import Shop from './core/shop.ts';
+import Merge from './core/merge.ts';
+import Run from './core/run.ts';
 
 export function installLegacyGlobals(root, { vfx = true } = {}) {
   Object.assign(root, {
@@ -36,6 +39,9 @@ export function installLegacyGlobals(root, { vfx = true } = {}) {
     AutoVfxEvents: VfxEvents,
     AutoCombatClock: CombatClock,
     AutoSave: Save,
+    AutoShop: Shop,
+    AutoMerge: Merge,
+    AutoRun: Run,
   });
   // In the page, battles record VFX events (main-thread fallback and presentation),
   // as vfx-events.js did when it was loaded as a script.

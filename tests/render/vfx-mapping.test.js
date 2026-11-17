@@ -1,6 +1,9 @@
 // Migrated from the v0.15.18 suite test-v01516.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $shopCore from '../../src/core/shop.ts';
+import $mergeCore from '../../src/core/merge.ts';
+import $runCore from '../../src/core/run.ts';
 import $data from '../../src/core/data/units.js';
 import $encounters from '../../src/core/encounters.js';
 import $engine from '../../src/core/combat/battle.js';
@@ -221,6 +224,9 @@ function uiFixture() {
     AutoProgression: P,
     AutoWorld: W,
     AutoPreparation: V,
+    AutoShop: $shopCore,
+    AutoMerge: $mergeCore,
+    AutoRun: $runCore,
     document,
     clearInterval() {},
     console,

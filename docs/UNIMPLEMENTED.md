@@ -17,7 +17,7 @@
 | U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
 | U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [index.html:1](../index.html#L1) · `id="homeGachaBtn"` |
 | U05 | 미구현 | 특수아이템2칸 | 예약UI aria-disabled만존재.일반아이템을넣는로직없음. | [index.html:5](../index.html#L5) · `class="special-inventory"` |
-| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [src/legacy/prototype.js:146](../src/legacy/prototype.js#L146) · `function icon` |
+| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [src/legacy/prototype.js:138](../src/legacy/prototype.js#L138) · `function icon` |
 | U07 | 범위밖/계획확인필요 | 픽셀자유이동/전투격자제거 | 0.15.9요청에서철회/보류.현재구현완료해야할결함으로분류하지않음. | [docs/AUTOCHESS_v0.15.9_Codex_수정지시서.md:55](archive/requests/AUTOCHESS_v0.15.9_Codex_수정지시서.md#L55) · `## 7.` |
 | U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [src/core/data/units.js:213](../src/core/data/units.js#L213) · `combat:` |
 | U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [src/core/data/units.js:251](../src/core/data/units.js#L251) · `run:` |

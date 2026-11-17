@@ -1,6 +1,9 @@
 // Migrated from the v0.15.18 suite test-v01511.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $shopCore from '../../src/core/shop.ts';
+import $mergeCore from '../../src/core/merge.ts';
+import $runCore from '../../src/core/run.ts';
 import $augments from '../../src/core/augments.js';
 import $data from '../../src/core/data/units.js';
 import $encounters from '../../src/core/encounters.js';
@@ -239,6 +242,9 @@ function integration() {
     AutoEngine: $engine,
     AutoProgression: P,
     AutoPreparation: V,
+    AutoShop: $shopCore,
+    AutoMerge: $mergeCore,
+    AutoRun: $runCore,
     AutoWorld: W,
     AutoNoticePolicy: require('../../src/legacy/notice-policy'),
     document: {

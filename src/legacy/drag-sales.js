@@ -1,26 +1,15 @@
 'use strict';
+// sale rules live in core/shop.ts
 function unitSalePrice(unit) {
-  return D.byId(unit.id).cost * 3 ** (unit.star - 1);
+  return AutoShop.salePrice(unit);
 }
 function canSellUnit(uid) {
-  return (
-    !battle &&
-    !state.done &&
-    state.roundPhase === 'prepare' &&
-    state.units.some(
-      (u) =>
-        u.uid === uid && ['board', 'bench'].includes(u.location) && D.playableIds.includes(u.id),
-    )
-  );
+  return AutoShop.canSell(state, uid, !!battle);
 }
 // The button and both drop zones share the original sale transaction. A missing
 // UID is inert, so a repeated pointer event cannot pay or release gear twice.
 function sellUnit(uid) {
-  if (!canSellUnit(uid)) return false;
-  const u = state.units.find((x) => x.uid === uid);
-  state.gold += unitSalePrice(u);
-  P.releaseEquipment(state, [u.uid]);
-  state.units = state.units.filter((x) => x !== u);
+  if (!AutoShop.sellUnit(state, uid, !!battle).ok) return false;
   selected = null;
   save();
   render();
