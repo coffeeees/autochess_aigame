@@ -48,7 +48,7 @@ const reducedMotion = () =>
  * 전투 중: 캐릭터와 연출은 PixiJS 캔버스가 그린다(render/battlefield.ts).
  * 캔버스를 만들 수 없는 환경이면 Worker 스냅샷의 유닛을 DOM 말로 그린다.
  */
-function CombatBoard({ ui }: GameProps) {
+function CombatBoard({ ui, actions }: GameProps) {
   const battle = (ui.battle ?? ui.finishing) as unknown as {
     units: CombatUnit[];
     time: number;
@@ -85,6 +85,8 @@ function CombatBoard({ ui }: GameProps) {
   const units = new Map(battle.units.filter((u) => !u.dead && u.hp > 0).map((u) => [u.pos, u]));
   return (
     <Grid
+      // 전투가 끝난 뒤 마지막 장면은 누르면 건너뛴다
+      onClick={ui.finishing ? actions.skipFinish : undefined}
       layer={<div ref={host} class={styles.canvas} data-mode={mode} />}
       cell={(pos) => {
         if (mode !== 'dom') return null;
@@ -158,17 +160,20 @@ function Grid({
   cellProps,
   caption,
   layer,
+  onClick,
 }: {
   cell: (pos: number) => ComponentChildren;
   cellProps?: (pos: number) => Record<string, unknown>;
   caption?: string;
   /** 칸 위에 겹쳐 그리는 층(전투 캔버스) */
   layer?: ComponentChildren;
+  onClick?: () => void;
 }) {
   const area = playArea();
   return (
     <div
       class={styles.art}
+      onClick={onClick}
       style={{ aspectRatio: `${boardArt.source.width} / ${boardArt.source.height}` }}
     >
       <img class={styles.boardImage} src={boardArt.board} alt="" draggable={false} />
