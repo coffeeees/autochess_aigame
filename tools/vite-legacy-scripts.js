@@ -1,13 +1,10 @@
-// Serves and emits the pre-module game scripts in src/legacy/ unchanged.
+// src/legacy/의 기존 화면 스크립트를 그대로 제공·출력한다.
 //
-// The v0.15.18 game is ~40 classic scripts that share globals and must load in
-// the order of the <script defer> tags in index.html; the combat worker loads the
-// logic files with importScripts() by bare file name. Until stage 3 turns them
-// into ES modules, this plugin keeps that exact runtime layout:
-//   - dev:   GET /<name>.js is answered from src/legacy/<name>.js, and editing a
-//            legacy file triggers a full page reload
-//   - build: every src/legacy/*.js file is copied to the output root under the
-//            same name, next to index.html
+// 기존 화면은 전역을 공유하는 일반 스크립트들이라 legacy.html의 <script defer> 순서대로
+// 불러와야 한다. 이 플러그인은 그 실행 구조를 그대로 유지한다:
+//   - 개발: GET /<이름>.js 요청에 src/legacy/<이름>.js를 돌려주고, 파일을 고치면
+//           페이지 전체를 새로고침한다
+//   - 빌드: src/legacy/*.js를 모두 같은 이름으로 출력 폴더 최상위(legacy.html 옆)에 복사한다
 import fs from 'node:fs';
 import path from 'node:path';
 

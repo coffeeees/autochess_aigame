@@ -1,18 +1,18 @@
-// Combat simulation that runs inside the Web Worker (moved from src/legacy/combat-worker.js).
-// The environment (messaging, clock, timers, randomness) is injected so the same
-// code runs in the real worker (combat.worker.js) and in tests.
+// Web Worker 안에서 도는 전투 계산(src/legacy/combat-worker.js에서 옮김).
+// 환경(메시지, 시계, 타이머, 난수)을 주입받아서, 실제 Worker(combat.worker.js)와
+// 테스트에서 같은 코드가 돈다.
 import Engine from '../core/combat/battle.js';
 import Clock from '../core/combat/clock.js';
 import VfxEvents from '../core/combat/vfx-events.js';
 import { storedRng } from '../core/rng.ts';
 
-// A seeded battle (rngState) continues its own sequence; battles created with an
-// explicit rng function cannot carry it over, so they use the injected random.
+// 시드 전투(rngState)는 자기 난수열을 이어 가고, rng 함수를 직접 받아 만든 전투는
+// 넘겨받을 수 없으므로 주입된 난수를 쓴다.
 const workerRng = (battle, random) =>
   Number.isInteger(battle.rngState) ? storedRng(battle, 'rngState', () => 0) : random;
 
-// Worker battles record VFX events. Installing on a subclass keeps the shared
-// Battle class untouched when the host runs in the same realm (tests).
+// Worker 전투는 VFX 이벤트를 기록한다. 하위 클래스에 설치해서, 같은 실행 환경에서
+// 돌 때(테스트) 공용 Battle 클래스에 영향을 주지 않는다.
 class WorkerBattle extends Engine.Battle {}
 VfxEvents.install(WorkerBattle);
 

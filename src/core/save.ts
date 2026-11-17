@@ -1,18 +1,18 @@
-// Run save: schema, validation, migration, backup and interrupted-battle recovery.
-// The stored format is the RunState JSON itself under SAVE_KEY (unchanged since
-// v0.15.18), so existing saves load as they are. Storage is passed in by the UI;
-// this module never touches localStorage directly.
+// 원정 저장: 형식, 검증, 이관, 백업, 중단된 전투 복구.
+// 저장 형식은 SAVE_KEY 아래의 RunState JSON 그대로이고(v0.15.18과 같음), 그래서
+// 기존 저장을 그대로 불러온다. 저장소는 UI가 넘겨주며 이 모듈은 localStorage를
+// 직접 건드리지 않는다.
 import type { RunState } from './types.ts';
 import D from './data/units.js';
 import P from './progression.js';
 import W from './encounters.js';
 
 export const SAVE_KEY = 'starlight-onecost-v1';
-/** Current RunState.version written by progression.initialize / migrate. */
+/** progression.initialize / migrate가 쓰는 현재 RunState.version. */
 export const SAVE_VERSION = 2;
 export const BACKUP_PREFIX = SAVE_KEY + '-backup-';
 
-/** What the UI hands over: window.localStorage or a test double. */
+/** UI가 넘겨주는 저장소: window.localStorage 또는 테스트용 대체물. */
 export interface SaveStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
@@ -20,10 +20,10 @@ export interface SaveStorage {
 }
 
 /**
- * Schema migrations, oldest first. progression.migrate brings any accepted
- * version to SAVE_VERSION (v1 -> v2: level from deployed capacity, items,
- * augments, board columns 8 -> 7) and normalises current saves; it is idempotent.
- * Add a step here when SAVE_VERSION changes.
+ * 저장 형식 이관 목록(오래된 것부터). progression.migrate가 받아들이는 모든 버전을
+ * SAVE_VERSION으로 올리고(v1 → v2: 배치 인원 기준 레벨, 아이템, 증강, 전장 8열 → 7열)
+ * 현재 저장도 정리한다. 여러 번 실행해도 결과가 같다.
+ * SAVE_VERSION을 바꿀 때 여기에 단계를 추가한다.
  */
 export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [
   { from: 1, to: 2, note: 'progression.migrate: level, inventory, augments, 7-column board' },
@@ -37,7 +37,7 @@ const boardUnits = (s: Raw) => s.units.filter((u: Raw) => u.location === 'board'
 const benchUnits = (s: Raw) => s.units.filter((u: Raw) => u.location === 'bench');
 const columns = (s: Raw) => s.boardColumns || 8;
 
-/** One entry per condition of the v0.15.18 load() check, in the same order. */
+/** v0.15.18 load() 검사 조건 하나당 한 항목, 같은 순서. */
 export const CHECKS: readonly Check[] = [
   {
     id: 'version',
@@ -112,9 +112,8 @@ export const CHECKS: readonly Check[] = [
 ];
 
 /**
- * Failed checks of a parsed save; [] means it can be loaded. Like the original
- * single condition, checking stops at the first failure (later checks assume the
- * earlier ones, e.g. that units is an array).
+ * 읽은 저장에서 실패한 검사 목록. []이면 불러올 수 있다. 원래의 한 줄 조건처럼
+ * 첫 실패에서 멈춘다(뒤 검사는 앞 검사가 통과했다고 가정, 예: units가 배열).
  */
 export function validateSave(s: unknown): Check[] {
   for (const check of CHECKS) {
@@ -130,14 +129,14 @@ export function validateSave(s: unknown): Check[] {
 }
 
 export interface RevertedBattle {
-  key: string; // round label, e.g. '2-3'
+  key: string; // 라운드 표기, 예: '2-3'
   loot: { kind: 'gold'; amount: number } | { kind: 'item'; itemId: string; itemUid: string } | null;
 }
 
 /**
- * D4 (a): a save made during a battle goes back to the preparation phase of that
- * round, and the bonus-monster reward paid during the cancelled battle is taken
- * back (gold, or the item), so the battle can be fought again for it.
+ * D4 (a): 전투 중에 저장된 원정은 그 라운드의 준비 단계로 되돌리고, 취소된
+ * 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)을 회수해 다시 싸우면 다시
+ * 얻을 수 있게 한다.
  */
 export function revertInterruptedBattle(state: RunState): RevertedBattle | null {
   if (state.roundPhase !== 'combat') return null;
@@ -172,9 +171,8 @@ export function backupKey(now: Date): string {
 }
 
 /**
- * Read, validate and migrate the run save. Invalid data is copied to a backup key
- * and then removed from SAVE_KEY (so it is not backed up again on every visit);
- * if the backup cannot be written the original stays where it is.
+ * 원정 저장을 읽고 검증·이관한다. 잘못된 데이터는 백업 키에 복사한 뒤 SAVE_KEY에서
+ * 지운다(페이지를 열 때마다 다시 백업되지 않게). 백업을 쓸 수 없으면 원본은 그대로 둔다.
  */
 export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadResult {
   let raw: string | null;
@@ -198,7 +196,7 @@ export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadRes
     problems = ['저장 데이터를 해석할 수 없습니다'];
   }
   if (!problems.length) {
-    // migrate a copy so a failure part-way leaves nothing half-converted
+    // 복사본을 이관해서, 도중에 실패해도 반쯤 바뀐 데이터가 남지 않게 한다
     const s = JSON.parse(raw) as Raw;
     try {
       const state = W.ensureRunDefaults(P.migrate(s)) as RunState;
@@ -223,7 +221,7 @@ export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadRes
   try {
     storage.removeItem(SAVE_KEY);
   } catch {
-    // the backup exists; leaving the damaged save only means it is backed up again
+    // 백업은 있으므로, 손상 저장이 남아도 다음에 다시 백업될 뿐이다
   }
   return { status: 'invalid', problems, backupKey: key, backupError: null };
 }

@@ -1,5 +1,5 @@
-// Starting a run and preparing a battle (moved from prototype.js fresh and
-// startBattle, so every UI builds runs and battles the same way).
+// 원정 시작과 전투 준비(prototype.js fresh와 startBattle에서 옮김). 어떤 UI든
+// 원정과 전투를 같은 방식으로 만든다.
 import type { RunState, RunUnit } from './types.ts';
 import D from './data/units.js';
 import P from './progression.js';
@@ -7,16 +7,16 @@ import V from './preparation.js';
 import W from './encounters.js';
 
 const C = D.prototypeConfig;
-/** The first shop of every run is fixed. */
+/** 모든 원정의 첫 상점은 고정. */
 export const FIRST_SHOP = ['C02', 'C04', 'C09', 'C10', 'C11'];
 
 export interface NewRunOptions {
-  seed: number; // run seed (the UI draws it with crypto)
+  seed: number; // 원정 시드(UI가 crypto로 뽑음)
   difficulty: number; // 1..10
-  firstUid?: number; // uid of the first starting unit (the UI keeps the counter)
+  firstUid?: number; // 첫 시작 캐릭터의 uid(번호는 UI가 관리)
 }
 
-/** A new run: 7G, level 3, two 1-cost and one 2-cost random units, fixed first shop. */
+/** 새 원정: 7G, 레벨 3, 무작위 1코스트 2명·2코스트 1명, 고정된 첫 상점. */
 export function newRun({ seed, difficulty, firstUid = 1 }: NewRunOptions): RunState {
   const seedHolder: Pick<RunState, 'rngState'> = { rngState: seed };
   let uid = firstUid;
@@ -46,9 +46,9 @@ export interface BattleSetup {
 }
 
 /**
- * Units and options for `new Battle(allies, enemies, options)`. Draws from the
- * run generator in the original order: enemy formation, then the battle seed.
- * UI-only options (quickMana, experimental, onUnitKilled) are added by the caller.
+ * `new Battle(allies, enemies, options)`에 넣을 유닛과 옵션. 원정 생성기에서 원래
+ * 순서대로 뽑는다: 적 편성, 그다음 전투 시드. UI 전용 옵션(quickMana, experimental,
+ * onUnitKilled)은 호출하는 쪽이 더한다.
  */
 export function battleSetup(state: RunState): BattleSetup {
   const allies = state.units

@@ -1,12 +1,12 @@
 'use strict';
-// Stage-0 combat baseline.
-// Runs a fixed set of seeded battles against the logic modules and writes
-// winner / time / damage totals / surviving HP / event & log counts / hashes.
+// 0단계 전투 기준선.
+// 정해진 시드 전투들을 로직 모듈로 실행해 승자, 시간, 피해 합계, 남은 HP,
+// 이벤트·로그 수, 해시를 기록한다.
 // Usage:
-//   node tools/combat-baseline.cjs            -> print JSON to stdout
-//   node tools/combat-baseline.cjs --write    -> write docs/archive/combat-baseline.json
-//   node tools/combat-baseline.cjs --check    -> compare with the stored file, exit 1 on diff
-// Game logic is loaded from src/core (ES modules).
+//   node tools/combat-baseline.mjs            -> JSON을 표준 출력으로
+//   node tools/combat-baseline.mjs --write    -> docs/archive/combat-baseline.json에 기록
+//   node tools/combat-baseline.mjs --check    -> 저장된 파일과 비교, 다르면 종료 코드 1
+// 게임 로직은 src/core(ES 모듈)에서 불러온다.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,12 +27,11 @@ function mulberry32(seed) {
   };
 }
 
-// Any module-level Math.random call (encounters, worker helpers) is also made
-// deterministic so the baseline never depends on hidden randomness.
+// 모듈 안의 Math.random 호출도 고정해서, 기준선이 숨은 무작위에 의존하지 않게 한다.
 let globalRng = mulberry32(1);
 Math.random = () => globalRng();
 
-// imported after Math.random is replaced above
+// 위에서 Math.random을 바꾼 뒤에 불러온다
 const load = async (p) => (await import(new URL('../src/core/' + p, import.meta.url))).default;
 const D = await load('data/units.js');
 const I = await load('items.js');
@@ -84,7 +83,7 @@ function scenarios() {
   const ids = D.playableIds;
   const allyCells = [28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41];
 
-  // 1) Every playable unit, 5 at a time, 2-star, vs a fixed enemy line.
+  // 1) 플레이 가능한 캐릭터 전원을 5명씩 2성으로, 고정된 적 편성과 대결.
   for (let g = 0; g < ids.length; g += 5) {
     const group = ids.slice(g, g + 5);
     out.push(
@@ -101,7 +100,7 @@ function scenarios() {
     );
   }
 
-  // 2) Mirror-ish fights between playable units (exercises every skill vs players).
+  // 2) 플레이어 캐릭터끼리 대결(모든 스킬을 플레이어 상대로 사용).
   for (let g = 0; g < ids.length; g += 9) {
     const a = ids.slice(g, g + 4);
     const b = ids.slice(g + 4, g + 8);
@@ -117,7 +116,7 @@ function scenarios() {
     );
   }
 
-  // 3) Items: every item worn at least once.
+  // 3) 아이템: 모든 아이템을 한 번 이상 장착.
   const itemIds = I.items.map((it) => it.id);
   for (let k = 0; k < itemIds.length; k += 6) {
     const gear = itemIds.slice(k, k + 6);
@@ -137,7 +136,7 @@ function scenarios() {
     );
   }
 
-  // 4) Augments: each augment applied alone on a fixed squad.
+  // 4) 증강: 고정 편성에 증강을 하나씩 적용.
   A.augments.forEach((aug, k) => {
     out.push(
       run(
@@ -154,7 +153,7 @@ function scenarios() {
     );
   });
 
-  // 5) Real encounters from the generator across stages and difficulties.
+  // 5) 적 편성 생성기로 만든 실제 편성, 여러 스테이지·난이도.
   const stages = [
     [1, 3],
     [2, 2],

@@ -1,4 +1,4 @@
-// Module Web Worker entry: wires the browser worker globals into the combat host.
+// 모듈 Web Worker 진입점: 브라우저 Worker 전역을 전투 호스트에 연결한다.
 import { createCombatWorkerHost } from './combat-worker-host.js';
 
 const host = createCombatWorkerHost({

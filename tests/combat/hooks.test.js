@@ -1,4 +1,4 @@
-// Battle extension hooks (stage 3): effects are registered, not patched onto the prototype.
+// 전투 확장 훅(3단계): 효과는 prototype을 덮어쓰지 않고 등록한다.
 import { test } from 'vitest';
 import a from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,7 +14,7 @@ const { Battle } = Engine;
 const fight = (Class = Battle) =>
   new Class([{ id: 'C01', pos: 38 }], [{ id: 'E01', pos: 17 }], { rng: () => 0.5 });
 
-test('built-in extensions and their documented order', () => {
+test('기본 확장과 문서에 적은 순서', () => {
   a.deepEqual(
     Battle.extensions.map((e) => e.name),
     ['item-effects', 'augment-effects', 'bond-effects'],
@@ -32,7 +32,7 @@ test('built-in extensions and their documented order', () => {
   );
 });
 
-test('around layers run by order, not by registration order', () => {
+test('around 층은 등록 순서가 아니라 order 순서로 실행된다', () => {
   class Probe extends Battle {}
   const calls = [];
   const layer = (name, order) => ({
@@ -56,7 +56,7 @@ test('around layers run by order, not by registration order', () => {
   a.deepEqual(calls, ['in:outer', 'in:middle', 'in:inner', 'out:inner', 'out:middle', 'out:outer']);
 });
 
-test('events run in their own order and see the battle', () => {
+test('이벤트는 각자의 순서로 실행되고 전투 객체를 받는다', () => {
   class Probe extends Battle {}
   const seen = [];
   Probe.use({
@@ -76,7 +76,7 @@ test('events run in their own order and see the battle', () => {
   a(seen.every((x) => x[1] === b.time));
 });
 
-test('subclass extensions do not leak into the base class; use() is idempotent', () => {
+test('하위 클래스 확장은 기본 클래스에 새지 않고, use()는 한 번만 등록한다', () => {
   class WithVfx extends Battle {}
   Vfx.install(WithVfx);
   Vfx.install(WithVfx);
@@ -85,9 +85,9 @@ test('subclass extensions do not leak into the base class; use() is idempotent',
     ['vfx-events'],
   );
   a(!Battle.extensions.some((e) => e.name === 'vfx-events'));
-  F.install(Battle); // already registered: no duplicate
+  F.install(Battle); // 이미 등록됨: 중복 없음
   a.equal(Battle.extensions.filter((e) => e.name === 'item-effects').length, 1);
-  // same seeded fight: identical outcome with or without VFX recording
+  // 같은 시드 전투: VFX 기록이 있든 없든 결과가 같다
   const run = (Class) => {
     const b = new Class(
       [
@@ -106,7 +106,7 @@ test('subclass extensions do not leak into the base class; use() is idempotent',
   a.deepEqual(run(WithVfx), run(Battle));
 });
 
-test('core code never assigns Battle.prototype methods outside hooks.ts', () => {
+test('core 코드는 hooks.ts 밖에서 Battle.prototype 메서드를 바꾸지 않는다', () => {
   for (const name of AROUND) a.equal(typeof Battle.prototype[name], 'function');
   a.deepEqual(Object.keys(Battle.coreMethods).sort(), [...AROUND].sort());
   const files = (dir) =>

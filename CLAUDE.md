@@ -3,12 +3,12 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~4단계 완료. 5단계 진행 중(5a 글꼴, 5b 규칙의 core 이동, 5c 새 UI 골격까지). 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~5단계 완료. 기본 화면은 새 UI(`index.html` → `src/ui/`). 기존 화면은 `legacy.html`에 비교용으로 남아 있다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
-- 새 UI는 `next.html` → `src/ui/`(Preact, 저장소 `store.ts` 하나, `styles/tokens.css`, 컴포넌트별 CSS Module). 기존 UI(`index.html`)는 체크리스트를 모두 옮길 때까지 기본 화면으로 둔다.
-- 다음 작업: 5d 전장 배치·드래그(판매 영역 포함) → 좌우 패널(유대, 보관함, 아이템) → 전투 시작·결과·보급·증강·6-5 모달 → 도감 → 설정·패치노트 → 기본 화면 전환.
+- 다음 작업: 6단계(전장·전투 연출을 캔버스(PixiJS)로: 도트 스프라이트, 피해 숫자, 투사체, 스킬 VFX, 합성 900/680ms, 레벨업,
+  하트 HP, 액체 XP, ROUND 전환). 기존 연출 코드는 `src/legacy/`에 있으니 사양을 보고 옮긴 뒤 legacy.html과 함께 지운다.
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
@@ -16,7 +16,7 @@
   `npm run format:check` Prettier 형식 확인. Node 22.18 이상(도구가 `.ts`를 Node로 직접 불러온다).
 - 전투 엔진·스킬·효과를 고친 뒤에는 반드시 `npm run baseline:check`.
 
-## 코드 구조 (3단계 이후)
+## 코드 구조 (5단계 이후)
 - `src/core/`: 게임 로직 ES 모듈. 각 모듈의 기본 내보내기는 예전 `AutoXxx` 객체와 같은 API다.
   `data/units.js`(명단·스킬 설명·`prototypeConfig`), `data/bonds.js`, `data/higher-cost-drafts.js`, `items.js`, `augments.js`,
   `progression.js`, `encounters.js`, `preparation.js`, `rng.ts`, `types.ts`, `save.ts`(저장 키·버전·이관표·검증·백업·D4),
@@ -27,11 +27,16 @@
   순서표는 `combat/hooks.ts` 머리 주석. 유대 규칙 호출(`Bonds.beforeDamage` 등)은 전투 루프 안의 정해진 지점에서 직접 호출한다.
 - 스킬: `combat/skills/costN.js`의 `Cxx(u, target, s)`를 `this`=전투로 호출한다. 새 스킬은 해당 코스트 파일에 추가한다.
 - `src/worker/`: 전투 Worker. `combat-worker-host.js`가 본체(환경 주입), `combat.worker.js`가 브라우저 진입점.
-- `src/main.js` + `src/legacy-globals.js`: core 모듈을 예전 전역 이름(`AutoData` 등)으로 노출한다. 화면을 다시 만들면(5단계) 없앤다.
-- `src/legacy/*.js`: 아직 전역을 공유하는 화면 스크립트. 로드 순서는 `index.html`의 `<script defer vite-ignore>` 순서이고,
+- `src/ui/`: 새 UI. `store.ts`(상태 저장소 하나, 동작은 core 호출만), `components/`(컴포넌트 + CSS Module), `combat/runner.ts`(Worker 전투 실행기),
+  `art/`(캐릭터 그림 등록표 D6: 일러스트 portrait·도트 sprite, 없으면 SVG 아바타), `notices.ts`(알림 정책), `styles/tokens.css`. `!important` 금지(테스트가 검사).
+- `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
+- `src/main.js` + `src/legacy-globals.js` + `src/legacy/` + `src/styles/`: 기존 화면(legacy.html) 전용. 6단계 뒤 함께 지운다.
+- `src/legacy/*.js`: 기존 화면 스크립트. 로드 순서는 `legacy.html`의 `<script defer vite-ignore>` 순서이고,
   `tools/vite-legacy-scripts.js`가 개발 서버에서 `/<이름>.js`로 제공하고 빌드 때 `dist/`에 같은 이름으로 복사한다.
 
 ## 테스트·문서에서 주의할 점
+- 새 UI 테스트는 `tests/ui-next/`(저장소 동작, 드래그, 흐름, 스타일 규칙). 화면을 바꾸면 브라우저에서 직접 확인한다.
+- 코드 주석·테스트 이름·커밋 메시지는 한국어로 쓴다.
 - 테스트는 `tests/<기능>/<출처>.test.js`. 예전 스위트에서 옮긴 파일은 그 스위트의 준비 코드가 복사돼 있다.
   Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돌고, `tests/setup/legacy-globals.js`가 전역 이름을 채운다.
 - Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.

@@ -1,5 +1,5 @@
-// Buying and selling characters (moved from prototype.js recruit and
-// drag-sales.js). The UI shows the notices named in the results.
+// 캐릭터 구매·판매(prototype.js recruit와 drag-sales.js에서 옮김).
+// 결과에 담긴 알림 ID는 UI가 표시한다.
 import type { RunState, RunUnit, UnitDef } from './types.ts';
 import D from './data/units.js';
 import P from './progression.js';
@@ -7,31 +7,31 @@ import V from './preparation.js';
 import { mergeAll, type MergeEvent } from './merge.ts';
 
 const C = D.prototypeConfig;
-// data/units.js is JS; its records are checked against UnitDef in tests/data/types.test.js
+// data/units.js는 JS라서, 레코드가 UnitDef와 맞는지는 tests/data/types.test.js가 확인한다
 const unitCost = (id: string): number => (D.byId(id) as unknown as UnitDef).cost;
 
 export interface BuyOptions {
-  uid: number; // uid for the new unit (the UI keeps the counter)
-  free?: boolean; // test recruit without paying
-  slot?: number; // shop slot that is emptied, -1 for none
-  busy?: boolean; // a battle is running
+  uid: number; // 새 캐릭터의 uid(번호는 UI가 관리)
+  free?: boolean; // 골드 없이 테스트 영입
+  slot?: number; // 비울 상점 칸, 없으면 -1
+  busy?: boolean; // 전투 진행 중
   beforeMerge?: (keep: RunUnit, removed: RunUnit[]) => void;
 }
 export type BuyResult =
   | { ok: true; unit: RunUnit; merges: MergeEvent[] }
   | { ok: false; notice: 'T04' | 'T05' | 'T06' | null };
 
-/** Buy a character from the shop, then merge copies and refresh the shop. */
+/** 상점에서 캐릭터를 사고, 합성한 뒤 상점을 갱신한다. */
 export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyResult {
   const { uid, free = false, slot = -1, busy = false, beforeMerge } = options;
-  if (!V.shopPool(state).includes(id)) return { ok: false, notice: 'T04' }; // owned at 3 stars
+  if (!V.shopPool(state).includes(id)) return { ok: false, notice: 'T04' }; // 3성 보유
   if (busy || state.done || state.roundPhase !== 'prepare' || !D.playableIds.includes(id))
     return { ok: false, notice: null };
   const canMerge = state.units.filter((u) => u.id === id && u.star === 1).length >= 2;
   if (state.units.filter((u) => u.location === 'bench').length >= C.board.benchSize && !canMerge)
-    return { ok: false, notice: 'T05' }; // bench full
+    return { ok: false, notice: 'T05' }; // 대기석 가득 참
   const cost = unitCost(id);
-  if (!free && state.gold < cost) return { ok: false, notice: 'T06' }; // not enough gold
+  if (!free && state.gold < cost) return { ok: false, notice: 'T06' }; // 골드 부족
   if (!free) state.gold -= cost;
   const unit: RunUnit = { uid, id, location: 'bench', pos: -1, star: 1 };
   state.units.push(unit);
@@ -43,7 +43,7 @@ export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyRe
   return { ok: true, unit, merges };
 }
 
-/** Sale price: cost x 3^(star-1). */
+/** 판매가: 코스트 × 3^(성급-1). */
 export function salePrice(unit: Pick<RunUnit, 'id' | 'star'>): number {
   return unitCost(unit.id) * 3 ** (unit.star - 1);
 }
@@ -60,7 +60,7 @@ export function canSell(state: RunState, uid: number, busy = false): boolean {
   );
 }
 
-/** Sell a character: refund its price and return its equipment to storage. */
+/** 캐릭터 판매: 판매가를 돌려주고 장비는 보관함으로 돌린다. */
 export function sellUnit(
   state: RunState,
   uid: number,

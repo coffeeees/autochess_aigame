@@ -1,5 +1,5 @@
-// Seeded randomness (stage 3): src/core draws only from src/core/rng.js, the run
-// generator lives in state.rngState and battles carry their own rngState.
+// 시드 난수(3단계): src/core는 src/core/rng.ts에서만 난수를 뽑고, 원정 생성기는
+// state.rngState에, 전투는 자기 rngState에 상태를 둔다.
 import { test, afterEach } from 'vitest';
 import a from 'node:assert/strict';
 import fs from 'node:fs';
@@ -36,7 +36,7 @@ function newRun(seed) {
   return V.normalize(state);
 }
 
-test('generator is deterministic, in [0,1) and its state survives JSON', () => {
+test('생성기는 결정적이고 값은 [0,1), 상태는 JSON을 거쳐도 이어진다', () => {
   const x = createRng(42),
     y = createRng(42);
   const xs = Array.from({ length: 1000 }, x);
@@ -48,25 +48,25 @@ test('generator is deterministic, in [0,1) and its state survives JSON', () => {
   r();
   r();
   const copy = clone(holder);
-  // two values were drawn before the copy, so the copy continues with the third
+  // 복사 전에 두 번 뽑았으므로 복사본은 세 번째 값부터 이어진다
   a.equal(storedRng(copy, 'rngState', () => 0)(), xs[2]);
 });
 
-test('creating a stored generator does not touch the holder until it draws', () => {
+test('저장형 생성기는 실제로 뽑기 전에는 holder를 바꾸지 않는다', () => {
   const state = { gold: 3 };
   const before = clone(state);
   runRng(state);
   a.deepEqual(state, before);
   runRng(state)();
   a(Number.isInteger(state.rngState));
-  // legacy saves without a seed get one derived from their content
+  // 시드가 없는 예전 저장은 내용에서 시드를 만든다
   const other = { gold: 3 };
   runRng(other)();
   a.equal(other.rngState, state.rngState);
   a.notEqual(seedFrom({ gold: 3 }), seedFrom({ gold: 4 }));
 });
 
-test('same seed gives the same starting roster, shops and supply offers', () => {
+test('같은 시드면 시작 캐릭터·상점·보급 후보가 같다', () => {
   const play = (seed) => {
     const s = newRun(seed);
     const log = [s.units.map((u) => u.id)];
@@ -83,7 +83,7 @@ test('same seed gives the same starting roster, shops and supply offers', () => 
   a.notDeepEqual(play(7), play(8));
 });
 
-test('saving and reloading mid-run continues the identical random sequence', () => {
+test('원정 중간에 저장·불러오기를 해도 같은 난수열이 이어진다', () => {
   const uninterrupted = newRun(99);
   const reloaded = clone(uninterrupted);
   const shops = (s, n) =>
@@ -94,12 +94,12 @@ test('saving and reloading mid-run continues the identical random sequence', () 
     });
   const expected = shops(uninterrupted, 6);
   const before = shops(reloaded, 3);
-  // save (JSON) and load (migrate + normalize) between the 3rd and 4th reroll
+  // 3번째와 4번째 새로고침 사이에 저장(JSON)과 불러오기(migrate + normalize)
   const restored = V.normalize(P.migrate(clone(reloaded)));
   a.deepEqual([...before, ...shops(restored, 3)], expected);
 });
 
-test('core never calls Math.random: a run start, supply, shop, encounter and battle', () => {
+test('core는 Math.random을 쓰지 않는다: 원정 시작·보급·상점·적 편성·전투', () => {
   Math.random = () => {
     throw new Error('Math.random used');
   };
@@ -133,7 +133,7 @@ test('core never calls Math.random: a run start, supply, shop, encounter and bat
     if (!file.endsWith('rng.ts')) a(!/Math\.random/.test(fs.readFileSync(file, 'utf8')), file);
 });
 
-test('seeded battles repeat exactly and continue identically after transfer to the worker', () => {
+test('시드 전투는 똑같이 반복되고, Worker로 넘긴 뒤에도 똑같이 이어진다', () => {
   const make = () =>
     new Engine.Battle(
       ['C01', 'C04', 'C07', 'C25'].map((id, i) => ({ id, pos: 37 + i })),
@@ -149,7 +149,7 @@ test('seeded battles repeat exactly and continue identically after transfer to t
     again.units.map((u) => [u.uid, u.hp]),
     direct.units.map((u) => [u.uid, u.hp]),
   );
-  // run 40 ticks here, then hand the battle to the worker host like the page does
+  // 여기서 40틱 진행한 뒤 화면처럼 전투를 Worker 호스트로 넘긴다
   const handed = make();
   for (let i = 0; i < 40; i++) handed.tick();
   const messages = [];
@@ -179,7 +179,7 @@ test('seeded battles repeat exactly and continue identically after transfer to t
   );
 });
 
-test('default export lists the helpers', () => {
+test('기본 내보내기에 도우미 함수가 모두 있다', () => {
   a.deepEqual(Object.keys(R).sort(), [
     'createRng',
     'nextSeed',

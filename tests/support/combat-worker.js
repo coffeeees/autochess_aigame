@@ -1,6 +1,6 @@
-// Runs the combat worker host against a vm-style test context that provides the
-// worker globals (postMessage, Date, setInterval, clearInterval and optionally
-// Math), then exposes `onmessage` on that context like the real worker scope.
+// Worker 전역(postMessage, Date, setInterval, clearInterval, 필요하면 Math)을 가진
+// vm 형태의 테스트 컨텍스트에 전투 Worker 호스트를 연결하고, 실제 Worker처럼 그
+// 컨텍스트에 `onmessage`를 붙인다.
 import { createCombatWorkerHost } from '../../src/worker/combat-worker-host.js';
 
 export function installCombatWorker(ctx) {

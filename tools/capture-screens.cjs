@@ -50,7 +50,7 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
     await p.waitForTimeout(300);
     return true;
   }
-  await p.goto('http://127.0.0.1:4173/');
+  await p.goto('http://127.0.0.1:4173/legacy.html');
   await p.evaluate(() => localStorage.clear());
   await p.reload();
   await p.waitForTimeout(1000);

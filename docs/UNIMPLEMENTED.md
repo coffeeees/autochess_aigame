@@ -15,8 +15,8 @@
 | U01 | 구현완료 | 4/5코스트12명해금 | 승인한임시스킬판정·상점·합성·유대·전투연결.정식밸런스확정별도. | [src/core/data/units.js:74](../src/core/data/units.js#L74) · `playable:true` |
 | U02 | 임시 구현 | 16종 새 유대 임시 밸런스 v1 | 요청된 모든 단계 효과 적용. 정식 밸런스 확정은 별도. 4~5코스트도 해금하여6인단계활성가능. | [src/core/data/units.js:258](../src/core/data/units.js#L258) · `experimentalSynergyEffects:` |
 | U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
-| U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [index.html:1](../index.html#L1) · `id="homeGachaBtn"` |
-| U05 | 미구현 | 특수아이템2칸 | 예약UI aria-disabled만존재.일반아이템을넣는로직없음. | [index.html:5](../index.html#L5) · `class="special-inventory"` |
+| U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [legacy.html:1](../legacy.html#L1) · `id="homeGachaBtn"` |
+| U05 | 미구현 | 특수아이템2칸 | 예약UI aria-disabled만존재.일반아이템을넣는로직없음. | [legacy.html:5](../legacy.html#L5) · `class="special-inventory"` |
 | U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [src/legacy/prototype.js:138](../src/legacy/prototype.js#L138) · `function icon` |
 | U07 | 범위밖/계획확인필요 | 픽셀자유이동/전투격자제거 | 0.15.9요청에서철회/보류.현재구현완료해야할결함으로분류하지않음. | [docs/AUTOCHESS_v0.15.9_Codex_수정지시서.md:55](archive/requests/AUTOCHESS_v0.15.9_Codex_수정지시서.md#L55) · `## 7.` |
 | U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [src/core/data/units.js:213](../src/core/data/units.js#L213) · `combat:` |

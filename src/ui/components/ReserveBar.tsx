@@ -64,6 +64,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
           );
         })}
       </ol>
+      <BenchOverflow ui={ui} actions={actions} />
       <div class={styles.actions}>
         {selected ? (
           <button
@@ -125,4 +126,38 @@ function primaryButton(ui: GameProps['ui'], type: string) {
     disabled,
     title: emptyBattle ? '아군을 1명 이상 배치해야 전투를 시작할 수 있습니다.' : '',
   };
+}
+
+/** 예전 저장의 10칸을 넘는 대기석 캐릭터(v0.15.18 benchOverflowMarkup). */
+function BenchOverflow({ ui, actions }: GameProps) {
+  const run = ui.run!;
+  const extra = run.units.filter(
+    (u) => u.location === 'bench' && (u.benchSlot ?? 0) >= C.board.benchSize,
+  );
+  if (!extra.length) return null;
+  return (
+    <details class={styles.overflow}>
+      <summary>이전 보유 {extra.length}명 ↗</summary>
+      <p>전장에 배치하거나 기존 칸과 교체할 수 있습니다.</p>
+      <div class={styles.overflowGrid}>
+        {extra.map((u) => (
+          <div
+            key={u.uid}
+            class={styles.slot}
+            data-drop={`bench:${u.benchSlot}`}
+            data-item-drop={`unit:${u.uid}`}
+          >
+            <Pawn
+              id={u.id}
+              star={u.star}
+              context="bench"
+              selected={ui.selected === u.uid}
+              onClick={() => actions.select(u.uid)}
+              onDragStart={(id, x, y) => actions.dragStart('unit', u.uid, id, x, y)}
+            />
+          </div>
+        ))}
+      </div>
+    </details>
+  );
 }

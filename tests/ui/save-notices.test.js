@@ -1,5 +1,5 @@
-// Stage 4 UI: save failure (T42), damaged save (T43) and battle cancelled by a
-// reload (T44, D4 a) in prototype.js, run in a vm like the other UI tests.
+// 4단계 기존 화면: prototype.js의 저장 실패(T42), 손상 저장(T43), 새로고침으로 전투
+// 취소(T44, D4 a). 다른 UI 테스트처럼 vm에서 실행한다.
 import { test } from 'vitest';
 import $shopCore from '../../src/core/shop.ts';
 import $mergeCore from '../../src/core/merge.ts';
@@ -48,7 +48,7 @@ function setup(initial = {}) {
   const shown = [];
   const context = vm.createContext({
     combatView: null,
-    selectedDifficulty: 1, // defined by shell-ui.js in the page
+    selectedDifficulty: 1, // 화면에서는 shell-ui.js가 정의
     AutoData: D,
     AutoEngine: {},
     AutoProgression: P,
@@ -77,13 +77,13 @@ function setup(initial = {}) {
   const source = fs.readFileSync('src/legacy/prototype.js', 'utf8');
   vm.runInContext(source.slice(0, source.lastIndexOf('\nload();')), context);
   const run = (s) => vm.runInContext(s, context);
-  // record every notice that passes the policy
+  // 정책을 통과한 알림을 모두 기록
   context.__shown = shown;
   run('const __tell = tell; tell = (s) => { __shown.push(s); return __tell(s); };');
   return { run, storage, store, shown };
 }
 
-test('T42: a failed save is reported once per failure streak', () => {
+test('T42: 저장 실패는 실패가 이어지는 동안 한 번만 알린다', () => {
   const { run, storage, shown } = setup();
   run('fresh()');
   storage.fail = true;
@@ -97,7 +97,7 @@ test('T42: a failed save is reported once per failure streak', () => {
   a(Policy.allows('T42') && Policy.allows('T43') && Policy.allows('T44'));
 });
 
-test('T43: a damaged save is backed up, a new run starts and the notice waits for the game', () => {
+test('T43: 손상 저장은 백업하고 새 원정을 시작하며, 알림은 게임 화면에서 보인다', () => {
   const { run, store, shown } = setup({ [KEY]: '{"version":2,"units":' });
   run('load()');
   const backups = [...store.keys()].filter((k) => k.startsWith(KEY + '-backup-'));
@@ -112,7 +112,7 @@ test('T43: a damaged save is backed up, a new run starts and the notice waits fo
   a.equal(run('loadNotice'), null);
 });
 
-test('T44: reopening during a battle returns to preparation, takes the bonus back and saves', () => {
+test('T44: 전투 중 다시 열면 준비 단계로 돌아가 보너스를 회수하고 저장한다', () => {
   const save = JSON.parse(fs.readFileSync('tests/fixtures/v0.15.18-mid-battle.json', 'utf8'));
   const key = P.label(save);
   save.gold += 5;
@@ -123,7 +123,7 @@ test('T44: reopening during a battle returns to preparation, takes the bonus bac
   a.equal(run('state.gold'), save.gold - 5);
   a.equal(run('loadNotice.id'), 'T44');
   a(run('loadNotice.text').includes('보너스 골드 5G'));
-  // the corrected state is written back so a second reload does not repeat it
+  // 고친 상태를 다시 저장해서 두 번째 새로고침에서 반복되지 않는다
   a.equal(storage.writes, 1);
   const stored = JSON.parse(store.get(KEY));
   a.equal(stored.roundPhase, 'prepare');
@@ -131,7 +131,7 @@ test('T44: reopening during a battle returns to preparation, takes the bonus bac
   a.deepEqual(stored.bonusLootLedger, {});
 });
 
-test('a normal save loads without notices or writes', () => {
+test('정상 저장은 알림이나 저장 쓰기 없이 불러온다', () => {
   const raw = fs.readFileSync('tests/fixtures/v0.15.18-prepare-with-augment.json', 'utf8');
   const { run, storage } = setup({ [KEY]: raw });
   run('load()');

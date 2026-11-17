@@ -1,5 +1,5 @@
-// Runtime check that the data matches src/core/types.ts (UnitDef, SkillDef, Bond,
-// Item, Augment, RunState). Keep both in step when a field is added.
+// 데이터가 src/core/types.ts(UnitDef, SkillDef, Bond, Item, Augment, RunState)와
+// 맞는지 실행 시 확인한다. 필드를 추가하면 둘을 함께 고친다.
 import { test } from 'vitest';
 import a from 'node:assert/strict';
 import D from '../../src/core/data/units.js';
@@ -24,11 +24,11 @@ const str = (v) => typeof v === 'string';
 const bool = (v) => typeof v === 'boolean';
 const strArr = (v) => Array.isArray(v) && v.every(str);
 
-test('Stats has exactly the ten stat keys', () => {
+test('Stats는 능력치 키 10개만 가진다', () => {
   a.deepEqual([...D.statKeys].sort(), [...STAT_KEYS].sort());
 });
 
-test('roster entries match UnitDef', () => {
+test('명단 항목이 UnitDef와 맞다', () => {
   const bondIds = new Set(D.synergies.map((b) => b.id));
   for (const u of D.roster) {
     fields(
@@ -50,7 +50,7 @@ test('roster entries match UnitDef', () => {
   }
 });
 
-test('skills match SkillDef', () => {
+test('스킬이 SkillDef와 맞다', () => {
   for (const [id, s] of Object.entries(D.skills))
     fields(
       { id, ...s },
@@ -59,7 +59,7 @@ test('skills match SkillDef', () => {
     );
 });
 
-test('bonds match Bond', () => {
+test('유대가 Bond와 맞다', () => {
   for (const b of D.synergies)
     fields(b, {
       id: str,
@@ -73,7 +73,7 @@ test('bonds match Bond', () => {
     });
 });
 
-test('items match Item (ItemStats uses ASPercent instead of AS)', () => {
+test('아이템이 Item과 맞다(ItemStats는 AS 대신 ASPercent)', () => {
   const itemStatKeys = new Set([...STAT_KEYS.filter((k) => k !== 'AS'), 'ASPercent']);
   for (const item of I.items)
     fields(item, {
@@ -88,7 +88,7 @@ test('items match Item (ItemStats uses ASPercent instead of AS)', () => {
     });
 });
 
-test('augments match Augment', () => {
+test('증강이 Augment와 맞다', () => {
   for (const aug of A.augments)
     fields(aug, {
       id: (v) => /^[SGP]\d\d$/.test(v),
@@ -100,7 +100,7 @@ test('augments match Augment', () => {
     });
 });
 
-test('a new run state has the RunState fields', () => {
+test('새 원정 상태에 RunState 필드가 있다', () => {
   const holder = { rngState: 1 };
   const s = V.normalize(
     P.initialize({

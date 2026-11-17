@@ -1,5 +1,6 @@
 .bar {
   grid-area: reserve;
+  position: relative;
   display: grid;
   grid-template-columns: 110px 1fr auto;
   gap: var(--space-3);
@@ -63,4 +64,26 @@
 .slot[data-over='true'] {
   border-color: #fff4c9;
   background: #fff4c922;
+}
+.overflow {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  left: 130px;
+  z-index: 6;
+  padding: var(--space-2) var(--space-3);
+  background: #101422f5;
+  border: 1px solid #c9a96e99;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.overflow p {
+  margin: var(--space-1) 0;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.overflowGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 64px);
+  grid-auto-rows: 72px;
+  gap: var(--space-2);
 }

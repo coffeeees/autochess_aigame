@@ -1,8 +1,8 @@
-// Shared data types for the game logic (stage 3: TypeScript starts with the data).
-// They describe what the modules in src/core produce today; JS modules are checked
-// against them in data/check-types.ts.
+// 게임 로직 공용 데이터 타입(3단계: TypeScript는 데이터부터 도입).
+// src/core 모듈이 지금 만드는 값을 설명하며, JS 모듈은 data/check-types.ts에서 이
+// 타입과 대조한다.
 
-/** The ten combat stats. RNG is in cells, AS in attacks per second, CTH/CTC/DOD in percent. */
+/** 전투 능력치 10종. RNG는 칸, AS는 초당 공격, CTH/CTC/DOD는 %. */
 export interface Stats {
   HP: number;
   MP: number;
@@ -17,7 +17,7 @@ export interface Stats {
 }
 export type StatKey = keyof Stats;
 
-/** A character in the roster (data/units.js `roster`). */
+/** 명단의 캐릭터(data/units.js `roster`). */
 export interface UnitDef {
   id: string; // C01..C45
   cost: 1 | 2 | 3 | 4 | 5;
@@ -28,11 +28,11 @@ export interface UnitDef {
   playable: boolean;
   provisional: boolean;
   stats: Stats;
-  bonds: string[]; // two bond (synergy) ids
+  bonds: string[]; // 유대 ID 2개
   draftSource?: string;
 }
 
-/** Skill text and metadata (data/units.js `skills`). The behaviour is in combat/skills/. */
+/** 스킬 설명과 정보(data/units.js `skills`). 동작은 combat/skills/에 있다. */
 export interface SkillDef {
   name: string;
   coefficient: string;
@@ -50,14 +50,14 @@ export interface Bond {
   category: string;
   thresholds: number[];
   concept: string;
-  effects: string[]; // one text per threshold
+  effects: string[]; // 단계마다 설명 하나
   confirmedEffect: boolean;
   balanceVersion: number;
 }
 
 export type ItemTier = 1 | 2 | 3;
 
-/** Item stat bonuses: flat values, except attack speed which is a percentage (ASPercent). */
+/** 아이템 능력치: 고정값, 공격 속도만 비율(ASPercent). */
 export type ItemStats = Partial<Omit<Stats, 'AS'>> & { ASPercent?: number };
 
 /** Equipment (items.js `items`). */
@@ -67,14 +67,14 @@ export interface Item {
   tier: ItemTier;
   stats: ItemStats;
   statsText: string;
-  effect: string; // '' when the item only gives stats
+  effect: string; // 능력치만 주는 아이템은 ''
   iconKey: string;
   icon: string;
 }
 
 export type AugmentTier = 'silver' | 'gold' | 'prism';
 
-/** An augment (augments.js `augments`). `effect` holds the editable numbers. */
+/** 증강(augments.js `augments`). `effect`에 조정 가능한 수치가 있다. */
 export interface Augment {
   id: string; // S01.., G01.., P01..
   name: string;
@@ -84,32 +84,32 @@ export interface Augment {
   effect: Record<string, unknown>;
 }
 
-/** A character owned in a run. */
+/** 원정에서 보유한 캐릭터. */
 export interface RunUnit {
   uid: number;
   id: string;
   location: 'bench' | 'board';
-  pos: number; // board cell, -1 on the bench
+  pos: number; // 전장 칸, 대기석이면 -1
   star: 1 | 2 | 3;
   benchSlot?: number;
 }
 
-/** An item owned in a run. */
+/** 원정에서 보유한 아이템. */
 export interface RunItem {
   uid: string; // I1, I2, ...
-  id: string; // item id
+  id: string; // 아이템 ID
   equippedTo: number | null; // RunUnit.uid
 }
 
 export type RoundType = 'SUPPLY' | 'BATTLE' | 'BOSS';
 
 export interface SupplyOffer {
-  key: string; // stage-round label, e.g. '1-2'
-  options: string[]; // four item ids
-  selected: number[]; // chosen option indexes (two to confirm)
+  key: string; // 스테이지-라운드 표기, 예: '1-2'
+  options: string[]; // 아이템 ID 4개
+  selected: number[]; // 고른 후보 번호(2개면 확정 가능)
 }
 
-/** The saved run (localStorage `starlight-onecost-v1`, version 2). */
+/** 저장되는 원정(localStorage `starlight-onecost-v1`, 버전 2). */
 export interface RunState {
   version: number;
   health: number;
@@ -142,6 +142,6 @@ export interface RunState {
   supplyOffer?: SupplyOffer | null;
   enemyEncounter?: { key: string; units: unknown[]; bonusAppeared?: boolean } | null;
   bonusLootLedger?: Record<string, unknown>;
-  /** Run random-number state (rng.ts). Missing in saves from before the rebuild. */
+  /** 원정 난수 상태(rng.ts). 재구축 이전 저장에는 없다. */
   rngState?: number;
 }

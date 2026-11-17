@@ -1,4 +1,4 @@
-// Skill registry: character id -> skill function (this = battle).
+// 스킬 등록표: 캐릭터 ID → 스킬 함수(this = 전투).
 import cost1 from './cost1.js';
 import cost2 from './cost2.js';
 import cost3 from './cost3.js';

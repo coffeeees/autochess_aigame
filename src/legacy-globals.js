@@ -1,6 +1,6 @@
-// Exposes the core modules under the global names the pre-module UI scripts in
-// src/legacy/ still use (AutoData, AutoEngine, ...). Used by the browser entry
-// (main.js) and by the Vitest setup file. Remove once the UI is rewritten (stage 5).
+// core 모듈을 기존 화면 스크립트(src/legacy/)가 쓰는 전역 이름(AutoData, AutoEngine 등)으로
+// 노출한다. 기존 화면 진입점(main.js)과 Vitest 준비 파일이 쓴다. 기존 화면(legacy.html)을
+// 없앨 때 함께 지운다.
 import Board from './core/board.js';
 import Bonds from './core/data/bonds.js';
 import HigherDrafts from './core/data/higher-cost-drafts.js';
@@ -47,7 +47,7 @@ export function installLegacyGlobals(root, { vfx = true } = {}) {
     AutoPatchNotes: PatchNotes,
     AutoNoticeAudit: NoticeAudit,
   });
-  // In the page, battles record VFX events (main-thread fallback and presentation),
-  // as vfx-events.js did when it was loaded as a script.
+  // 화면에서는 전투가 VFX 이벤트를 기록한다(메인 스레드 대체 계산과 연출용),
+  // vfx-events.js를 스크립트로 불러오던 때와 같다.
   if (vfx) VfxEvents.install(Engine.Battle);
 }
