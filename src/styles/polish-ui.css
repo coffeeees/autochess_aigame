@@ -6,28 +6,6 @@
   font-weight: 100 900;
   font-display: swap;
 }
-@font-face {
-  font-family: GameSUIT;
-  src: url('/assets/fonts/suit.woff2') format('woff2');
-  font-weight: 100 900;
-  font-display: swap;
-}
-@font-face {
-  font-family: GameNoto;
-  src: url('/assets/fonts/noto-sans-kr.ttf') format('truetype');
-  font-weight: 100 900;
-  font-display: swap;
-}
-@font-face {
-  font-family: GameNanum;
-  src: url('/assets/fonts/nanum-gothic.ttf') format('truetype');
-  font-display: swap;
-}
-@font-face {
-  font-family: GameGothicA1;
-  src: url('/assets/fonts/gothic-a1.ttf') format('truetype');
-  font-display: swap;
-}
 :root {
   --ui-font: GamePretendard;
   --panel-edge: #9badd299;
@@ -627,67 +605,6 @@ dialog {
 }
 .hud-popover .menu-actions button {
   font-size: 14px;
-}
-.font-lab {
-  padding: 18px;
-  border: 1px solid #95a7d466;
-  border-radius: 10px;
-  margin: 22px 0;
-  background: #11182b;
-}
-.font-lab h3 {
-  font-size: 20px;
-  margin: 0 0 10px;
-}
-.font-lab input {
-  width: 100%;
-  padding: 11px 13px;
-  border: 1px solid #8496c077;
-  border-radius: 7px;
-  background: #090f1c;
-  color: #eee6fa;
-  margin: 8px 0 12px;
-}
-.font-samples {
-  display: grid;
-  gap: 10px;
-}
-.font-sample {
-  padding: 13px;
-  border: 1px solid #8e9ec544;
-  border-radius: 8px;
-  background: #1d2538;
-}
-.font-sample-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font:
-    14px var(--ui-font),
-    sans-serif;
-}
-.font-sample button {
-  font-size: 13px;
-  padding: 5px 12px;
-}
-.font-sample[data-active='true'] {
-  border-color: #dec28b;
-  box-shadow: inset 0 0 12px #e2bb6d0d;
-}
-.font-sample-text {
-  font-size: 21px;
-  line-height: 1.8;
-  margin: 10px 0 0;
-}
-.font-lab-links {
-  font-size: 12px;
-  line-height: 1.8;
-  margin-top: 13px;
-}
-.font-lab-links a {
-  color: #b9d4ff;
-  margin-right: 12px;
 }
 @media (max-width: 1250px) {
   .battle-screen {

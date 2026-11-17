@@ -1,9 +1,5 @@
 # 글꼴 출처 · SIL Open Font License 1.1
 
 - Pretendard: https://github.com/orioncactus/pretendard
-- SUIT: https://github.com/sun-typeface/SUIT
-- Noto Sans KR: https://github.com/google/fonts/tree/main/ofl/notosanskr
-- 나눔고딕: https://github.com/google/fonts/tree/main/ofl/nanumgothic
-- Gothic A1: https://github.com/google/fonts/tree/main/ofl/gothica1
 
-각 배포판의 원본 허가문은 같은 폴더의 *-OFL.txt에 보관합니다.
+원본 허가문은 같은 폴더의 pretendard-ofl.txt에 보관합니다. 기본 글꼴은 Pretendard 하나로 확정했습니다(재구축 결정 D5).
