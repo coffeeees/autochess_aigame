@@ -1,0 +1,17 @@
+{
+  "version": "0.15.13",
+  "thumbnail": {
+    "source": "C:/Users/rusti/Downloads/from-PixAI-2078382921018397629-11.png",
+    "asset": "assets/characters/C01_녹스_thumbnail.png",
+    "width": 992,
+    "height": 992,
+    "format": "RGBA",
+    "backgroundAlpha": 0,
+    "sha256": "110324b45855b870f3f8a6712b1853a659bf48d0e7e154d120d5eaf7af31d64b"
+  },
+  "detail": {
+    "asset": "assets/characters/C01_녹스.png",
+    "sha256": "4d5c6c3ce7b77b4fa66b4bb69c7ae9dad5528e56845195186eca84f5659afe3f"
+  },
+  "processed": false
+}

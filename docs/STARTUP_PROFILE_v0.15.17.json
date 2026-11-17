@@ -1,0 +1,174 @@
+[
+  {
+    "version": "0.15.16",
+    "condition": "no-save/no-store",
+    "metrics": {
+      "ready": 77.59999999403954,
+      "dom": 77.69999998807907,
+      "load": 117,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 112
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 112
+        }
+      ],
+      "measures": [],
+      "long": [],
+      "errors": []
+    }
+  },
+  {
+    "version": "0.15.16",
+    "condition": "new-run-entry",
+    "metrics": {
+      "ready": 77.59999999403954,
+      "dom": 77.69999998807907,
+      "load": 117,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 112
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 112
+        }
+      ],
+      "measures": [
+        {
+          "name": "qa:enter-field",
+          "ms": 29.19999998807907
+        }
+      ],
+      "long": [],
+      "errors": []
+    }
+  },
+  {
+    "version": "0.15.16",
+    "condition": "saved-run/reload/no-store",
+    "metrics": {
+      "ready": 46.099999994039536,
+      "dom": 46.29999998211861,
+      "load": 88.2999999821186,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 52
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 52
+        }
+      ],
+      "measures": [],
+      "long": [],
+      "errors": []
+    }
+  },
+  {
+    "version": "0.15.17",
+    "condition": "no-save/no-store",
+    "metrics": {
+      "ready": 86,
+      "dom": 86.09999999403954,
+      "load": 107.90000000596046,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 76
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 76
+        }
+      ],
+      "measures": [
+        {
+          "name": "autochess:ready-from-parse",
+          "ms": 29.69999998807907
+        },
+        {
+          "name": "autochess:initialize",
+          "ms": 3
+        }
+      ],
+      "long": [],
+      "errors": []
+    }
+  },
+  {
+    "version": "0.15.17",
+    "condition": "new-run-entry",
+    "metrics": {
+      "ready": 86,
+      "dom": 86.09999999403954,
+      "load": 107.90000000596046,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 76
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 76
+        }
+      ],
+      "measures": [
+        {
+          "name": "autochess:ready-from-parse",
+          "ms": 29.69999998807907
+        },
+        {
+          "name": "autochess:initialize",
+          "ms": 3
+        },
+        {
+          "name": "autochess:enter-to-field",
+          "ms": 11.199999988079071
+        },
+        {
+          "name": "qa:enter-field",
+          "ms": 11.299999982118607
+        }
+      ],
+      "long": [],
+      "errors": []
+    }
+  },
+  {
+    "version": "0.15.17",
+    "condition": "saved-run/reload/no-store",
+    "metrics": {
+      "ready": 57.099999994039536,
+      "dom": 57.19999998807907,
+      "load": 84.69999998807907,
+      "paints": [
+        {
+          "name": "first-paint",
+          "ms": 60
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 60
+        }
+      ],
+      "measures": [
+        {
+          "name": "autochess:ready-from-parse",
+          "ms": 27.200000017881393
+        },
+        {
+          "name": "autochess:initialize",
+          "ms": 2
+        }
+      ],
+      "long": [],
+      "errors": []
+    }
+  }
+]

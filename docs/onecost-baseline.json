@@ -1,0 +1,671 @@
+{
+  "roster": [
+    {
+      "id": "C01",
+      "cost": 1,
+      "race": "언데드",
+      "job": "궁수",
+      "trait": "화염",
+      "playable": true,
+      "name": "잿불 사수 모르칸",
+      "stats": {
+        "HP": 550,
+        "MP": 80,
+        "AD": 55,
+        "AP": 25,
+        "CTH": 150,
+        "CTC": 10,
+        "GD": 18,
+        "AS": 0.8,
+        "RNG": 4,
+        "DOD": 5
+      },
+      "provisional": true
+    },
+    {
+      "id": "C02",
+      "cost": 1,
+      "race": "마족",
+      "job": "소환사",
+      "trait": "독",
+      "playable": true,
+      "name": "역병술사 제르크",
+      "stats": {
+        "HP": 520,
+        "MP": 70,
+        "AD": 35,
+        "AP": 55,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 16,
+        "AS": 0.65,
+        "RNG": 3,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C03",
+      "cost": 1,
+      "race": "인간",
+      "job": "전사",
+      "trait": "암흑",
+      "playable": true,
+      "name": "흑검병 카이른",
+      "stats": {
+        "HP": 750,
+        "MP": 100,
+        "AD": 55,
+        "AP": 20,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 30,
+        "AS": 0.7,
+        "RNG": 1,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C04",
+      "cost": 1,
+      "race": "엘프",
+      "job": "암살자",
+      "trait": "번개",
+      "playable": true,
+      "name": "뇌광의 세리아",
+      "stats": {
+        "HP": 540,
+        "MP": 80,
+        "AD": 60,
+        "AP": 20,
+        "CTH": 150,
+        "CTC": 15,
+        "GD": 18,
+        "AS": 0.85,
+        "RNG": 1,
+        "DOD": 10
+      },
+      "provisional": true
+    },
+    {
+      "id": "C05",
+      "cost": 1,
+      "race": "엘프",
+      "job": "주술사",
+      "trait": "물",
+      "playable": true,
+      "name": "물결술사 리엔",
+      "stats": {
+        "HP": 550,
+        "MP": 70,
+        "AD": 35,
+        "AP": 50,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 18,
+        "AS": 0.65,
+        "RNG": 3,
+        "DOD": 5
+      },
+      "provisional": true
+    },
+    {
+      "id": "C06",
+      "cost": 1,
+      "race": "마족",
+      "job": "암살자",
+      "trait": "바람",
+      "playable": true,
+      "name": "질풍의 라제크",
+      "stats": {
+        "HP": 560,
+        "MP": 80,
+        "AD": 55,
+        "AP": 25,
+        "CTH": 150,
+        "CTC": 15,
+        "GD": 20,
+        "AS": 0.85,
+        "RNG": 1,
+        "DOD": 10
+      },
+      "provisional": true
+    },
+    {
+      "id": "C07",
+      "cost": 1,
+      "race": "인간",
+      "job": "궁수",
+      "trait": "번개",
+      "playable": true,
+      "name": "섬광 사수 에단",
+      "stats": {
+        "HP": 530,
+        "MP": 80,
+        "AD": 60,
+        "AP": 20,
+        "CTH": 150,
+        "CTC": 10,
+        "GD": 16,
+        "AS": 0.9,
+        "RNG": 4,
+        "DOD": 5
+      },
+      "provisional": true
+    },
+    {
+      "id": "C08",
+      "cost": 1,
+      "race": "언데드",
+      "job": "마법사",
+      "trait": "물",
+      "playable": true,
+      "name": "침수술사 네크리스",
+      "stats": {
+        "HP": 500,
+        "MP": 60,
+        "AD": 35,
+        "AP": 60,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 15,
+        "AS": 0.6,
+        "RNG": 4,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C09",
+      "cost": 1,
+      "race": "용족",
+      "job": "전사",
+      "trait": "바람",
+      "playable": true,
+      "name": "비늘 전사 드라칸",
+      "stats": {
+        "HP": 800,
+        "MP": 100,
+        "AD": 50,
+        "AP": 30,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 32,
+        "AS": 0.7,
+        "RNG": 1,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C10",
+      "cost": 1,
+      "race": "수인",
+      "job": "기사",
+      "trait": "대지",
+      "playable": true,
+      "name": "바위방패 브로크",
+      "stats": {
+        "HP": 800,
+        "MP": 100,
+        "AD": 40,
+        "AP": 20,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 40,
+        "AS": 0.6,
+        "RNG": 1,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C11",
+      "cost": 1,
+      "race": "드워프",
+      "job": "소환사",
+      "trait": "화염",
+      "playable": true,
+      "name": "화로장인 토르딘",
+      "stats": {
+        "HP": 600,
+        "MP": 80,
+        "AD": 40,
+        "AP": 50,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 25,
+        "AS": 0.6,
+        "RNG": 3,
+        "DOD": 0
+      },
+      "provisional": true
+    },
+    {
+      "id": "C12",
+      "cost": 1,
+      "race": "천족",
+      "job": "기사",
+      "trait": "독",
+      "playable": true,
+      "name": "성역 기사 아엘",
+      "stats": {
+        "HP": 760,
+        "MP": 100,
+        "AD": 45,
+        "AP": 30,
+        "CTH": 150,
+        "CTC": 5,
+        "GD": 38,
+        "AS": 0.6,
+        "RNG": 1,
+        "DOD": 0
+      },
+      "provisional": true
+    }
+  ],
+  "skills": {
+    "C01": {
+      "name": "불씨 화살",
+      "coefficient": "AD",
+      "text": "대상에게 AD 160% 물리 피해. 4초 화상: 매초 AD 15% 마법 피해."
+    },
+    "C02": {
+      "name": "맹독의 하수인",
+      "coefficient": "AP",
+      "text": "8초 역병충 소환, 최대 2마리. AP 40% 공격력, 공격 시 3초 중독. 소환수 수치·독 피해는 임시."
+    },
+    "C03": {
+      "name": "그림자 베기",
+      "coefficient": "AD",
+      "text": "대상에게 AD 180% 물리 피해. 4초간 대상 AD 15% 감소."
+    },
+    "C04": {
+      "name": "섬광 찌르기",
+      "coefficient": "AD",
+      "text": "AD 200% 물리 피해, 이 공격의 치명타 확률 +20%p. 치명타 시 AD 50% 추가 마법 피해."
+    },
+    "C05": {
+      "name": "치유의 물결",
+      "coefficient": "AP",
+      "text": "HP 비율이 가장 낮은 아군 AP 180% 회복. 해로운 상태이상 1개 제거."
+    },
+    "C06": {
+      "name": "바람 가르기",
+      "coefficient": "AD",
+      "text": "각각 AD 140% 물리 피해 2회. 4초간 자신의 공격속도 +20%."
+    },
+    "C07": {
+      "name": "연속 사격",
+      "coefficient": "AD",
+      "text": "AD 75% 물리 피해 3회. 마지막 화살은 주변 적 1명에게 튕겨 AD 50% 마법 피해. 튕김 범위 임시."
+    },
+    "C08": {
+      "name": "심연의 물구슬",
+      "coefficient": "AP",
+      "text": "대상에게 AP 220% 마법 피해. 3초간 공격속도 15% 감소."
+    },
+    "C09": {
+      "name": "용의 돌진",
+      "coefficient": "AD",
+      "text": "대상에게 돌진, AD 170% 물리 피해와 1초 기절. 인접 시 이동 없이 공격. 경로 규칙 임시."
+    },
+    "C10": {
+      "name": "대지의 수호",
+      "coefficient": "GD",
+      "text": "5초간 자신의 GD +30%. 인접 아군 중 HP 비율이 가장 낮은 1명에게 GD 200% 보호막."
+    },
+    "C11": {
+      "name": "화염 정령 소환",
+      "coefficient": "AP",
+      "text": "8초 화염 정령 소환, 최대 1마리. AP 60% 마법 공격. 소멸 시 주변에 AP 100% 마법 피해. 소환수·범위 수치 임시."
+    },
+    "C12": {
+      "name": "부식의 방패",
+      "coefficient": "GD",
+      "text": "5초간 GD 250% 보호막. 이 보호막 유지 중 자신을 기본 공격한 적에게 3초간 GD 15% 감소."
+    }
+  },
+  "synergies": [
+    {
+      "id": "인간",
+      "name": "인간",
+      "category": "race",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "아군 전체 공격력·방어력",
+      "confirmedEffect": false
+    },
+    {
+      "id": "엘프",
+      "name": "엘프",
+      "category": "race",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "공격속도·회피",
+      "confirmedEffect": false
+    },
+    {
+      "id": "드워프",
+      "name": "드워프",
+      "category": "race",
+      "thresholds": [
+        2,
+        3,
+        5
+      ],
+      "concept": "방어력·인접 보호막",
+      "confirmedEffect": false
+    },
+    {
+      "id": "마족",
+      "name": "마족",
+      "category": "race",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "처치 관여 시 공격력 중첩",
+      "confirmedEffect": false
+    },
+    {
+      "id": "수인",
+      "name": "수인",
+      "category": "race",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "저체력 흡혈·공격속도",
+      "confirmedEffect": false
+    },
+    {
+      "id": "언데드",
+      "name": "언데드",
+      "category": "race",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "적 방어력·회복량 감소",
+      "confirmedEffect": false
+    },
+    {
+      "id": "용족",
+      "name": "용족",
+      "category": "race",
+      "thresholds": [
+        1,
+        2,
+        3
+      ],
+      "concept": "체력·광역 스킬 강화",
+      "confirmedEffect": false
+    },
+    {
+      "id": "천족",
+      "name": "천족",
+      "category": "race",
+      "thresholds": [
+        2,
+        3
+      ],
+      "concept": "보호막·전투당 1회 부활",
+      "confirmedEffect": false
+    },
+    {
+      "id": "정령",
+      "name": "정령",
+      "category": "race",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "마나 획득·스킬 순환",
+      "confirmedEffect": false
+    },
+    {
+      "id": "전사",
+      "name": "전사",
+      "category": "job",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "체력·공격력·저체력 강화·처치 회복",
+      "confirmedEffect": false
+    },
+    {
+      "id": "기사",
+      "name": "기사",
+      "category": "job",
+      "thresholds": [
+        2,
+        4,
+        5
+      ],
+      "concept": "방어력·인접 아군 보호·위기 피해 감소",
+      "confirmedEffect": false
+    },
+    {
+      "id": "궁수",
+      "name": "궁수",
+      "category": "job",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "공격속도·기본 공격 강화·추가 화살",
+      "confirmedEffect": false
+    },
+    {
+      "id": "마법사",
+      "name": "마법사",
+      "category": "job",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "스킬 피해·첫 스킬 마나 절감·마나 회복",
+      "confirmedEffect": false
+    },
+    {
+      "id": "암살자",
+      "name": "암살자",
+      "category": "job",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "치명타·처치 후 은신",
+      "confirmedEffect": false
+    },
+    {
+      "id": "사제",
+      "name": "사제",
+      "category": "job",
+      "thresholds": [
+        2,
+        3,
+        4
+      ],
+      "concept": "치유량·보호막",
+      "confirmedEffect": false
+    },
+    {
+      "id": "주술사",
+      "name": "주술사",
+      "category": "job",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "해로운 상태이상 감소·군중제어 강화",
+      "confirmedEffect": false
+    },
+    {
+      "id": "소환사",
+      "name": "소환사",
+      "category": "job",
+      "thresholds": [
+        2,
+        3,
+        4
+      ],
+      "concept": "소환수 강화·추가 정령병",
+      "confirmedEffect": false
+    },
+    {
+      "id": "무도가",
+      "name": "무도가",
+      "category": "job",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "연격·방어력 약화",
+      "confirmedEffect": false
+    },
+    {
+      "id": "화염",
+      "name": "화염",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "화상·전염·폭발",
+      "confirmedEffect": false
+    },
+    {
+      "id": "빙결",
+      "name": "빙결",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "공격속도 둔화·빙결·피해 증가",
+      "confirmedEffect": false
+    },
+    {
+      "id": "번개",
+      "name": "번개",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4,
+        6
+      ],
+      "concept": "추가 번개·연쇄 공격",
+      "confirmedEffect": false
+    },
+    {
+      "id": "대지",
+      "name": "대지",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "방어력·피격 반격",
+      "confirmedEffect": false
+    },
+    {
+      "id": "바람",
+      "name": "바람",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "공격속도·초반 회피",
+      "confirmedEffect": false
+    },
+    {
+      "id": "물",
+      "name": "물",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "주기적 회복·정화",
+      "confirmedEffect": false
+    },
+    {
+      "id": "신성",
+      "name": "신성",
+      "category": "trait",
+      "thresholds": [
+        2,
+        3
+      ],
+      "concept": "보호막·사망 방지",
+      "confirmedEffect": false
+    },
+    {
+      "id": "암흑",
+      "name": "암흑",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4,
+        5
+      ],
+      "concept": "공격력 약화·회복 감소·피해 증폭",
+      "confirmedEffect": false
+    },
+    {
+      "id": "독",
+      "name": "독",
+      "category": "trait",
+      "thresholds": [
+        2,
+        4
+      ],
+      "concept": "중독 중첩·회복 감소",
+      "confirmedEffect": false
+    },
+    {
+      "id": "혈마법",
+      "name": "혈마법",
+      "category": "trait",
+      "thresholds": [
+        2,
+        3
+      ],
+      "concept": "체력 소모·스킬 피해 강화",
+      "confirmedEffect": false
+    }
+  ],
+  "playableIds": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C08",
+    "C09",
+    "C10",
+    "C11",
+    "C12"
+  ]
+}

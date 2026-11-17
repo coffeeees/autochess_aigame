@@ -1,0 +1,357 @@
+PASS 45 roster / cost distribution / exact one of each attribute / all 16 bonds
+PASS all roster combinations exactly match the supplied document
+PASS all ten proposed stats for C01-C12 exactly match the source table
+PASS only playable IDs allowed; duplicate cells and >10 deployment rejected
+PASS bond count deduplicates IDs and ignores summons
+PASS highest stage only and locked six tiers retained
+PASS bond evaluation is pure and frozen after a member dies
+PASS physical and magical damage use same GD formula
+PASS magic classes basic attack is AD physical, and mana gains faster
+PASS C01 AD160% and four burn ticks
+PASS C02 plague summon cap2 / AP40% / poison / expiry
+PASS C03 shadow AD reduction expires
+PASS C04 special crit +20 percentage points and extra magic damage
+PASS C05 heals lowest ratio ally and removes one harmful effect
+PASS C06 two AD140% hits + temporary AS20%
+PASS C07 three arrows with one nearby magical ricochet
+PASS C08 AP220% magical hit + AS slow15%
+PASS C09 charge ends in a free adjacent cell and stuns
+PASS C10 GD30% buff and lowest-adjacent ally shield; self excluded
+PASS C11 fire summon cap1, magic basic, death explosion and expiry explosion
+PASS C12 GD250% shield and corrosion on incoming basic attacker
+PASS legacy experimental toggle has no independent numerical effect
+PASS shield absorption, dodge, status refresh, and mana cap
+PASS headless simulated battles finish, conserve occupancy, and use every one-cost skill
+
+24 tests passed.
+PASS round schedules exact through stage6 and same temporary fallback after6
+PASS new run starts level3, 0/6XP and 1-1 safe supply
+PASS safe supply grants exactly two chosen items, no HP loss or battle gold/interest
+PASS repeated supply, reload, or result confirmation cannot duplicate rewards/XP
+PASS BATTLE win3 lose1; before-base interest boundaries unchanged
+PASS BOSS win5 lose3 and extra gold is separate, stage amounts correct
+PASS boss guaranteed item plus unchanged60% gold boundary; one item only
+PASS boss roll and payment occur exactly once after repeated callbacks / reload
+PASS XP purchase4G/4XP, carry, multi-level overflow, maximum10
+PASS XP cannot be bought during result, combat, augment, gameover, or without funds
+PASS augment gates at 1-3,3-3,5-3 and old stage starts are inactive
+PASS three unique candidates each time, chosen excluded, immediate reward once
+PASS pending tier and options survive reload without using RNG again
+PASS items equip, slot limit, free unequip, and actual AD/AP/GD stats
+PASS sell/merge release items; unknown or mid-combat equip is rejected
+PASS training AD+10%, mana+20 cap, no base roster mutation or enemy changes
+PASS recommendation uses playable pool only and includes off-board members
+PASS stage transitions across 6 stages; exactly three augment selections
+PASS loss preserves units; HP0 stops progression and supply has no damage
+PASS old saves retain characters, gold, HP and deployed capacity during migration
+
+20 progression tests passed.
+PASS existing C01-C12 data, skills, pool subset and old metadata unchanged; new bonds explicitly added
+PASS new 33 names/classes/attributes and ten stats match original Markdown exactly
+PASS all 33 skill names and descriptions registered verbatim, cost2/3 activated and cost4+ remains draft
+PASS cost4+ entries remain excluded from ally/enemy battle constructors
+PASS HP consumption metadata uses current HP for C17/C20/C37
+PASS complete 45 roster has ten finite stats and unchanged cost distribution
+
+6 draft-data tests passed.
+PASS board move, same-cell and swaps preserve UID and equipment
+PASS duplicate character rejected independent of star and without mutation
+PASS same-ID replacement of existing character is legal; different ID swap too
+PASS capacity restriction allows replacements and bench transfer frees capacity
+PASS bench-to-bench swaps exact slots; full bench board transfer cannot add unit
+PASS enemy positions, missing targets, invalid slots and nonprepare moves fail atomically
+PASS legacy duplicate deployment repaired without losing units or gear, even full bench
+PASS engine rejects repeated allied IDs while independent enemy repeats remain valid
+PASS three equipment slots apply all stats; fourth and duplicate type blocked
+PASS equipment transfer failure atomic, return to storage, phase guards preserved
+PASS recommendation migration, unique max3, toggles, invalid and fourth preserve list
+PASS owned3star excluded on bench or field, lower copies eligible, sale restores pool
+PASS 3star sanitizes current offers only, all-complete pool returns empty safely
+PASS damage aggregation includes dead summons, excludes enemies and zero allies retained
+PASS actual battle damage conserved in report and survives settlement/reload without mutating receipt
+PASS ten-slot reserve fills at10, rejects11th slot and keeps same-slot replacement legal
+PASS legacy12 reserve units and equipment survive, overflow compacts as units leave
+
+17 preparation/UI-rules tests passed.
+PASS all ten difficulties have exact HP and damage values
+PASS migration preserves existing HP and units; meta profile is separate
+PASS enemy roster independent, comparable stats, forbidden in player team
+PASS encounters contain only enemy IDs and unique valid positions through stage10
+PASS 10% boundary replaces exactly one enemy; stable across rendering and reload
+PASS supply never rolls encounter; advancing combat rerolls
+PASS bonus 40% item and 60% gold are exclusive, gold covers3 through5
+PASS bonus duplicate callbacks/reload and summons cannot pay twice
+PASS bonus earned on kill even with loss; settlement includes it once
+PASS streak firstwin1, secondwin2, caps5, loss resets, idempotent
+PASS boss streak applies, supply maintains streak without paying bonus
+PASS enemy difficulty scales basic, skill, DOT and summon damage only
+PASS kill callback pays bonus once through actual engine death and repeated kill
+PASS new enemy skills and summons complete battle with experimental bonds on/off
+
+14 home/enemy/reward tests passed.
+PASS 33 playable, exact cost colors; original 12 stats/skills unchanged covered by baseline
+PASS exact referenced level1..10 base table and normalized1/2 cost chances
+PASS boundary tier sampling and uniform per-tier entries, current level used on every roll
+PASS owned3star filtered, sold2cost restored; exhausted tiers renormalized without locked cards
+PASS stage scaling adds two promotions per stage then reaches3star cap
+PASS promoted enemies have actual HP/AD/AP growth; cached encounters stable after reload
+PASS C13 AP190% target plus adjacent splash and slow20%/3s
+PASS C14 threeAD85% hits and exactly3 burn ticks at15%AP
+PASS C15 lowestHP ally healsAP200% and GD15% lasts4sec
+PASS C16 lightning wolf magicAP55%, cap2, duration8sec
+PASS C17 cost8% of CURRENT HP, AD230%, heals20% actual damage
+PASS C18 lowHP ally healsAP180% and shieldAP120% lasts4sec
+PASS C19 AP150%, root blocks movement but allows in-range attacks
+PASS C20 currentHP6%, AS30% and AD20% extra attack expire after5sec
+PASS C21 AP230%, nearest OTHER ally AP100% shield and lonecaster fallback
+PASS C22 AD170% and ownGD20% for4sec
+PASS C23 shields self+adjacent only and retaliates50%AP on melee basic without recursion
+PASS all11 two-cost units complete quickMana battles and use skills with bonds on/off
+
+18 two-cost/odds/enemy-growth tests passed.
+PASS all40 IDs, exact names/text/stats from Markdown and tier10/15/15
+PASS legacy equipment IDs/numbers preserved, excluded from new drop pool
+PASS all tiers allow identical equipment and preserve3slots
+PASS all10 stats, relativeAS, flatHP/MP, ranges and preview match actual battle
+PASS supply4 unique slots, choose2, prohibit third, selection/offer survives reload
+PASS supply slot deselection/reselection persists and no rewards before confirmation
+PASS all supply tier boundaries and large seeded distributions match each stage
+PASS boss guaranteed1 correct tier, loss0 and gold/interest/streak unchanged for all branches
+PASS regular1..6 supplies14 + bosses6 exactly20 items, endless supply/boss T3
+PASS trash only loose items in preparation, one-level undo persists and no duplication
+PASS new start7G and exactly2 unique1cost+1two-cost through many seeds
+PASS I26 25% chain max2 AD60% magic, only other nearby foes, no recursive procs
+PASS I27 free cast once, no repeated I27/I30 from bonus and normal skill effect retained
+PASS I27 supports all33 skills including heals/summons/AOE with safe targets
+PASS I28 lethal hit survivesHP1 shield30%/4s once, resets next battle
+PASS I29 heals20% actual basic HP damage, excludes shielded/overkill excess
+PASS I30 delay3s maxMP30%, cooldown8s and dead unit cannot refund
+PASS I31 only own summons: attack30%, lifetime40%, no poison/explosion rewrite
+PASS I32 fourAP25% burn ticks, refresh without double stacking, proc-tagged DOT
+PASS I33 target-specific3hit freeze counts reset, no DOT or proc trigger
+PASS I34 threshold uses prehitHP25% and only normal basic damage50%
+PASS I35 healing skill30% and actualheal25% shield3s, excludes overheal and lifesteal
+PASS I36 evadeAS20%/4s cooldown6s
+PASS I37 start self/adjacent shield maxHP15%/6s only
+PASS I38 continuous targetAS5% capped8, target switch resets
+PASS I39 splash actualskill35% as magic, maxonce per recipient per cast and no proc chain
+PASS I40 killsAD/AP5% capped5, no item-proc kills and state fresh next battle
+PASS injected duplicateT3 IDs never duplicate unique effect; stats still sum defensively
+PASS item-proc extra skills cannot trigger other active unique effects recursively
+PASS all40 random combat combinations finish, no nonfinite stats, no recursive explosion
+PASS patch notes include v0.1..0.15.11 current rules40items and original history
+
+31 item-content/effect/reward tests passed.
+PASS readable integer/fractional damage text without negativezero
+PASS physical/magic/incoming/critical figures use actual event values and distinct tones
+PASS adjacent melee and ranged or magic projectiles can be distinguished
+PASS periodic damage keeps DOT marker and proc events keep source tag
+PASS heals/shields/dodge are separate feedback; zero heals are suppressed
+PASS casting/spawn/death events include stable actors and dead targets
+PASS nonvisual logs and missing unit references are safe and ignored
+PASS visual planning is pure and leaves all battle/log state intact
+PASS floating damage reflects defense, shield absorption and capped remaining HP
+PASS fully shielded hits show absorption without invented HP damage
+PASS every cell maps to the same7x8 logical coordinate space
+PASS visual event consumption does not change seeded battles, RNG, gear procs or damage totals
+
+12 combat-presentation tests passed.
+PASS every bond lists all matching characters with correct lock/ownership status
+PASS member detail returns to the same bond and does not expose free recruit for drafts
+PASS backdrop closes only an outside press+release and preserves supply offer/selection
+PASS all ten traits have distinct colors and summoned attacks retain their element
+PASS augment modal shows one tier, three distinct full effects and explicit confirmation buttons
+PASS recruit clicks stay inside even after the bought card is detached during rerender
+PASS new run starts random two1G/one2G in separate bench slots with7G, leaves existing saves alone
+PASS deployment warning counts empty/partial/full with P12 and suppression persists only for the run
+PASS deployment dialog cancel keeps preparation; confirmation alone saves checkbox and continues once
+PASS empty battlefield is blocked even with confirmation while safe supply still works
+PASS purchase at10 reserve units is blocked without payment while a completing merge still succeeds
+
+11 interface/element tests passed.
+PASS 36 exact unique IDs with12 per tier and editable numeric effects
+PASS uniform independent tier boundaries and unbiased three-without-replacement candidate sampling
+PASS selected IDs excluded; offered but unchosen may return; repeated grades allowed
+PASS gates happen before node entry, supply3-3/5-3 preserved and completed picks never reopen
+PASS pending tier/options survive migrate, refresh and confirmation; stale double click is inert
+PASS all36 choices execute once, immediate gold/XP/T3 match data and others do not pay
+PASS P11 follows existing independent T3 draws, permits two identical IDs, atomic on failure
+PASS S11 reroll1G and G12/P09 win gold stack with original interest/boss/streak
+PASS all passive stat augments affect actual units, preview equals battle and base/enemies stay intact
+PASS flat boosts add after star/gear, AS/MP percentages stack and probabilities use points
+PASS S08/G09 start shields use final maxHP, independent5/6sec durations and reset next battle
+PASS G06/P05 heal only attacker based on actual HP damage, shield/overkill/dot/proc exclusions
+PASS augment leech stacks with I29 and cannot trigger healing-skill I35 shielding
+PASS G07 exactly5/10/15/20sec, caps4, excludes dead and resets across battles
+PASS P06 once at10sec on living allies, no retroactive grant to later summons
+PASS G08 MP15% refund with per-character5sec CD, no loop from I27 bonus casts
+PASS P07 starts with50% final maxMP, quick-mana override and future summons MP0
+PASS P04 and I28 use independent states; I28 first, next lethal P04, then death
+PASS P04 also prevents lethal DOT/item damage, protects allied summons and never enemies
+PASS P12 capacity level+1 up to11, real move/swap/save/battle limits without level11
+PASS summons inherit ongoing flat buffs once, later heat only at future ticks, start shields not reapplied
+PASS old v1/v2 saves migrate without retroactive picks/rewards and keep legacy effects
+PASS fresh run resets all selections and36 augments combined with all33 skills terminate safely
+
+23 augment tests passed.
+PASS 7columns8rows56cells, player lower28 cells and no wraparound neighbors
+PASS new states are stamped7columns and only ally positions28..55 accept placement
+PASS legacy8column units and enemy cache preserve identities, rewards and gear without collisions
+PASS migration prioritizes surviving columns and moves removed last column to nearest vacancy
+PASS cached bonus encounter remains identical on restore and never rerolls
+PASS item adjacency shield and chain lightning respect seventh-column edge
+PASS enemy formations through all stages stay unique and inside7-column enemy area
+PASS summoning and moving from edges never produce outside or overlapping actors
+PASS legacy corner migrations are deterministic and source marker prevents second conversion
+
+9 board/migration tests passed.
+PASS sale prices retain cost times3^(star-1) for every playable character
+PASS click and movement below7px never show sale zones or pay gold
+PASS actual unit drag shows only sale value on both sides and highlights target
+PASS left drop sells once, refunds exact gold and releases equipped items
+PASS right drop sells three-star once and reopens its existing shop pool
+PASS outside drop preserves unit and gold with original feedback
+PASS pointer cancellation, Escape and window blur never sell and clear all targets
+PASS opening a modal during drag immediately clears sale zones without sale
+PASS item dragging never activates unit sale zones
+PASS sale button uses same transaction and locked or stale sales remain inert
+
+10 drag sale tests passed.
+PASS all41 IDs have exactly12 retained,28 silent and one approved T28 route
+PASS retained notices last3seconds, restart on a new retained event and silent actions do not restart
+PASS drag routing keeps only specified errors and removes every success and invalid-drop message
+PASS T28 keeps rejection behavior and uses user-approved wording for all four failure causes
+PASS board merge center retains its unit and returns only consumed copies equipment
+PASS bench merge anchors the leftmost slot rather than source array order
+PASS nine copies still chain to one3star with two consumed units per visual event
+PASS base inventory has12 slots and all17 overflow items remain visible/reachable without mutation
+PASS empty combat is disabled and cannot settle even with forced confirmation; supplies stay available
+PASS level animation runs only on real level increases, not initialization or XP-only updates
+
+10 UI/notice refinement tests passed.
+PASS all45 names exactly match approved ID mapping, with33 playable and12 locked
+PASS C24 heals lowest two and slows their last living basic attackers only at cast
+PASS C24 ignores dead former attacker and does not attach reactive future attacks
+PASS C25 chains once per distinct enemy at220/150/100AP in nearest order
+PASS C26 execution snapshots pre-hit40percent threshold and adds70AD only then
+PASS C27 direct170AD and poison20AP ticks exactly five times
+PASS C28 charges to farthest enemy using existing free-cell path and debuffs3seconds
+PASS C28 blocked path has no teleport, no damage and no debuff
+PASS C29 uses200AD before applying20percent GD reduction for4seconds
+PASS C30 shields self250AP five seconds and heals two lowest adjacent others100AP
+PASS C31 direct230AD and20AP burn expires after3seconds, no extra movement
+PASS C32 target and orthogonal neighbors200AP, one-second action lock without immunity
+PASS C33 two targets160AP, max-priority healing reduction and timed expiry
+PASS all10 cost3 skills terminate real battles with gear and augments, both bond modes
+PASS HP display decrements by1 at80ms while target is immediately final
+PASS large HP loss reaches0 within1.6seconds with no skipped integer
+PASS HP cancellation/scene end snaps and removes outstanding jobs, new run increases instantly
+PASS reduced motion snaps HP without shards or timers
+PASS shop ownership covers board and bench, coexists with recommendation, and sale removes badge
+PASS cost3 purchase/merge/sale keeps price, returns gear and restores3star excluded pool
+PASS all cost3 IDs and legacy result names survive unchanged save fields and migrate byID
+PASS active themes precede inactive themes without changing evaluation
+PASS merge900ms flights then680ms flare and cleanup
+PASS reduced merge120ms and cancellation prevents stale flare
+
+24 v0.15.9 tests passed.
+PASS purchase preview matches full carry arithmetic for every one/two star count without mutation
+PASS victory heals2 at100 cap for battle and boss, and receipt replay never heals twice
+PASS difficulty affects startHP but player maximum stays100 and victory can recover above start
+PASS supplies, augment picks and defeat do not grant victory healing; loss formula unchanged
+PASS every supply stage uses50percent chance then50/50 amounts with exact boundaries
+PASS supply RNG occurs only on valid confirmation and awarded gold survives replay/reload exactly once
+PASS large seeded supply distribution is50percent none/25percent2G/25percent3G
+PASS one-shot lock keeps purchased holes and offers then unlocks before normal following reroll
+PASS lock survives saved results and augment gates, consumed only at the destination
+PASS manual reroll succeeds for correct price and unlocks; rejected action is fully inert
+PASS locked carry never restores a now-owned3star and lock defaults do not change old fields
+PASS 6-5 settlement gates advance only after rewards; pending choice survives reload
+PASS continue preserves all progress, enters7-1 once and never prompts again
+PASS end preserves paid receipts and assets without bonus, blocks progression after reload
+PASS 6-5 loss withHP left still offers completion, lethal loss uses gameover, old7+ saves skip retroactive choice
+PASS patch exports separate approved decisions, Codex additions and notification changes
+PASS catalog hub has4 routes; dedicated catalogs include all records and preserve prior tools
+PASS completion result renders exact2 choices and record-only notice with no ordinary next button
+PASS shop preview is visible beside ownership/recommendations and disappears after actual merge
+PASS rendered supply outcome explicitly includes received/no extra gold and actual healedHP only
+PASS patch UI shows same additional and notification records as exportedMD
+PASS item tooltip uses top-layer within modal and returns safely to body when hidden
+PASS round transition wrapper delegates current node without changing state
+PASS round transition wrapper skips ended/hidden scenes and exposes scoped cancellation
+
+24 v0.15.10 regression tests passed.
+PASS health model reads settled before/after values without mutating receipt
+PASS loss/zero/maxHP and legacy receipts display actual deltas without inventing healing
+PASS health scene shows only heart and current health without card labels or meter
+PASS heart animates73to75; final result resolves after root
+PASS loss track really empties96to6 and zeroHP has an empty final fill
+PASS reduced health is short fade with immediate fill and same state model
+PASS round overlay replaces small banner with exactly one full dialog and ROUND N plus node
+PASS reduced full transition lasts600ms and contains no moving title track
+PASS native scene blocks Escape/outside events until cleanup without gameplay callback
+PASS scene cancellation rejects visual completion and stale animations never reopen or resolve true
+PASS reentry and scoped cancellation cannot remove an unrelated scene or leave stale nodes
+PASS actual endBattle saves settlement immediately but opens result only after health presentation
+PASS cancelled health display leaves paid rewards and result phase intact without duplicate popup
+PASS hidden or replaced run prevents stale result after a successful visual completion
+PASS gameoverHP0 is settled first and its own result survives presentation
+PASS nine unchanged core modules match baseline; items and preparation intentionally change stacking
+PASS all four documents share current code version and linked source references point to real lines
+PASS design includes exactly45 unique character sections with every stat and unchanged skill descriptions
+PASS catalogs in docs cover28 bonds40 items36 augments and locked list12 without promoting draft skills
+PASS changelog preserves every version and separately records sourced differences and uncertain cases
+PASS patch metadata keeps Codex decisions and all notification changes independently exportable
+
+21 v0.15.11/UI-document tests passed.
+PASS unaltered new PNG and measured tracks preserve exactly7x8 rectangular cells
+PASS real combat measurement and positioning use all56 calibrated centres at multiple scales
+PASS intra-round text never opens a modal and a new scene safely replaces it
+PASS stage2-1 uses cover, stage2-2 and augment destinations use text without mutating progress
+
+4 v0.15.12 board/transition tests passed.
+PASS wall-clock catch-up at1/2/4x, pause excludes hidden time, repeated time has zero steps
+PASS worker normal/boss,1/2/4x, hidden catch-up and manual pause match deterministic direct simulation
+PASS duplicateT3 three-slot limit, migration and bonuses survive round-trip; T24 disabled
+
+3 v0.15.15 regression tests passed.
+PASS visual metadata preserves all33 deterministic battles including damage, RNG, final units and log ordering
+PASS event geometry and ranged MISS attribution survive later unit movement without inventing a hit
+PASS gray basic and instant yellow C01 skill have disjoint mapping; DOT/item/melee/other skills stay unchanged
+PASS pixel lifetime is opaque until deletion, flight has one impact, MISS has none, repeated event is ignored
+PASS result/reloaded supply/normal/boss boards suppress enemies, and confirmed next stage closes before placement once
+
+5 v0.15.16 regression tests passed.
+PASS exact source assignments:45×2,16 themes,33 playable,all four-tier reachable,eight six-tier locked
+PASS all16 tiers replace rather than add base stats, and summoned units do not inherit themes
+PASS 혈광 thresholds dynamically change AS; six-tier leeches actual damage
+PASS 월하 same-target stacks cap at four and target change resets
+PASS 종언 currentHP threshold and capped flat kill MP without mage multiplier
+PASS 흑월 critical extra physical is nonrecursive; next basic forced only after crit kill
+PASS 무극 basic-only AS stacks and full-stack basic damage cap
+PASS 철혈 eight-second self shield only at four tier
+PASS 성약 post-mitigation transfer is once, no second mitigation/difficulty/onhit/counter
+PASS 성약 routed lethal respects I28 then P04 then 윤회 and never loops
+PASS 생명 one pulse per team every5s, lowest ratio+UID and source healing/shield power once
+PASS 윤회 allies death stacks cap, one immediate revive after survival guards, no phantom kill callback
+PASS 천명 starting adjacent ally GD only, aura does not duplicate per provider
+PASS 왕권 only actual stun/root marks damage vulnerability3s; armor debuff does not
+PASS 아르카나 flat15MP returns after cast and respects cap
+PASS 공명 direct cast per-target once despite C07 multihit; adjacent one half extra; no DOT recursion
+PASS 심연 timed30% healing reduction uses highest overlap, skill direct hit only
+PASS 운명 one RNG draw per team, same buff for all members, no reroll on stats/tick
+PASS 금단 currentHP cost min1; next cast charge is not current, not stacked; skill leech excludes DOT
+PASS legacy recommendation migration drops invalid IDs only, preserves units/items/augments and three valid themes
+PASS old experimental toggle cannot restore28 effects; new combat per battle state resets
+PASS actual 33 playable mixed gear/augments battles terminate with finite stats and no duplicated cells
+PASS all16 theme snapshots at each tier match real Worker execution and hidden-time catch-up
+PASS 혈광 includes attributed proc/transfer damage once; 금단 excludes I27 costs/charges
+
+24 integrated v0.15.17 tests passed.
+PASS real XP events rise600ms, level-up settles remainder, max and restored save do not replay
+PASS XP hides/cancels and resumes one frame loop; reduced motion snaps true value
+PASS HP actual numbers interpolate900-1700, finishes3450; capped win has no fake +2
+PASS HP zero, rapid reentry/cancel and reduced motion leave no loop, timers or stale reward callback
+4 motion17 tests passed.
+
+All 21 suites passed (314 tests).

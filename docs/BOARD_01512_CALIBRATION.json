@@ -1,0 +1,38 @@
+{
+  "version": "0.15.12",
+  "asset": "assets/석조 아치형 7×8 빛나는 격자 보드.png",
+  "original": "C:/game/오토체스/asset/석조 아치형 7×8 빛나는 격자 보드.png",
+  "sha256": "d9e629e17bd51d110fe65662af32fe0e5f775f2d5625d6622190fbef1d020a80",
+  "source": {
+    "width": 1659,
+    "height": 948
+  },
+  "frame": {
+    "left": 0,
+    "top": 0,
+    "width": 1659,
+    "height": 948
+  },
+  "columns": [
+    283.5,
+    443.5,
+    600,
+    754.5,
+    909.5,
+    1063,
+    1215,
+    1375.5
+  ],
+  "rows": [
+    94,
+    186.5,
+    277,
+    366,
+    453,
+    542,
+    628,
+    719.5,
+    813
+  ],
+  "method": "Bright R>135,G>210,B>230 line centres sampled across cell interiors; 7 columns/8 rows. Original PNG copied without editing."
+}

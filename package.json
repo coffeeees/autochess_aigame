@@ -1,0 +1,13 @@
+{
+  "name": "starlight-onecost-prototype",
+  "version": "0.15.18",
+  "private": true,
+  "description": "PvE autochess prototype with 33 playable units, 40 equipment items and patch notes",
+  "scripts": {
+    "start": "node serve.cjs",
+    "test": "node test-all.cjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

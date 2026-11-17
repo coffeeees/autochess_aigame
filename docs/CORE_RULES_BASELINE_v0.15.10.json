@@ -1,0 +1,17 @@
+{
+  "sourceCommit": "484b913926d3c3a0295e41e0dc7a5219543ce265",
+  "lineEndings": "LF",
+  "hashes": {
+    "dist/data.js": "9b501f28ac834a6203d08c56d89b0c0aeb91fb7604941bbb8aef1b2e5e35945e",
+    "dist/higher-cost-drafts.js": "43dc1627a5fdb7d1a80048b691beacc281e5b13a3d253e5eead44bad2bf3a4f5",
+    "dist/board.js": "e812c452d7d290a86e3d7f3e6db09220455a9ce26729203442728f843b0d564b",
+    "dist/engine.js": "fa94f23034e9a21bbfc5c12bf1cbc220c59ec55fd0b35ea4982ef40e46c2c6ac",
+    "dist/progression.js": "f0f4545a3b9c0783503344faaf8618eae388d9c72b23280328489df3ab6e402f",
+    "dist/preparation.js": "5428addd226fc3eae9ebf2ada4dcd03cb1d41f986978563c207d5d43ab406796",
+    "dist/encounters.js": "eeec1dde74b42055d9cabb912e34a7d8bd3e79d20761167165267ccb372fdef9",
+    "dist/items.js": "7e5de7777ac9310db2fc756b12a66ce62a7d83d7eb45575b4dc4397447ce9f89",
+    "dist/item-effects.js": "e36a1f5b03d23a6aa91f1d733f8679a2a44703e63ee980d2f6d7a8312918745e",
+    "dist/augments.js": "4c9fb4e1b36120f33e191a3e4c21cfa8c62a8cb190b97b7b3199e394639fcb5e",
+    "dist/augment-effects.js": "c4c9454e055ef1d01fd3d966f469ff288057160bece6965a4047675567ebb215"
+  }
+}

@@ -1,0 +1,182 @@
+[
+  {
+    "bench": {
+      "bottom": 1068,
+      "height": 132,
+      "left": 12,
+      "right": 1908,
+      "top": 936,
+      "width": 1896,
+      "x": 12,
+      "y": 936
+    },
+    "board": {
+      "bottom": 914,
+      "height": 832,
+      "left": 248,
+      "right": 1704,
+      "top": 82,
+      "width": 1456,
+      "x": 248,
+      "y": 82
+    },
+    "damage": {
+      "bottom": 884,
+      "height": 205,
+      "left": 1716,
+      "right": 1904,
+      "top": 679,
+      "width": 188,
+      "x": 1716,
+      "y": 679
+    },
+    "h": 1080,
+    "inventory": {
+      "bottom": 669,
+      "height": 577,
+      "left": 1746,
+      "right": 1904,
+      "top": 92,
+      "width": 158,
+      "x": 1746,
+      "y": 92
+    },
+    "overflow": false,
+    "w": 1920
+  },
+  {
+    "bench": {
+      "bottom": 888,
+      "height": 132,
+      "left": 12,
+      "right": 1588,
+      "top": 756,
+      "width": 1576,
+      "x": 12,
+      "y": 756
+    },
+    "board": {
+      "bottom": 734,
+      "height": 652,
+      "left": 250,
+      "right": 1391,
+      "top": 82,
+      "width": 1141,
+      "x": 250,
+      "y": 82
+    },
+    "damage": {
+      "bottom": 704,
+      "height": 116,
+      "left": 1403,
+      "right": 1584,
+      "top": 588,
+      "width": 181,
+      "x": 1403,
+      "y": 588
+    },
+    "h": 900,
+    "inventory": {
+      "bottom": 578,
+      "height": 486,
+      "left": 1435,
+      "right": 1584,
+      "top": 92,
+      "width": 149,
+      "x": 1435,
+      "y": 92
+    },
+    "overflow": false,
+    "w": 1600
+  },
+  {
+    "bench": {
+      "bottom": 756,
+      "height": 132,
+      "left": 12,
+      "right": 1354,
+      "top": 624,
+      "width": 1342,
+      "x": 12,
+      "y": 624
+    },
+    "board": {
+      "bottom": 602,
+      "height": 520,
+      "left": 257,
+      "right": 1167,
+      "top": 82,
+      "width": 910,
+      "x": 257,
+      "y": 82
+    },
+    "damage": {
+      "bottom": 572,
+      "height": 116,
+      "left": 1179,
+      "right": 1350,
+      "top": 456,
+      "width": 171,
+      "x": 1179,
+      "y": 456
+    },
+    "h": 768,
+    "inventory": {
+      "bottom": 446,
+      "height": 354,
+      "left": 1218,
+      "right": 1350,
+      "top": 92,
+      "width": 132,
+      "x": 1218,
+      "y": 92
+    },
+    "overflow": false,
+    "w": 1366
+  },
+  {
+    "bench": {
+      "bottom": 638,
+      "height": 132,
+      "left": 12,
+      "right": 788,
+      "top": 506,
+      "width": 776,
+      "x": 12,
+      "y": 506
+    },
+    "board": {
+      "bottom": 412.28125,
+      "height": 262.28125,
+      "left": 177.0078125,
+      "right": 635.9921875,
+      "top": 150,
+      "width": 458.984375,
+      "x": 177.0078125,
+      "y": 150
+    },
+    "damage": {
+      "bottom": 454,
+      "height": 176.828125,
+      "left": 648,
+      "right": 784,
+      "top": 277.171875,
+      "width": 136,
+      "x": 648,
+      "y": 277.171875
+    },
+    "h": 650,
+    "inventory": {
+      "bottom": 267.171875,
+      "height": 107.171875,
+      "left": 738,
+      "right": 784,
+      "top": 160,
+      "width": 46,
+      "x": 738,
+      "y": 160
+    },
+    "overflow": false,
+    "w": 800
+  }
+]

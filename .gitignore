@@ -1,0 +1,16 @@
+work-baseline/
+update-stage-ui.cjs
+import-higher-drafts.cjs
+
+update-shell.cjs
+
+update-interaction.cjs
+
+update-costs.cjs
+update-cost-ui.cjs
+build-items.cjs
+connect-items.cjs
+update-item-ui.cjs
+update-inventory.cjs
+update-battle-view.cjs
+update-animation-notes.cjs
