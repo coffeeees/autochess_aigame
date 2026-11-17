@@ -58,51 +58,13 @@ function fresh() {
 }
 
 function load() {
-  try {
-    const s = JSON.parse(localStorage.getItem(KEY));
-    const occupied = new Set();
-    if (
-      (s?.version === 1 || s?.version === 2) &&
-      (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
-      Array.isArray(s.units) &&
-      s.units.every((u) => {
-        if (
-          !D.playableIds.includes(u.id) ||
-          !['board', 'bench'].includes(u.location) ||
-          !Number.isInteger(u.uid) ||
-          u.star < 1 ||
-          u.star > 3
-        )
-          return false;
-        if (u.location === 'board') {
-          if (
-            !Number.isInteger(u.pos) ||
-            u.pos < (s.boardColumns || 8) * 4 ||
-            u.pos >= (s.boardColumns || 8) * 8 ||
-            occupied.has(u.pos)
-          )
-            return false;
-          occupied.add(u.pos);
-        }
-        return true;
-      }) &&
-      s.units.filter((u) => u.location === 'board').length <=
-        (s.augments?.includes('P12') ? 11 : 10) &&
-      s.units.filter((u) => u.location === 'bench').length <= 22 &&
-      new Set(s.units.map((u) => u.uid)).size === s.units.length &&
-      Number.isFinite(s.gold) &&
-      s.gold >= 0 &&
-      s.wave >= 1 &&
-      Array.isArray(s.shop) &&
-      s.shop.every((id) => id === null || D.playableIds.includes(id))
-    ) {
-      state = W.ensureRunDefaults(P.migrate(s));
-      if (state.roundPhase === 'combat') state.roundPhase = 'prepare';
-      P.ensureAugment(state);
-      nextUid = Math.max(0, ...s.units.map((u) => u.uid));
-      return;
-    }
-  } catch {}
+  // core/save.ts validates and migrates; an unusable save starts a new run
+  const result = AutoSave.loadSave(localStorage);
+  if (result.status === 'loaded') {
+    state = result.state;
+    nextUid = result.nextUid;
+    return;
+  }
   fresh();
 }
 function save() {

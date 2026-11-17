@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/legacy/prototype.js:542](../src/legacy/prototype.js#L542) · `function startBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/legacy/prototype.js:504](../src/legacy/prototype.js#L504) · `function startBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외,판매후복귀.1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/legacy/drag-sales.js:2](../src/legacy/drag-sales.js#L2) · `function unitSalePrice`, [src/legacy/prototype.js:402](../src/legacy/prototype.js#L402) · `function merge`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
+[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/legacy/drag-sales.js:2](../src/legacy/drag-sales.js#L2) · `function unitSalePrice`, [src/legacy/prototype.js:364](../src/legacy/prototype.js#L364) · `function merge`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 

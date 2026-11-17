@@ -1,0 +1,62 @@
+{
+  "health": 80,
+  "gold": 7,
+  "units": [
+    {
+      "uid": 1,
+      "id": "C08",
+      "location": "bench",
+      "pos": -1,
+      "star": 1,
+      "benchSlot": 0
+    },
+    {
+      "uid": 2,
+      "id": "C09",
+      "location": "bench",
+      "pos": -1,
+      "star": 1,
+      "benchSlot": 1
+    },
+    {
+      "uid": 3,
+      "id": "C23",
+      "location": "bench",
+      "pos": -1,
+      "star": 1,
+      "benchSlot": 2
+    }
+  ],
+  "shop": ["C02", "C04", "C09", "C10", "C11"],
+  "shopLocked": false,
+  "shopCarry": null,
+  "completionChoice": null,
+  "version": 2,
+  "boardColumns": 7,
+  "stage": 1,
+  "round": 1,
+  "wave": 1,
+  "level": 3,
+  "xp": 0,
+  "inventory": [],
+  "itemSequence": 0,
+  "augments": [],
+  "augmentSelections": {},
+  "augmentState": {
+    "version": 1,
+    "completedPicks": [],
+    "skippedPicks": [],
+    "pendingPick": null
+  },
+  "completedRounds": {},
+  "roundPhase": "prepare",
+  "lastResult": null,
+  "done": false,
+  "winStreak": 0,
+  "skipDeploymentWarning": false,
+  "difficulty": 5,
+  "maxHealth": 100,
+  "bonusLootLedger": {},
+  "enemyEncounter": null,
+  "recommendedBonds": []
+}

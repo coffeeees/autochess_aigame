@@ -1,0 +1,198 @@
+{
+  "health": 80,
+  "gold": 12,
+  "units": [
+    {
+      "uid": 1,
+      "id": "C08",
+      "location": "board",
+      "pos": 35,
+      "star": 1,
+      "benchSlot": 0
+    },
+    {
+      "uid": 2,
+      "id": "C09",
+      "location": "board",
+      "pos": 36,
+      "star": 1,
+      "benchSlot": 1
+    },
+    {
+      "uid": 3,
+      "id": "C23",
+      "location": "board",
+      "pos": 37,
+      "star": 1,
+      "benchSlot": 2
+    }
+  ],
+  "shop": ["C05", "C08", "C05", "C04", "C08"],
+  "shopLocked": false,
+  "shopCarry": null,
+  "completionChoice": null,
+  "version": 2,
+  "boardColumns": 7,
+  "stage": 1,
+  "round": 3,
+  "wave": 3,
+  "level": 3,
+  "xp": 4,
+  "inventory": [
+    {
+      "uid": "I1",
+      "id": "I07",
+      "equippedTo": null
+    },
+    {
+      "uid": "I2",
+      "id": "I10",
+      "equippedTo": null
+    },
+    {
+      "uid": "I3",
+      "id": "I01",
+      "equippedTo": null
+    },
+    {
+      "uid": "I4",
+      "id": "I08",
+      "equippedTo": null
+    }
+  ],
+  "itemSequence": 4,
+  "augments": ["S11"],
+  "augmentSelections": {
+    "1-3": "S11"
+  },
+  "augmentState": {
+    "version": 1,
+    "completedPicks": ["1-3"],
+    "skippedPicks": [],
+    "pendingPick": null
+  },
+  "completedRounds": {
+    "1-1": {
+      "key": "1-1",
+      "stage": 1,
+      "round": 1,
+      "type": "SUPPLY",
+      "win": true,
+      "before": 7,
+      "base": 0,
+      "interest": 0,
+      "bonusGold": 3,
+      "streakBonus": 0,
+      "augmentGold": 0,
+      "winStreak": 0,
+      "monsterLoot": null,
+      "bossItem": null,
+      "total": 3,
+      "totalEarned": 3,
+      "extra": {
+        "kind": "items",
+        "itemIds": ["I07", "I10"],
+        "itemUids": ["I1", "I2"]
+      },
+      "healthBefore": 80,
+      "healing": 0,
+      "loss": 0,
+      "survivors": 0,
+      "gold": 10,
+      "health": 80,
+      "done": false,
+      "xpGained": 2,
+      "levelBefore": 3,
+      "levelAfter": 3,
+      "time": 0,
+      "reason": "supply",
+      "skillUses": {},
+      "damageRows": []
+    },
+    "1-2": {
+      "key": "1-2",
+      "stage": 1,
+      "round": 2,
+      "type": "SUPPLY",
+      "win": true,
+      "before": 10,
+      "base": 0,
+      "interest": 0,
+      "bonusGold": 2,
+      "streakBonus": 0,
+      "augmentGold": 0,
+      "winStreak": 0,
+      "monsterLoot": null,
+      "bossItem": null,
+      "total": 2,
+      "totalEarned": 2,
+      "extra": {
+        "kind": "items",
+        "itemIds": ["I01", "I08"],
+        "itemUids": ["I3", "I4"]
+      },
+      "healthBefore": 80,
+      "healing": 0,
+      "loss": 0,
+      "survivors": 0,
+      "gold": 12,
+      "health": 80,
+      "done": false,
+      "xpGained": 2,
+      "levelBefore": 3,
+      "levelAfter": 3,
+      "time": 0,
+      "reason": "supply",
+      "skillUses": {},
+      "damageRows": []
+    }
+  },
+  "roundPhase": "prepare",
+  "lastResult": null,
+  "done": false,
+  "winStreak": 0,
+  "skipDeploymentWarning": false,
+  "difficulty": 5,
+  "maxHealth": 100,
+  "bonusLootLedger": {},
+  "enemyEncounter": {
+    "key": "1-3",
+    "units": [
+      {
+        "id": "E08",
+        "pos": 17,
+        "star": 1,
+        "boss": false,
+        "scale": 0.885
+      },
+      {
+        "id": "E04",
+        "pos": 18,
+        "star": 1,
+        "boss": false,
+        "scale": 0.885
+      },
+      {
+        "id": "E08",
+        "pos": 3,
+        "star": 1,
+        "boss": false,
+        "scale": 0.885
+      },
+      {
+        "id": "E02",
+        "pos": 4,
+        "star": 1,
+        "boss": false,
+        "scale": 0.885
+      }
+    ],
+    "bonusAppeared": false
+  },
+  "recommendedBonds": [],
+  "supplyOffer": {
+    "key": "1-2",
+    "options": ["I01", "I09", "I08", "I02"],
+    "selected": [0, 2]
+  }
+}
