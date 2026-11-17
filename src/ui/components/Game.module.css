@@ -1,8 +1,11 @@
 .screen {
-  min-height: 100vh;
+  /* 화면 높이에 맞춘다: 전장이 남는 공간에 맞게 줄어들고 대기석 바가 잘리지 않는다 */
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: grid;
   grid-template-columns: var(--side-width) 1fr var(--side-width);
-  grid-template-rows: var(--hud-h) 1fr var(--reserve-h);
+  grid-template-rows: var(--hud-h) minmax(0, 1fr) var(--reserve-h);
   grid-template-areas:
     'hud hud hud'
     'left stage right'
@@ -15,6 +18,8 @@
 }
 .left {
   grid-area: left;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -22,11 +27,18 @@
 .right {
   grid-area: right;
   position: relative;
+  min-height: 0;
+  /* 보관함이 남는 높이만큼 줄어들고(칸은 스크롤), 아래 딜량 칸은 가려지지 않는다 */
+  display: flex;
+  flex-direction: column;
 }
 .stage {
   grid-area: stage;
   position: relative;
   min-height: 0;
+  min-width: 0;
+  /* 전장 그림이 가로·세로 중 좁은 쪽에 맞추도록 크기 컨테이너로 */
+  container-type: size;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +61,7 @@
 @media (max-width: 900px) {
   .screen {
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
     grid-template-areas: 'hud' 'left' 'stage' 'reserve';
   }
   .right {

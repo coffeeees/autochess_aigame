@@ -18,6 +18,7 @@
   color: #9cc8ff;
 }
 .panel {
+  flex: none;
   margin-top: var(--space-3);
   padding: var(--space-3);
   background: var(--panel-bg);
