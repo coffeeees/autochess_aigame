@@ -1,0 +1,62 @@
+.bar {
+  grid-area: reserve;
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--panel-bg);
+  border: 1px solid #c9a96e99;
+  border-radius: var(--radius-lg);
+}
+.level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: #1a1d2b;
+}
+.level b {
+  font-size: 26px;
+}
+.level span,
+.level small {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.bench {
+  display: grid;
+  grid-template-columns: repeat(var(--bench-slots), 1fr);
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.slot {
+  min-width: 0;
+  border: 1px solid #3c4257;
+  border-radius: var(--radius-md);
+  background: #121522cc;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.recruit {
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+.recruit small {
+  color: var(--color-gold);
+}
+.main {
+  width: 144px;
+  font-size: 15px;
+}

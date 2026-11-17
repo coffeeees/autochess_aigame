@@ -1,0 +1,20 @@
+.toast {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 6;
+  margin: 0;
+  max-width: min(640px, 90%);
+  padding: 10px 18px;
+  background: #101422ee;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.toast[data-visible='true'] {
+  opacity: 1;
+}

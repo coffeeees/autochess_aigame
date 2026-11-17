@@ -3,10 +3,12 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~4단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~4단계 완료. 5단계 진행 중(5a 글꼴, 5b 규칙의 core 이동, 5c 새 UI 골격까지). 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
-- 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수, D7 과거 파일은 docs/archive에 보관.
-- 다음 작업: 5단계(UI 재작성: 디자인 토큰, Preact 컴포넌트, 상태 저장소 1개, `!important` 금지). 남은 결정: D5 기본 글꼴, D6 캐릭터 그림 방향.
+- 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
+  D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
+- 새 UI는 `next.html` → `src/ui/`(Preact, 저장소 `store.ts` 하나, `styles/tokens.css`, 컴포넌트별 CSS Module). 기존 UI(`index.html`)는 체크리스트를 모두 옮길 때까지 기본 화면으로 둔다.
+- 다음 작업: 5d 전장 배치·드래그(판매 영역 포함) → 좌우 패널(유대, 보관함, 아이템) → 전투 시작·결과·보급·증강·6-5 모달 → 도감 → 설정·패치노트 → 기본 화면 전환.
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)

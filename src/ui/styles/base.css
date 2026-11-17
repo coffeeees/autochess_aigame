@@ -1,0 +1,36 @@
+/* Element defaults (v0.15.18 prototype.css button rules). Variants use
+   data-variant instead of extra classes so components never fight over them. */
+button {
+  background: #26262f;
+  border: 1px solid #44444f;
+  color: var(--color-text);
+  border-radius: 7px;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  background: #3a3946;
+  border-color: #b7b2c6;
+}
+button:focus-visible {
+  outline: 2px solid #d9d2f1;
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+button[data-variant='primary'] {
+  background: var(--color-accent);
+  color: #191722;
+  font-weight: 750;
+  border-color: var(--color-accent);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
