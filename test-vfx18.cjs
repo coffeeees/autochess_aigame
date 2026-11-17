@@ -1,9 +1,326 @@
-'use strict';const a=require('assert/strict'),fs=require('fs'),vm=require('vm'),Pixels=require('./dist/pixel-vfx'),D=require('./dist/data'),{Battle}=require('./dist/engine'),Visuals=require('./dist/combat-visuals');let count=0;function test(n,fn){fn();count++;console.log('PASS '+n);}
-test('only real C07 skill compound events select chains; basic gray/C01 yellow mappings unchanged',()=>{require('./dist/vfx-events').install(Battle);const b=new Battle([{id:'C07',pos:35}],[{id:'E01',pos:28},{id:'E02',pos:27},{id:'E03',pos:21}],{rng:()=>.99});b.cast(b.units[0],b.units[1]);const commands=Visuals.plan(b.events,b.units),chain=commands.find(c=>c.kind==='chainLightning');a(chain);a.equal(chain.sourceId,'C07');a.equal(chain.chains.length,2);a(chain.eventId);a.equal(commands.filter(c=>c.skillVisual==='c07-primary').length,3);a.equal(commands.filter(c=>c.skillVisual==='c07-chain').length,2);a.equal(Pixels.mapping({kind:'damage',sourceId:'C07',attackKind:'basic',ranged:true}).theme,'gray');a.equal(Pixels.mapping({kind:'damage',sourceId:'C01',attackKind:'skill'}).theme,'yellow');a.equal(Pixels.mapping({kind:'damage',sourceId:'C07',attackKind:'skill'}),null);});
-test('chain pixels/steps opaque, event dedup, actual0/1/2 recipients, lifespan, resize/pause cleanup and caps',()=>{const old={document:global.document,requestAnimationFrame:global.requestAnimationFrame,cancelAnimationFrame:global.cancelAnimationFrame};const rects=[],strokes=[],ctx={globalAlpha:1,setTransform(){},clearRect(){},save(){},restore(){},translate(){},rotate(){},beginPath(){},moveTo(){},lineTo(){},stroke(){strokes.push({alpha:this.globalAlpha,color:this.strokeStyle});},createRadialGradient(){return {addColorStop(){}};},fillRect(){rects.push({alpha:this.globalAlpha,color:this.fillStyle});}},canvas={style:{},setAttribute(){},getContext:()=>ctx,remove(){}};global.document={createElement:()=>canvas};global.requestAnimationFrame=()=>1;global.cancelAnimationFrame=()=>{};try{for(let targets=0;targets<=2;targets++){const p=new Pixels.PixelVfx({appendChild(){},clientWidth:700,clientHeight:600},{random:()=>.5}),s={x:20,y:60,w:100},t={x:250,y:60,w:100},others=[{x:380,y:20,w:100},{x:380,y:180,w:100}].slice(0,targets),now=performance.now();a(p.playChain({eventId:'c'+targets,sourceId:'C07',primary:{landed:true}},s,t,others,1));a(!p.playChain({eventId:'c'+targets,primary:{landed:true}},s,t,others,1));p.draw(now+250);for(const row of rects.filter(r=>Pixels.themes.electric.particles.includes(r.color)))a.equal(row.alpha,1);a(strokes.every(s=>s.alpha===1));p.draw(now+1000);a.equal(p.chains.length,0);a.equal(p.particles.length,0);p.playChain({eventId:'more',primary:{landed:false}},s,t,[],1);p.draw(performance.now()+200);a(!p.bursts.some(b=>b.kind==='impact'));for(let i=0;i<80;i++)p.playChain({eventId:'n'+i,primary:{landed:true}},s,t,others,4);a(p.chains.length<=24);a(p.particles.length<=720);p.resize(500,300);a.equal(p.chains.length,0);a.equal(p.particles.length,0);p.destroy();}}finally{Object.assign(global,old);}});
-function runner(){let raf=[],messages=[],created=0,fail=false;const elements={gameView:{hidden:false},clock:{},modal:{open:false}};class Worker{constructor(){if(fail)throw Error('no worker');created++;this.sent=[];messages.push(this);}postMessage(m){this.sent.push(m);}terminate(){this.closed=true;}}const ctx=vm.createContext({Worker,performance:{now:()=>0,mark(){},measure(){}},Date,document:{hidden:false,addEventListener(){}},$:id=>elements[id],requestAnimationFrame:fn=>(raf.push(fn),raf.length),cancelAnimationFrame(){},speed:1,battle:{time:0,events:[]},state:{roundPhase:'combat'},renderBoard(){},renderDetail(){},renderDebug(){},positionCombatDamage(){},getCombatView:()=>({consume(){},clearTransient(){}}),num:Math.round,runTimer:x=>ctx.fallback=x,URL:{},console});vm.runInContext(fs.readFileSync('dist/combat-runner.js','utf8'),ctx);return {ctx,elements,messages,get created(){return created;},fail(){fail=true;},flush(){const jobs=raf;raf=[];jobs.forEach(f=>f());}};}
-test('client warm reuse, ready→initial frame→begin, pause-before-ready, hidden start, failed Worker fallback',()=>{const f=runner();vm.runInContext('warmCombatWorker();warmCombatWorker();startCombatWorker()',f.ctx);a.equal(f.created,1);const w=f.messages[0];a.equal(w.sent[0].type,'prepare');w.onmessage({data:{type:'ready'}});a(!w.sent.some(m=>m.type==='begin'));f.flush();a(!w.sent.some(m=>m.type==='begin'));f.flush();a(w.sent.some(m=>m.type==='begin'));w.onerror();a.equal(f.ctx.fallback,true);const c=runner();vm.runInContext('startCombatWorker()',c.ctx);c.elements.gameView.hidden=true;c.messages[0].onmessage({data:{type:'ready'}});c.flush();c.flush();a(c.messages[0].sent.find(m=>m.type==='begin').paused);const h=runner();h.ctx.document.hidden=true;vm.runInContext('startCombatWorker()',h.ctx);h.messages[0].onmessage({data:{type:'ready'}});a(h.messages[0].sent.some(m=>m.type==='begin'));const bad=runner();bad.fail();a.equal(vm.runInContext('startCombatWorker()',bad.ctx),false);});
-test('multi-tick Worker pump preserves early C07 events at4x without extra simulation damage',()=>{let now=0,pump,output=[];const math=Object.create(Math);math.random=()=>.99;const ctx=vm.createContext({Math:math,Date:{now:()=>now},setInterval:f=>(pump=f,1),clearInterval(){},postMessage:m=>output.push(structuredClone(m))});ctx.importScripts=(...files)=>files.forEach(f=>vm.runInContext(fs.readFileSync('dist/'+f,'utf8'),ctx));vm.runInContext(fs.readFileSync('dist/combat-worker.js','utf8'),ctx);const b=new Battle([{id:'C07',pos:35}],[{id:'E01',pos:28},{id:'E02',pos:27}],{rng:()=>.99,quickMana:true});ctx.input={type:'prepare',battle:JSON.parse(JSON.stringify(b)),hidden:false};vm.runInContext('onmessage({data:input})',ctx);ctx.input={type:'begin',now:0,speed:4};vm.runInContext('onmessage({data:input})',ctx);now=100;pump();const snapshot=output.at(-1).battle;a(snapshot.events.some(e=>e.kind==='chainLightning'));for(let i=0;i<4;i++)b.tick();a.deepEqual(snapshot.units.map(u=>[u.hp,u.mp,u.pos]),b.units.map(u=>[u.hp,u.mp,u.pos]));});
-test('shop empty card has no visible success text and 200ms heart exit does not retime HP interpolation',()=>{const p=fs.readFileSync('dist/prototype.js','utf8');a(p.includes('aria-label="구매한 빈 슬롯"></div>'));a(!p.includes('<span>영입 완료</span>'));const hp=fs.readFileSync('dist/impact-health.js','utf8');a(hp.includes('duration=small?500:3000'));a(hp.includes('offset:2800/3000'));a(hp.includes('(elapsed-900)/800'));});
-test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale and preserves gear/save',()=>{const P=require('./dist/progression'),V=require('./dist/preparation'),W=require('./dist/encounters');const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,{style:{},classList:{add(){},remove(){},toggle(){}},innerHTML:'',addEventListener(){},close(){},showModal(){}});return elements.get(id);};const ctx=vm.createContext({AutoData:D,AutoEngine:require('./dist/engine'),AutoWorld:W,AutoProgression:P,AutoPreparation:V,AutoItems:require('./dist/items'),AutoNoticePolicy:require('./dist/notice-policy'),document:{getElementById:el,querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},body:{classList:{remove(){}}}},setTimeout,clearTimeout,clearInterval,console,localStorage:{setItem(){}}});const source=fs.readFileSync('dist/prototype.js','utf8');vm.runInContext(source.slice(0,source.lastIndexOf('\nload();')),ctx);vm.runInContext(fs.readFileSync('dist/drag-sales.js','utf8'),ctx);vm.runInContext("function render(){}function save(){}function notify(){}function setRecruitOpen(){}",ctx);for(const id of D.playableIds.slice(33)){ctx.testId=id;vm.runInContext("state=V.normalize(P.initialize({health:88,gold:1000,units:[],shop:[]}));nextUid=0;for(let n=0;n<9;n++)recruit(testId,false);",ctx);a.equal(vm.runInContext('state.units.length',ctx),1,id);a.equal(vm.runInContext('state.units[0].star',ctx),3,id);a.equal(vm.runInContext('state.gold',ctx),1000-D.byId(id).cost*9,id);a.equal(vm.runInContext('V.shopPool(state).includes(testId)',ctx),false);vm.runInContext("var gear=P.addItem(state,'I01');P.equip(state,gear.uid,state.units[0].uid);state=V.normalize(P.migrate(JSON.parse(JSON.stringify(state))));sellUnit(state.units[0].uid);",ctx);a.equal(vm.runInContext('state.gold',ctx),1000,id);a.equal(vm.runInContext('state.inventory[0].equippedTo',ctx),null,id);a.equal(vm.runInContext('V.shopPool(state).includes(testId)',ctx),true);}vm.runInContext("state.gold=0;recruit('C34',true);recruit('C35',false);",ctx);a.equal(vm.runInContext('state.gold',ctx),0);a.equal(vm.runInContext('state.units.length',ctx),1);a(!vm.runInContext('recruitCardMarkup(null,0)',ctx).includes('영입 완료'));});
-console.log(count+' VFX/startup18 tests passed.');
+'use strict';
+const a = require('assert/strict'),
+  fs = require('fs'),
+  vm = require('vm'),
+  Pixels = require('./dist/pixel-vfx'),
+  D = require('./dist/data'),
+  { Battle } = require('./dist/engine'),
+  Visuals = require('./dist/combat-visuals');
+let count = 0;
+function test(n, fn) {
+  fn();
+  count++;
+  console.log('PASS ' + n);
+}
+test('only real C07 skill compound events select chains; basic gray/C01 yellow mappings unchanged', () => {
+  require('./dist/vfx-events').install(Battle);
+  const b = new Battle(
+    [{ id: 'C07', pos: 35 }],
+    [
+      { id: 'E01', pos: 28 },
+      { id: 'E02', pos: 27 },
+      { id: 'E03', pos: 21 },
+    ],
+    { rng: () => 0.99 },
+  );
+  b.cast(b.units[0], b.units[1]);
+  const commands = Visuals.plan(b.events, b.units),
+    chain = commands.find((c) => c.kind === 'chainLightning');
+  a(chain);
+  a.equal(chain.sourceId, 'C07');
+  a.equal(chain.chains.length, 2);
+  a(chain.eventId);
+  a.equal(commands.filter((c) => c.skillVisual === 'c07-primary').length, 3);
+  a.equal(commands.filter((c) => c.skillVisual === 'c07-chain').length, 2);
+  a.equal(
+    Pixels.mapping({ kind: 'damage', sourceId: 'C07', attackKind: 'basic', ranged: true }).theme,
+    'gray',
+  );
+  a.equal(Pixels.mapping({ kind: 'damage', sourceId: 'C01', attackKind: 'skill' }).theme, 'yellow');
+  a.equal(Pixels.mapping({ kind: 'damage', sourceId: 'C07', attackKind: 'skill' }), null);
+});
+test('chain pixels/steps opaque, event dedup, actual0/1/2 recipients, lifespan, resize/pause cleanup and caps', () => {
+  const old = {
+    document: global.document,
+    requestAnimationFrame: global.requestAnimationFrame,
+    cancelAnimationFrame: global.cancelAnimationFrame,
+  };
+  const rects = [],
+    strokes = [],
+    ctx = {
+      globalAlpha: 1,
+      setTransform() {},
+      clearRect() {},
+      save() {},
+      restore() {},
+      translate() {},
+      rotate() {},
+      beginPath() {},
+      moveTo() {},
+      lineTo() {},
+      stroke() {
+        strokes.push({ alpha: this.globalAlpha, color: this.strokeStyle });
+      },
+      createRadialGradient() {
+        return { addColorStop() {} };
+      },
+      fillRect() {
+        rects.push({ alpha: this.globalAlpha, color: this.fillStyle });
+      },
+    },
+    canvas = { style: {}, setAttribute() {}, getContext: () => ctx, remove() {} };
+  global.document = { createElement: () => canvas };
+  global.requestAnimationFrame = () => 1;
+  global.cancelAnimationFrame = () => {};
+  try {
+    for (let targets = 0; targets <= 2; targets++) {
+      const p = new Pixels.PixelVfx(
+          { appendChild() {}, clientWidth: 700, clientHeight: 600 },
+          { random: () => 0.5 },
+        ),
+        s = { x: 20, y: 60, w: 100 },
+        t = { x: 250, y: 60, w: 100 },
+        others = [
+          { x: 380, y: 20, w: 100 },
+          { x: 380, y: 180, w: 100 },
+        ].slice(0, targets),
+        now = performance.now();
+      a(
+        p.playChain(
+          { eventId: 'c' + targets, sourceId: 'C07', primary: { landed: true } },
+          s,
+          t,
+          others,
+          1,
+        ),
+      );
+      a(!p.playChain({ eventId: 'c' + targets, primary: { landed: true } }, s, t, others, 1));
+      p.draw(now + 250);
+      for (const row of rects.filter((r) => Pixels.themes.electric.particles.includes(r.color)))
+        a.equal(row.alpha, 1);
+      a(strokes.every((s) => s.alpha === 1));
+      p.draw(now + 1000);
+      a.equal(p.chains.length, 0);
+      a.equal(p.particles.length, 0);
+      p.playChain({ eventId: 'more', primary: { landed: false } }, s, t, [], 1);
+      p.draw(performance.now() + 200);
+      a(!p.bursts.some((b) => b.kind === 'impact'));
+      for (let i = 0; i < 80; i++)
+        p.playChain({ eventId: 'n' + i, primary: { landed: true } }, s, t, others, 4);
+      a(p.chains.length <= 24);
+      a(p.particles.length <= 720);
+      p.resize(500, 300);
+      a.equal(p.chains.length, 0);
+      a.equal(p.particles.length, 0);
+      p.destroy();
+    }
+  } finally {
+    Object.assign(global, old);
+  }
+});
+function runner() {
+  let raf = [],
+    messages = [],
+    created = 0,
+    fail = false;
+  const elements = { gameView: { hidden: false }, clock: {}, modal: { open: false } };
+  class Worker {
+    constructor() {
+      if (fail) throw Error('no worker');
+      created++;
+      this.sent = [];
+      messages.push(this);
+    }
+    postMessage(m) {
+      this.sent.push(m);
+    }
+    terminate() {
+      this.closed = true;
+    }
+  }
+  const ctx = vm.createContext({
+    Worker,
+    performance: { now: () => 0, mark() {}, measure() {} },
+    Date,
+    document: { hidden: false, addEventListener() {} },
+    $: (id) => elements[id],
+    requestAnimationFrame: (fn) => (raf.push(fn), raf.length),
+    cancelAnimationFrame() {},
+    speed: 1,
+    battle: { time: 0, events: [] },
+    state: { roundPhase: 'combat' },
+    renderBoard() {},
+    renderDetail() {},
+    renderDebug() {},
+    positionCombatDamage() {},
+    getCombatView: () => ({ consume() {}, clearTransient() {} }),
+    num: Math.round,
+    runTimer: (x) => (ctx.fallback = x),
+    URL: {},
+    console,
+  });
+  vm.runInContext(fs.readFileSync('dist/combat-runner.js', 'utf8'), ctx);
+  return {
+    ctx,
+    elements,
+    messages,
+    get created() {
+      return created;
+    },
+    fail() {
+      fail = true;
+    },
+    flush() {
+      const jobs = raf;
+      raf = [];
+      jobs.forEach((f) => f());
+    },
+  };
+}
+test('client warm reuse, ready→initial frame→begin, pause-before-ready, hidden start, failed Worker fallback', () => {
+  const f = runner();
+  vm.runInContext('warmCombatWorker();warmCombatWorker();startCombatWorker()', f.ctx);
+  a.equal(f.created, 1);
+  const w = f.messages[0];
+  a.equal(w.sent[0].type, 'prepare');
+  w.onmessage({ data: { type: 'ready' } });
+  a(!w.sent.some((m) => m.type === 'begin'));
+  f.flush();
+  a(!w.sent.some((m) => m.type === 'begin'));
+  f.flush();
+  a(w.sent.some((m) => m.type === 'begin'));
+  w.onerror();
+  a.equal(f.ctx.fallback, true);
+  const c = runner();
+  vm.runInContext('startCombatWorker()', c.ctx);
+  c.elements.gameView.hidden = true;
+  c.messages[0].onmessage({ data: { type: 'ready' } });
+  c.flush();
+  c.flush();
+  a(c.messages[0].sent.find((m) => m.type === 'begin').paused);
+  const h = runner();
+  h.ctx.document.hidden = true;
+  vm.runInContext('startCombatWorker()', h.ctx);
+  h.messages[0].onmessage({ data: { type: 'ready' } });
+  a(h.messages[0].sent.some((m) => m.type === 'begin'));
+  const bad = runner();
+  bad.fail();
+  a.equal(vm.runInContext('startCombatWorker()', bad.ctx), false);
+});
+test('multi-tick Worker pump preserves early C07 events at4x without extra simulation damage', () => {
+  let now = 0,
+    pump,
+    output = [];
+  const math = Object.create(Math);
+  math.random = () => 0.99;
+  const ctx = vm.createContext({
+    Math: math,
+    Date: { now: () => now },
+    setInterval: (f) => ((pump = f), 1),
+    clearInterval() {},
+    postMessage: (m) => output.push(structuredClone(m)),
+  });
+  ctx.importScripts = (...files) =>
+    files.forEach((f) => vm.runInContext(fs.readFileSync('dist/' + f, 'utf8'), ctx));
+  vm.runInContext(fs.readFileSync('dist/combat-worker.js', 'utf8'), ctx);
+  const b = new Battle(
+    [{ id: 'C07', pos: 35 }],
+    [
+      { id: 'E01', pos: 28 },
+      { id: 'E02', pos: 27 },
+    ],
+    { rng: () => 0.99, quickMana: true },
+  );
+  ctx.input = { type: 'prepare', battle: JSON.parse(JSON.stringify(b)), hidden: false };
+  vm.runInContext('onmessage({data:input})', ctx);
+  ctx.input = { type: 'begin', now: 0, speed: 4 };
+  vm.runInContext('onmessage({data:input})', ctx);
+  now = 100;
+  pump();
+  const snapshot = output.at(-1).battle;
+  a(snapshot.events.some((e) => e.kind === 'chainLightning'));
+  for (let i = 0; i < 4; i++) b.tick();
+  a.deepEqual(
+    snapshot.units.map((u) => [u.hp, u.mp, u.pos]),
+    b.units.map((u) => [u.hp, u.mp, u.pos]),
+  );
+});
+test('shop empty card has no visible success text and 200ms heart exit does not retime HP interpolation', () => {
+  const p = fs.readFileSync('dist/prototype.js', 'utf8');
+  a(p.includes('aria-label="구매한 빈 슬롯"></div>'));
+  a(!p.includes('<span>영입 완료</span>'));
+  // whitespace-insensitive: the source is Prettier-formatted
+  const hp = fs.readFileSync('dist/impact-health.js', 'utf8').replace(/\s+/g, '');
+  a(hp.includes('duration=small?500:3000'));
+  a(hp.includes('offset:2800/3000'));
+  a(hp.includes('(elapsed-900)/800'));
+});
+test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale and preserves gear/save', () => {
+  const P = require('./dist/progression'),
+    V = require('./dist/preparation'),
+    W = require('./dist/encounters');
+  const elements = new Map();
+  const el = (id) => {
+    if (!elements.has(id))
+      elements.set(id, {
+        style: {},
+        classList: { add() {}, remove() {}, toggle() {} },
+        innerHTML: '',
+        addEventListener() {},
+        close() {},
+        showModal() {},
+      });
+    return elements.get(id);
+  };
+  const ctx = vm.createContext({
+    AutoData: D,
+    AutoEngine: require('./dist/engine'),
+    AutoWorld: W,
+    AutoProgression: P,
+    AutoPreparation: V,
+    AutoItems: require('./dist/items'),
+    AutoNoticePolicy: require('./dist/notice-policy'),
+    document: {
+      getElementById: el,
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      addEventListener() {},
+      body: { classList: { remove() {} } },
+    },
+    setTimeout,
+    clearTimeout,
+    clearInterval,
+    console,
+    localStorage: { setItem() {} },
+  });
+  const source = fs.readFileSync('dist/prototype.js', 'utf8');
+  vm.runInContext(source.slice(0, source.lastIndexOf('\nload();')), ctx);
+  vm.runInContext(fs.readFileSync('dist/drag-sales.js', 'utf8'), ctx);
+  vm.runInContext(
+    'function render(){}function save(){}function notify(){}function setRecruitOpen(){}',
+    ctx,
+  );
+  for (const id of D.playableIds.slice(33)) {
+    ctx.testId = id;
+    vm.runInContext(
+      'state=V.normalize(P.initialize({health:88,gold:1000,units:[],shop:[]}));nextUid=0;for(let n=0;n<9;n++)recruit(testId,false);',
+      ctx,
+    );
+    a.equal(vm.runInContext('state.units.length', ctx), 1, id);
+    a.equal(vm.runInContext('state.units[0].star', ctx), 3, id);
+    a.equal(vm.runInContext('state.gold', ctx), 1000 - D.byId(id).cost * 9, id);
+    a.equal(vm.runInContext('V.shopPool(state).includes(testId)', ctx), false);
+    vm.runInContext(
+      "var gear=P.addItem(state,'I01');P.equip(state,gear.uid,state.units[0].uid);state=V.normalize(P.migrate(JSON.parse(JSON.stringify(state))));sellUnit(state.units[0].uid);",
+      ctx,
+    );
+    a.equal(vm.runInContext('state.gold', ctx), 1000, id);
+    a.equal(vm.runInContext('state.inventory[0].equippedTo', ctx), null, id);
+    a.equal(vm.runInContext('V.shopPool(state).includes(testId)', ctx), true);
+  }
+  vm.runInContext("state.gold=0;recruit('C34',true);recruit('C35',false);", ctx);
+  a.equal(vm.runInContext('state.gold', ctx), 0);
+  a.equal(vm.runInContext('state.units.length', ctx), 1);
+  a(!vm.runInContext('recruitCardMarkup(null,0)', ctx).includes('영입 완료'));
+});
+console.log(count + ' VFX/startup18 tests passed.');

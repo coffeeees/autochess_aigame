@@ -1,32 +1,548 @@
 'use strict';
-const a=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),D=require('./dist/data'),P=require('./dist/progression'),V=require('./dist/preparation'),W=require('./dist/encounters'),A=require('./dist/augments'),I=require('./dist/items'),N=require('./dist/patch-notes');let count=0;const test=(name,fn)=>{fn();count++;console.log('PASS '+name);},copy=x=>JSON.parse(JSON.stringify(x)),near=(x,y)=>a(Math.abs(x-y)<1e-7);
-function state(stage=1,round=3){const s=P.initialize({gold:25,health:75,units:[],shop:['C01',null,'C24','C03','C05']});Object.assign(s,{stage,round});s.wave=P.ordinal(s);return s;}
-function combat(s,winner='ally'){s.roundPhase='combat';return P.settleRound(s,{winner},()=>.99);}
-function supply(s,rng){P.beginSupply(s,()=>.1);P.toggleSupply(s,0);P.toggleSupply(s,1);return P.confirmSupply(s,rng);}
-test('purchase preview matches full carry arithmetic for every one/two star count without mutation',()=>{for(let ones=0;ones<12;ones++)for(let twos=0;twos<4;twos++){const s=state();s.units=[...Array.from({length:ones},()=>({id:'C24',star:1,location:'bench'})),...Array.from({length:twos},()=>({id:'C24',star:2,location:'board'}))];const before=copy(s);const expected=Math.floor((ones+1)/3)?twos+Math.floor((ones+1)/3)>=3?3:2:twos>=3?3:0;a.equal(V.mergePreview(s,'C24'),expected);a.deepEqual(s,before);}a.equal(V.mergePreview({units:[{id:'C24',star:3}]},'C24'),0);a.equal(V.mergePreview({units:[]},'C34'),0);});
-test('victory heals2 at100 cap for battle and boss, and receipt replay never heals twice',()=>{for(const round of [3,5])for(const hp of [50,98,99,100]){const s=state(1,round);s.health=hp;const r=combat(s);a.equal(s.health,Math.min(100,hp+2));a.equal(r.healing,Math.min(2,100-hp));a.equal(r.healthBefore,hp);const settled=copy(s);a.equal(P.settleRound(s,{winner:'ally'}),r);a.deepEqual(s,settled);const restored=P.migrate(copy(s));P.settleRound(restored,{winner:'ally'});a.equal(restored.health,settled.health);}});
-test('difficulty affects startHP but player maximum stays100 and victory can recover above start',()=>{for(let level=1;level<=10;level++){const s=W.configureNewRun(state(),level);a.equal(s.maxHealth,100);a.equal(s.health,W.difficulty(level).startingHealth);combat(s);a.equal(s.health,Math.min(100,W.difficulty(level).startingHealth+2));}});
-test('supplies, augment picks and defeat do not grant victory healing; loss formula unchanged',()=>{const s=state(1,1),r=supply(s,()=>.9);a.equal(s.health,75);a.equal(r.healing,0);const lost=state(1,3),l=combat(lost,'enemy');a.equal(lost.health,59);a.equal(l.loss,16);a.equal(l.healing,0);const aug=state();P.requestAugment(aug,'1-3',()=>0);P.chooseAugment(aug,P.availableAugments(aug)[0].id);a.equal(aug.health,75);});
-test('every supply stage uses50percent chance then50/50 amounts with exact boundaries',()=>{for(const [stage,round]of [[1,1],[1,2],[2,3],[6,3],[9,3]])for(const [chance,amount,expected]of [[0,0,2],[.499999,.499999,2],[.499999,.5,3],[.499999,.999999,3],[.5,0,0],[.999999,0,0]]){const s=state(stage,round),seq=[chance,amount],r=supply(s,()=>seq.shift());a.equal(r.bonusGold,expected);a.equal(s.gold,25+expected);a.equal(r.base,0);a.equal(r.interest,0);a.equal(r.extra.itemIds.length,2);a.equal(s.inventory.length,2);}});
-test('supply RNG occurs only on valid confirmation and awarded gold survives replay/reload exactly once',()=>{const s=state(1,1);let rolls=0;P.beginSupply(s,()=>.1);a.equal(P.confirmSupply(s,()=>{rolls++;return 0;}),null);a.equal(rolls,0);P.toggleSupply(s,0);P.toggleSupply(s,1);const r=P.confirmSupply(s,()=>{rolls++;return .1;});a.equal(rolls,2);const after=copy(s);for(const x of [s,P.migrate(copy(s))]){P.confirmSupply(x,()=>{throw Error('reroll');});P.settleRound(x,{},()=>{throw Error('reroll');});a.equal(x.gold,after.gold);a.equal(x.inventory.length,2);a.equal(x.lastResult.bonusGold,r.bonusGold);}});
-test('large seeded supply distribution is50percent none/25percent2G/25percent3G',()=>{let seed=191;const rng=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296),counts={0:0,2:0,3:0};for(let i=0;i<12000;i++)counts[supply(state(2,3),rng).bonusGold]++;for(const [value,ratio]of [[0,.5],[2,.25],[3,.25]])a(Math.abs(counts[value]/12000-ratio)<.018);});
-test('one-shot lock keeps purchased holes and offers then unlocks before normal following reroll',()=>{const s=state(2,1);s.shopLocked=true;const offers=[...s.shop];combat(s);a(P.advanceRound(s));a.equal(s.shopLocked,false);a.deepEqual(s.shopCarry.offers,offers);V.enterShop(s,()=>{throw Error('locked RNG');});a.deepEqual(s.shop,offers);a.equal(s.shopCarry,null);combat(s);a(P.advanceRound(s));let calls=0;V.enterShop(s,()=>{calls++;return .1;});a(calls>0);a.notDeepEqual(s.shop,offers);});
-test('lock survives saved results and augment gates, consumed only at the destination',()=>{const s=state(1,2);s.shopLocked=true;supply(s,()=>.9);const reload=P.migrate(copy(s));a(P.advanceRound(reload,()=>0));a.equal(reload.roundPhase,'augment');a.equal(reload.shopLocked,false);a.equal(reload.shopCarry.node,'1-3');const again=P.migrate(copy(reload));a(P.chooseAugment(again,P.availableAugments(again)[0].id));V.enterShop(again,()=>{throw Error('carry reroll');});a.deepEqual(again.shop,s.shop);a.equal(again.shopCarry,null);});
-test('manual reroll succeeds for correct price and unlocks; rejected action is fully inert',()=>{for(const augments of [[],['S11']]){const s=state();s.augments=augments;s.shopLocked=true;const price=P.rerollCost(s);a(V.manualReroll(s,()=>.1));a.equal(s.gold,25-price);a.equal(s.shopLocked,false);a.equal(s.shopCarry,null);}for(const mode of ['poor','combat','gameover']){const s=state();s.shopLocked=true;if(mode==='poor')s.gold=0;if(mode==='combat')s.roundPhase='combat';if(mode==='gameover')s.done=true;const before=copy(s);a(!V.manualReroll(s));a.deepEqual(s,before);}});
-test('locked carry never restores a now-owned3star and lock defaults do not change old fields',()=>{const s=state();s.shopCarry={node:'1-3',offers:['C01',null,'C24','C03','C05']};s.units=[{id:'C24',star:3}];V.enterShop(s);a.equal(s.shop[2],null);const old=state();delete old.shopLocked;delete old.shopCarry;delete old.completionChoice;const before=copy(old);P.migrate(old);a.equal(old.shopLocked,false);a.equal(old.shopCarry,null);for(const key of ['units','gold','health','inventory','shop','augments','completedRounds'])a.deepEqual(old[key],before[key]);});
-test('6-5 settlement gates advance only after rewards; pending choice survives reload',()=>{const s=state(6,5);const r=combat(s),after=copy(s);a.equal(s.completionChoice,'pending');a.equal(s.roundPhase,'result');a(!P.advanceRound(s));a.deepEqual(s,after);const restored=P.migrate(copy(s));a.equal(restored.completionChoice,'pending');a.equal(P.settleRound(restored,{winner:'ally'}).total,r.total);a.equal(restored.gold,after.gold);a.equal(restored.inventory.length,1);a(!P.buyXp(restored));});
-test('continue preserves all progress, enters7-1 once and never prompts again',()=>{const s=state(6,5);s.units=[{id:'C24',uid:1,star:2,location:'board',pos:31}];s.augments=['S01'];combat(s);s.shopLocked=true;const before=copy(s);a(P.chooseCompletion(s,'continue'));a(!P.chooseCompletion(s,'continue'));a(!P.chooseCompletion(s,'end'));a(P.advanceRound(s));V.enterShop(s);a.equal(P.label(s),'7-1');for(const key of ['gold','health','inventory','units','augments','completedRounds'])a.deepEqual(s[key],before[key]);a.deepEqual(s.shop,before.shop);a(!P.advanceRound(s));s.stage=7;s.round=5;combat(s);a.equal(s.completionChoice,'continue');a(P.advanceRound(s));a.equal(P.label(s),'8-1');});
-test('end preserves paid receipts and assets without bonus, blocks progression after reload',()=>{const s=state(6,5);combat(s);const before=copy(s);a(P.chooseCompletion(s,'end'));a.equal(s.done,true);a.equal(s.roundPhase,'complete');for(const key of ['gold','health','inventory','units','augments','completedRounds'])a.deepEqual(s[key],before[key]);const restored=P.migrate(copy(s));a.equal(restored.completionChoice,'end');a(!P.advanceRound(restored));a(!P.chooseCompletion(restored,'continue'));a(!P.beginSupply(restored));a(!V.manualReroll(restored));a.deepEqual(P.settleRound(restored),restored.lastResult);});
-test('6-5 loss withHP left still offers completion, lethal loss uses gameover, old7+ saves skip retroactive choice',()=>{const loss=state(6,5);loss.health=100;combat(loss,'enemy');a.equal(loss.completionChoice,'pending');a(loss.health>0);const dead=state(6,5);dead.health=1;combat(dead,'enemy');a.equal(dead.health,0);a.equal(dead.roundPhase,'gameover');a.equal(dead.completionChoice,null);a(!P.chooseCompletion(dead,'continue'));const old=state(7,2);delete old.completionChoice;P.migrate(old);a.equal(old.completionChoice,'legacy');const fresh=state();fresh.completionChoice='end';fresh.shopLocked=true;P.initialize(fresh);a.equal(fresh.completionChoice,null);a.equal(fresh.shopLocked,false);});
-test('patch exports separate approved decisions, Codex additions and notification changes',()=>{a.equal(N.current,'0.15.18');const e=N.history.find(x=>x.version==='0.15.10');for(const key of ['approvedDecisions','additionalChanges','notificationChanges'])a(e[key].length>0);const md=N.toMarkdown();for(const text of ['Codex 판단으로 추가·조정한 사항','알림·팝업·표시 조건 변경','T01~T41','수동 새로고침 시 잠금 해제','메타레벨'])a(md.includes(text),text);a.equal(require('./dist/notice-policy').allows('T08'),false);});
-const els=new Map(),get=id=>{if(!els.has(id))els.set(id,{id,innerHTML:'',textContent:'',hidden:false,style:{},attrs:{},handlers:{},setAttribute(k,v){this.attrs[k]=v;},classList:{add(){},remove(){},toggle(){}},addEventListener(t,fn){(this.handlers[t]??=[]).push(fn);},showModal(){this.open=true;},close(){this.open=false;},getBoundingClientRect(){return {left:10,top:10,width:50,height:50};}});return els.get(id);},doc={getElementById:get,querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},body:{appendChild(){},classList:{remove(){}}}};
-const ctx=vm.createContext({AutoData:D,AutoEngine:{},AutoProgression:P,AutoWorld:W,AutoPreparation:V,AutoItems:I,AutoAugments:A,AutoNoticePolicy:require('./dist/notice-policy'),AutoPatchNotes:N,document:doc,console,setTimeout,clearTimeout,clearInterval,localStorage:{setItem(){}}});const src=fs.readFileSync('dist/prototype.js','utf8');vm.runInContext(src.slice(0,src.lastIndexOf('\nload();')),ctx);for(const p of ['interaction-ui','content-ui','catalog-ui','run-flow-ui'])vm.runInContext(fs.readFileSync('dist/'+p+'.js','utf8'),ctx);vm.runInContext("function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){} state=P.initialize({gold:25,health:75,units:[],shop:['C24']});setupRunFlowUI();setupCatalogUI();",ctx);
-test('catalog hub has4 routes; dedicated catalogs include all records and preserve prior tools',()=>{vm.runInContext('showCatalog()',ctx);a.equal((get('modalContent').innerHTML.match(/data-catalog=/g)||[]).length,4);vm.runInContext('showAugmentCatalog()',ctx);a.equal((get('modalContent').innerHTML.match(/class="catalog-card augment-/g)||[]).length,36);a(!get('modalContent').innerHTML.includes('data-augment='));vm.runInContext('showItemCatalog()',ctx);a.equal((get('modalContent').innerHTML.match(/class="catalog-card item-tier-/g)||[]).length,40);for(const i of I.items)a(get('modalContent').innerHTML.includes(i.name));vm.runInContext('showRoster()',ctx);a.equal((get('modalContent').innerHTML.match(/data-free=/g)||[]).length,45);a(get('modalContent').innerHTML.includes('아바돈'));vm.runInContext('showBonds()',ctx);a.equal((get('modalContent').innerHTML.match(/data-recommend=/g)||[]).length,16);a(get('modalContent').innerHTML.includes('data-catalog-home'));});
-test('completion result renders exact2 choices and record-only notice with no ordinary next button',()=>{const s=state(6,5);combat(s);ctx.saved=copy(s);vm.runInContext('state=saved;showResult(state.lastResult)',ctx);const html=get('modalContent').innerHTML;a.equal((html.match(/data-completion=/g)||[]).length,2);a(!html.includes('data-continue'));a(html.includes('메타레벨(전체레벨) 경험치를 받지 않으며'));vm.runInContext("P.chooseCompletion(state,'end');showCompletionSummary();",ctx);a(get('modalContent').innerHTML.includes('기본 진행 구간 완료'));});
-test('shop preview is visible beside ownership/recommendations and disappears after actual merge',()=>{vm.runInContext("state=P.initialize({gold:25,health:75,units:[{id:'C24',star:1,uid:1,location:'board',pos:31},{id:'C24',star:1,uid:2,location:'bench',benchSlot:0}],shop:['C24']});state.recommendedBonds=['흑월'];nextUid=2;render();",ctx);const html=get('shop').innerHTML;a(html.includes('구매 시 2성 합성'));a(html.includes('owned-badge'));a(html.includes('matched-bond'));vm.runInContext("recruit('C24',false,0)",ctx);a.equal(vm.runInContext('state.units.length',ctx),1);a.equal(vm.runInContext('state.units[0].star',ctx),2);a(!get('shop').innerHTML.includes('merge-preview'));});
-test('rendered supply outcome explicitly includes received/no extra gold and actual healedHP only',()=>{for(const [rng,value]of [[()=>.1,'+2 G'],[()=>.9,'미획득']]){const s=state(1,1);supply(s,rng);ctx.saved=s;vm.runInContext('state=saved;showResult(state.lastResult)',ctx);a(get('modalContent').innerHTML.includes(value));a(!get('modalContent').innerHTML.includes('전투 승리 체력 회복'));}const s=state();s.health=99;combat(s);ctx.saved=s;vm.runInContext('state=saved;showResult(state.lastResult)',ctx);a(get('modalContent').innerHTML.includes('+1 HP'));});
-test('patch UI shows same additional and notification records as exportedMD',()=>{vm.runInContext('showPatchNotes()',ctx);a(get('modalContent').innerHTML.includes('Codex 판단으로 추가·조정한 사항'));a(get('modalContent').innerHTML.includes('기존 공통 알림T01~T41'));});
-test('item tooltip uses top-layer within modal and returns safely to body when hidden',()=>{const el=get('itemPopover'),modal=get('modal'),anchor={},body=doc.body;let open=false,shows=0,hides=0;el.matches=()=>open;el.showPopover=()=>{open=true;shows++;};el.hidePopover=()=>{open=false;hides++;};modal.contains=x=>x===anchor;modal.appendChild=x=>{x.parentElement=modal;};body.appendChild=x=>{x.parentElement=body;};el.parentElement=body;modal.open=true;ctx.anchor=anchor;vm.runInContext('raiseItemTooltip(anchor)',ctx);a.equal(el.parentElement,modal);a.equal(el.hidden,false);a.equal(shows,1);vm.runInContext('raiseItemTooltip(anchor)',ctx);a.equal(shows,1);vm.runInContext('hideItemDetail()',ctx);a.equal(el.hidden,true);a.equal(el.parentElement,body);a.equal(hides,1);modal.open=false;});
-test('round transition wrapper delegates current node without changing state',()=>{const calls=[],scene=vm.createContext({AutoScreenEffects:{round:p=>calls.push(p),cancel:k=>calls.push(k)},state:state(2,1),P,$:()=>({hidden:false})});vm.runInContext(fs.readFileSync('dist/run-flow-ui.js','utf8'),scene);const before=copy(scene.state);vm.runInContext('showRoundTransition()',scene);a.equal(calls.length,1);a.equal(calls[0].stage,2);a.equal(calls[0].round,1);a.deepEqual(scene.state,before);});
-test('round transition wrapper skips ended/hidden scenes and exposes scoped cancellation',()=>{const calls=[],scene=vm.createContext({AutoScreenEffects:{round:p=>calls.push(p),cancel:k=>calls.push(k)},state:state(),P,$:()=>({hidden:true})});vm.runInContext(fs.readFileSync('dist/run-flow-ui.js','utf8'),scene);vm.runInContext('showRoundTransition();cancelRoundTransition()',scene);a.deepEqual(calls,['round','stage']);});
-console.log('\n'+count+' v0.15.10 regression tests passed.');
+const a = require('node:assert/strict'),
+  fs = require('node:fs'),
+  vm = require('node:vm'),
+  D = require('./dist/data'),
+  P = require('./dist/progression'),
+  V = require('./dist/preparation'),
+  W = require('./dist/encounters'),
+  A = require('./dist/augments'),
+  I = require('./dist/items'),
+  N = require('./dist/patch-notes');
+let count = 0;
+const test = (name, fn) => {
+    fn();
+    count++;
+    console.log('PASS ' + name);
+  },
+  copy = (x) => JSON.parse(JSON.stringify(x)),
+  near = (x, y) => a(Math.abs(x - y) < 1e-7);
+function state(stage = 1, round = 3) {
+  const s = P.initialize({
+    gold: 25,
+    health: 75,
+    units: [],
+    shop: ['C01', null, 'C24', 'C03', 'C05'],
+  });
+  Object.assign(s, { stage, round });
+  s.wave = P.ordinal(s);
+  return s;
+}
+function combat(s, winner = 'ally') {
+  s.roundPhase = 'combat';
+  return P.settleRound(s, { winner }, () => 0.99);
+}
+function supply(s, rng) {
+  P.beginSupply(s, () => 0.1);
+  P.toggleSupply(s, 0);
+  P.toggleSupply(s, 1);
+  return P.confirmSupply(s, rng);
+}
+test('purchase preview matches full carry arithmetic for every one/two star count without mutation', () => {
+  for (let ones = 0; ones < 12; ones++)
+    for (let twos = 0; twos < 4; twos++) {
+      const s = state();
+      s.units = [
+        ...Array.from({ length: ones }, () => ({ id: 'C24', star: 1, location: 'bench' })),
+        ...Array.from({ length: twos }, () => ({ id: 'C24', star: 2, location: 'board' })),
+      ];
+      const before = copy(s);
+      const expected = Math.floor((ones + 1) / 3)
+        ? twos + Math.floor((ones + 1) / 3) >= 3
+          ? 3
+          : 2
+        : twos >= 3
+          ? 3
+          : 0;
+      a.equal(V.mergePreview(s, 'C24'), expected);
+      a.deepEqual(s, before);
+    }
+  a.equal(V.mergePreview({ units: [{ id: 'C24', star: 3 }] }, 'C24'), 0);
+  a.equal(V.mergePreview({ units: [] }, 'C34'), 0);
+});
+test('victory heals2 at100 cap for battle and boss, and receipt replay never heals twice', () => {
+  for (const round of [3, 5])
+    for (const hp of [50, 98, 99, 100]) {
+      const s = state(1, round);
+      s.health = hp;
+      const r = combat(s);
+      a.equal(s.health, Math.min(100, hp + 2));
+      a.equal(r.healing, Math.min(2, 100 - hp));
+      a.equal(r.healthBefore, hp);
+      const settled = copy(s);
+      a.equal(P.settleRound(s, { winner: 'ally' }), r);
+      a.deepEqual(s, settled);
+      const restored = P.migrate(copy(s));
+      P.settleRound(restored, { winner: 'ally' });
+      a.equal(restored.health, settled.health);
+    }
+});
+test('difficulty affects startHP but player maximum stays100 and victory can recover above start', () => {
+  for (let level = 1; level <= 10; level++) {
+    const s = W.configureNewRun(state(), level);
+    a.equal(s.maxHealth, 100);
+    a.equal(s.health, W.difficulty(level).startingHealth);
+    combat(s);
+    a.equal(s.health, Math.min(100, W.difficulty(level).startingHealth + 2));
+  }
+});
+test('supplies, augment picks and defeat do not grant victory healing; loss formula unchanged', () => {
+  const s = state(1, 1),
+    r = supply(s, () => 0.9);
+  a.equal(s.health, 75);
+  a.equal(r.healing, 0);
+  const lost = state(1, 3),
+    l = combat(lost, 'enemy');
+  a.equal(lost.health, 59);
+  a.equal(l.loss, 16);
+  a.equal(l.healing, 0);
+  const aug = state();
+  P.requestAugment(aug, '1-3', () => 0);
+  P.chooseAugment(aug, P.availableAugments(aug)[0].id);
+  a.equal(aug.health, 75);
+});
+test('every supply stage uses50percent chance then50/50 amounts with exact boundaries', () => {
+  for (const [stage, round] of [
+    [1, 1],
+    [1, 2],
+    [2, 3],
+    [6, 3],
+    [9, 3],
+  ])
+    for (const [chance, amount, expected] of [
+      [0, 0, 2],
+      [0.499999, 0.499999, 2],
+      [0.499999, 0.5, 3],
+      [0.499999, 0.999999, 3],
+      [0.5, 0, 0],
+      [0.999999, 0, 0],
+    ]) {
+      const s = state(stage, round),
+        seq = [chance, amount],
+        r = supply(s, () => seq.shift());
+      a.equal(r.bonusGold, expected);
+      a.equal(s.gold, 25 + expected);
+      a.equal(r.base, 0);
+      a.equal(r.interest, 0);
+      a.equal(r.extra.itemIds.length, 2);
+      a.equal(s.inventory.length, 2);
+    }
+});
+test('supply RNG occurs only on valid confirmation and awarded gold survives replay/reload exactly once', () => {
+  const s = state(1, 1);
+  let rolls = 0;
+  P.beginSupply(s, () => 0.1);
+  a.equal(
+    P.confirmSupply(s, () => {
+      rolls++;
+      return 0;
+    }),
+    null,
+  );
+  a.equal(rolls, 0);
+  P.toggleSupply(s, 0);
+  P.toggleSupply(s, 1);
+  const r = P.confirmSupply(s, () => {
+    rolls++;
+    return 0.1;
+  });
+  a.equal(rolls, 2);
+  const after = copy(s);
+  for (const x of [s, P.migrate(copy(s))]) {
+    P.confirmSupply(x, () => {
+      throw Error('reroll');
+    });
+    P.settleRound(x, {}, () => {
+      throw Error('reroll');
+    });
+    a.equal(x.gold, after.gold);
+    a.equal(x.inventory.length, 2);
+    a.equal(x.lastResult.bonusGold, r.bonusGold);
+  }
+});
+test('large seeded supply distribution is50percent none/25percent2G/25percent3G', () => {
+  let seed = 191;
+  const rng = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296,
+    counts = { 0: 0, 2: 0, 3: 0 };
+  for (let i = 0; i < 12000; i++) counts[supply(state(2, 3), rng).bonusGold]++;
+  for (const [value, ratio] of [
+    [0, 0.5],
+    [2, 0.25],
+    [3, 0.25],
+  ])
+    a(Math.abs(counts[value] / 12000 - ratio) < 0.018);
+});
+test('one-shot lock keeps purchased holes and offers then unlocks before normal following reroll', () => {
+  const s = state(2, 1);
+  s.shopLocked = true;
+  const offers = [...s.shop];
+  combat(s);
+  a(P.advanceRound(s));
+  a.equal(s.shopLocked, false);
+  a.deepEqual(s.shopCarry.offers, offers);
+  V.enterShop(s, () => {
+    throw Error('locked RNG');
+  });
+  a.deepEqual(s.shop, offers);
+  a.equal(s.shopCarry, null);
+  combat(s);
+  a(P.advanceRound(s));
+  let calls = 0;
+  V.enterShop(s, () => {
+    calls++;
+    return 0.1;
+  });
+  a(calls > 0);
+  a.notDeepEqual(s.shop, offers);
+});
+test('lock survives saved results and augment gates, consumed only at the destination', () => {
+  const s = state(1, 2);
+  s.shopLocked = true;
+  supply(s, () => 0.9);
+  const reload = P.migrate(copy(s));
+  a(P.advanceRound(reload, () => 0));
+  a.equal(reload.roundPhase, 'augment');
+  a.equal(reload.shopLocked, false);
+  a.equal(reload.shopCarry.node, '1-3');
+  const again = P.migrate(copy(reload));
+  a(P.chooseAugment(again, P.availableAugments(again)[0].id));
+  V.enterShop(again, () => {
+    throw Error('carry reroll');
+  });
+  a.deepEqual(again.shop, s.shop);
+  a.equal(again.shopCarry, null);
+});
+test('manual reroll succeeds for correct price and unlocks; rejected action is fully inert', () => {
+  for (const augments of [[], ['S11']]) {
+    const s = state();
+    s.augments = augments;
+    s.shopLocked = true;
+    const price = P.rerollCost(s);
+    a(V.manualReroll(s, () => 0.1));
+    a.equal(s.gold, 25 - price);
+    a.equal(s.shopLocked, false);
+    a.equal(s.shopCarry, null);
+  }
+  for (const mode of ['poor', 'combat', 'gameover']) {
+    const s = state();
+    s.shopLocked = true;
+    if (mode === 'poor') s.gold = 0;
+    if (mode === 'combat') s.roundPhase = 'combat';
+    if (mode === 'gameover') s.done = true;
+    const before = copy(s);
+    a(!V.manualReroll(s));
+    a.deepEqual(s, before);
+  }
+});
+test('locked carry never restores a now-owned3star and lock defaults do not change old fields', () => {
+  const s = state();
+  s.shopCarry = { node: '1-3', offers: ['C01', null, 'C24', 'C03', 'C05'] };
+  s.units = [{ id: 'C24', star: 3 }];
+  V.enterShop(s);
+  a.equal(s.shop[2], null);
+  const old = state();
+  delete old.shopLocked;
+  delete old.shopCarry;
+  delete old.completionChoice;
+  const before = copy(old);
+  P.migrate(old);
+  a.equal(old.shopLocked, false);
+  a.equal(old.shopCarry, null);
+  for (const key of ['units', 'gold', 'health', 'inventory', 'shop', 'augments', 'completedRounds'])
+    a.deepEqual(old[key], before[key]);
+});
+test('6-5 settlement gates advance only after rewards; pending choice survives reload', () => {
+  const s = state(6, 5);
+  const r = combat(s),
+    after = copy(s);
+  a.equal(s.completionChoice, 'pending');
+  a.equal(s.roundPhase, 'result');
+  a(!P.advanceRound(s));
+  a.deepEqual(s, after);
+  const restored = P.migrate(copy(s));
+  a.equal(restored.completionChoice, 'pending');
+  a.equal(P.settleRound(restored, { winner: 'ally' }).total, r.total);
+  a.equal(restored.gold, after.gold);
+  a.equal(restored.inventory.length, 1);
+  a(!P.buyXp(restored));
+});
+test('continue preserves all progress, enters7-1 once and never prompts again', () => {
+  const s = state(6, 5);
+  s.units = [{ id: 'C24', uid: 1, star: 2, location: 'board', pos: 31 }];
+  s.augments = ['S01'];
+  combat(s);
+  s.shopLocked = true;
+  const before = copy(s);
+  a(P.chooseCompletion(s, 'continue'));
+  a(!P.chooseCompletion(s, 'continue'));
+  a(!P.chooseCompletion(s, 'end'));
+  a(P.advanceRound(s));
+  V.enterShop(s);
+  a.equal(P.label(s), '7-1');
+  for (const key of ['gold', 'health', 'inventory', 'units', 'augments', 'completedRounds'])
+    a.deepEqual(s[key], before[key]);
+  a.deepEqual(s.shop, before.shop);
+  a(!P.advanceRound(s));
+  s.stage = 7;
+  s.round = 5;
+  combat(s);
+  a.equal(s.completionChoice, 'continue');
+  a(P.advanceRound(s));
+  a.equal(P.label(s), '8-1');
+});
+test('end preserves paid receipts and assets without bonus, blocks progression after reload', () => {
+  const s = state(6, 5);
+  combat(s);
+  const before = copy(s);
+  a(P.chooseCompletion(s, 'end'));
+  a.equal(s.done, true);
+  a.equal(s.roundPhase, 'complete');
+  for (const key of ['gold', 'health', 'inventory', 'units', 'augments', 'completedRounds'])
+    a.deepEqual(s[key], before[key]);
+  const restored = P.migrate(copy(s));
+  a.equal(restored.completionChoice, 'end');
+  a(!P.advanceRound(restored));
+  a(!P.chooseCompletion(restored, 'continue'));
+  a(!P.beginSupply(restored));
+  a(!V.manualReroll(restored));
+  a.deepEqual(P.settleRound(restored), restored.lastResult);
+});
+test('6-5 loss withHP left still offers completion, lethal loss uses gameover, old7+ saves skip retroactive choice', () => {
+  const loss = state(6, 5);
+  loss.health = 100;
+  combat(loss, 'enemy');
+  a.equal(loss.completionChoice, 'pending');
+  a(loss.health > 0);
+  const dead = state(6, 5);
+  dead.health = 1;
+  combat(dead, 'enemy');
+  a.equal(dead.health, 0);
+  a.equal(dead.roundPhase, 'gameover');
+  a.equal(dead.completionChoice, null);
+  a(!P.chooseCompletion(dead, 'continue'));
+  const old = state(7, 2);
+  delete old.completionChoice;
+  P.migrate(old);
+  a.equal(old.completionChoice, 'legacy');
+  const fresh = state();
+  fresh.completionChoice = 'end';
+  fresh.shopLocked = true;
+  P.initialize(fresh);
+  a.equal(fresh.completionChoice, null);
+  a.equal(fresh.shopLocked, false);
+});
+test('patch exports separate approved decisions, Codex additions and notification changes', () => {
+  a.equal(N.current, '0.15.18');
+  const e = N.history.find((x) => x.version === '0.15.10');
+  for (const key of ['approvedDecisions', 'additionalChanges', 'notificationChanges'])
+    a(e[key].length > 0);
+  const md = N.toMarkdown();
+  for (const text of [
+    'Codex 판단으로 추가·조정한 사항',
+    '알림·팝업·표시 조건 변경',
+    'T01~T41',
+    '수동 새로고침 시 잠금 해제',
+    '메타레벨',
+  ])
+    a(md.includes(text), text);
+  a.equal(require('./dist/notice-policy').allows('T08'), false);
+});
+const els = new Map(),
+  get = (id) => {
+    if (!els.has(id))
+      els.set(id, {
+        id,
+        innerHTML: '',
+        textContent: '',
+        hidden: false,
+        style: {},
+        attrs: {},
+        handlers: {},
+        setAttribute(k, v) {
+          this.attrs[k] = v;
+        },
+        classList: { add() {}, remove() {}, toggle() {} },
+        addEventListener(t, fn) {
+          (this.handlers[t] ??= []).push(fn);
+        },
+        showModal() {
+          this.open = true;
+        },
+        close() {
+          this.open = false;
+        },
+        getBoundingClientRect() {
+          return { left: 10, top: 10, width: 50, height: 50 };
+        },
+      });
+    return els.get(id);
+  },
+  doc = {
+    getElementById: get,
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    addEventListener() {},
+    body: { appendChild() {}, classList: { remove() {} } },
+  };
+const ctx = vm.createContext({
+  AutoData: D,
+  AutoEngine: {},
+  AutoProgression: P,
+  AutoWorld: W,
+  AutoPreparation: V,
+  AutoItems: I,
+  AutoAugments: A,
+  AutoNoticePolicy: require('./dist/notice-policy'),
+  AutoPatchNotes: N,
+  document: doc,
+  console,
+  setTimeout,
+  clearTimeout,
+  clearInterval,
+  localStorage: { setItem() {} },
+});
+const src = fs.readFileSync('dist/prototype.js', 'utf8');
+vm.runInContext(src.slice(0, src.lastIndexOf('\nload();')), ctx);
+for (const p of ['interaction-ui', 'content-ui', 'catalog-ui', 'run-flow-ui'])
+  vm.runInContext(fs.readFileSync('dist/' + p + '.js', 'utf8'), ctx);
+vm.runInContext(
+  "function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){} state=P.initialize({gold:25,health:75,units:[],shop:['C24']});setupRunFlowUI();setupCatalogUI();",
+  ctx,
+);
+test('catalog hub has4 routes; dedicated catalogs include all records and preserve prior tools', () => {
+  vm.runInContext('showCatalog()', ctx);
+  a.equal((get('modalContent').innerHTML.match(/data-catalog=/g) || []).length, 4);
+  vm.runInContext('showAugmentCatalog()', ctx);
+  a.equal((get('modalContent').innerHTML.match(/class="catalog-card augment-/g) || []).length, 36);
+  a(!get('modalContent').innerHTML.includes('data-augment='));
+  vm.runInContext('showItemCatalog()', ctx);
+  a.equal(
+    (get('modalContent').innerHTML.match(/class="catalog-card item-tier-/g) || []).length,
+    40,
+  );
+  for (const i of I.items) a(get('modalContent').innerHTML.includes(i.name));
+  vm.runInContext('showRoster()', ctx);
+  a.equal((get('modalContent').innerHTML.match(/data-free=/g) || []).length, 45);
+  a(get('modalContent').innerHTML.includes('아바돈'));
+  vm.runInContext('showBonds()', ctx);
+  a.equal((get('modalContent').innerHTML.match(/data-recommend=/g) || []).length, 16);
+  a(get('modalContent').innerHTML.includes('data-catalog-home'));
+});
+test('completion result renders exact2 choices and record-only notice with no ordinary next button', () => {
+  const s = state(6, 5);
+  combat(s);
+  ctx.saved = copy(s);
+  vm.runInContext('state=saved;showResult(state.lastResult)', ctx);
+  const html = get('modalContent').innerHTML;
+  a.equal((html.match(/data-completion=/g) || []).length, 2);
+  a(!html.includes('data-continue'));
+  a(html.includes('메타레벨(전체레벨) 경험치를 받지 않으며'));
+  vm.runInContext("P.chooseCompletion(state,'end');showCompletionSummary();", ctx);
+  a(get('modalContent').innerHTML.includes('기본 진행 구간 완료'));
+});
+test('shop preview is visible beside ownership/recommendations and disappears after actual merge', () => {
+  vm.runInContext(
+    "state=P.initialize({gold:25,health:75,units:[{id:'C24',star:1,uid:1,location:'board',pos:31},{id:'C24',star:1,uid:2,location:'bench',benchSlot:0}],shop:['C24']});state.recommendedBonds=['흑월'];nextUid=2;render();",
+    ctx,
+  );
+  const html = get('shop').innerHTML;
+  a(html.includes('구매 시 2성 합성'));
+  a(html.includes('owned-badge'));
+  a(html.includes('matched-bond'));
+  vm.runInContext("recruit('C24',false,0)", ctx);
+  a.equal(vm.runInContext('state.units.length', ctx), 1);
+  a.equal(vm.runInContext('state.units[0].star', ctx), 2);
+  a(!get('shop').innerHTML.includes('merge-preview'));
+});
+test('rendered supply outcome explicitly includes received/no extra gold and actual healedHP only', () => {
+  for (const [rng, value] of [
+    [() => 0.1, '+2 G'],
+    [() => 0.9, '미획득'],
+  ]) {
+    const s = state(1, 1);
+    supply(s, rng);
+    ctx.saved = s;
+    vm.runInContext('state=saved;showResult(state.lastResult)', ctx);
+    a(get('modalContent').innerHTML.includes(value));
+    a(!get('modalContent').innerHTML.includes('전투 승리 체력 회복'));
+  }
+  const s = state();
+  s.health = 99;
+  combat(s);
+  ctx.saved = s;
+  vm.runInContext('state=saved;showResult(state.lastResult)', ctx);
+  a(get('modalContent').innerHTML.includes('+1 HP'));
+});
+test('patch UI shows same additional and notification records as exportedMD', () => {
+  vm.runInContext('showPatchNotes()', ctx);
+  a(get('modalContent').innerHTML.includes('Codex 판단으로 추가·조정한 사항'));
+  a(get('modalContent').innerHTML.includes('기존 공통 알림T01~T41'));
+});
+test('item tooltip uses top-layer within modal and returns safely to body when hidden', () => {
+  const el = get('itemPopover'),
+    modal = get('modal'),
+    anchor = {},
+    body = doc.body;
+  let open = false,
+    shows = 0,
+    hides = 0;
+  el.matches = () => open;
+  el.showPopover = () => {
+    open = true;
+    shows++;
+  };
+  el.hidePopover = () => {
+    open = false;
+    hides++;
+  };
+  modal.contains = (x) => x === anchor;
+  modal.appendChild = (x) => {
+    x.parentElement = modal;
+  };
+  body.appendChild = (x) => {
+    x.parentElement = body;
+  };
+  el.parentElement = body;
+  modal.open = true;
+  ctx.anchor = anchor;
+  vm.runInContext('raiseItemTooltip(anchor)', ctx);
+  a.equal(el.parentElement, modal);
+  a.equal(el.hidden, false);
+  a.equal(shows, 1);
+  vm.runInContext('raiseItemTooltip(anchor)', ctx);
+  a.equal(shows, 1);
+  vm.runInContext('hideItemDetail()', ctx);
+  a.equal(el.hidden, true);
+  a.equal(el.parentElement, body);
+  a.equal(hides, 1);
+  modal.open = false;
+});
+test('round transition wrapper delegates current node without changing state', () => {
+  const calls = [],
+    scene = vm.createContext({
+      AutoScreenEffects: { round: (p) => calls.push(p), cancel: (k) => calls.push(k) },
+      state: state(2, 1),
+      P,
+      $: () => ({ hidden: false }),
+    });
+  vm.runInContext(fs.readFileSync('dist/run-flow-ui.js', 'utf8'), scene);
+  const before = copy(scene.state);
+  vm.runInContext('showRoundTransition()', scene);
+  a.equal(calls.length, 1);
+  a.equal(calls[0].stage, 2);
+  a.equal(calls[0].round, 1);
+  a.deepEqual(scene.state, before);
+});
+test('round transition wrapper skips ended/hidden scenes and exposes scoped cancellation', () => {
+  const calls = [],
+    scene = vm.createContext({
+      AutoScreenEffects: { round: (p) => calls.push(p), cancel: (k) => calls.push(k) },
+      state: state(),
+      P,
+      $: () => ({ hidden: true }),
+    });
+  vm.runInContext(fs.readFileSync('dist/run-flow-ui.js', 'utf8'), scene);
+  vm.runInContext('showRoundTransition();cancelRoundTransition()', scene);
+  a.deepEqual(calls, ['round', 'stage']);
+});
+console.log('\n' + count + ' v0.15.10 regression tests passed.');

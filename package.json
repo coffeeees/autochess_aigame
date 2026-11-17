@@ -5,9 +5,13 @@
   "description": "PvE autochess prototype with 33 playable units, 40 equipment items and patch notes",
   "scripts": {
     "start": "node serve.cjs",
-    "test": "node test-all.cjs"
+    "test": "node test-all.cjs",
+    "format": "prettier --write \"dist/*.js\" \"dist/*.css\" \"*.cjs\" \"tools/*.cjs\""
   },
   "engines": {
     "node": ">=18"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3"
   }
 }

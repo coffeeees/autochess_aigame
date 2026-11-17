@@ -1,7 +1,79 @@
 'use strict';
-function showCatalog(){setRecruitOpen(false);showModal(`<section class="catalog-home"><span class="eyebrow">AUTOCHESS · COLLECTION</span><h2>도감</h2><div class="catalog-menu"><button data-catalog="characters"><b>캐릭터 도감</b><span>45명 · 해금 33명</span></button><button data-catalog="bonds"><b>유대 도감</b><span>28종 · 소속 동료와 추천</span></button><button data-catalog="augments"><b>증강 도감</b><span>36종 · 등급과 효과</span></button><button data-catalog="items"><b>아이템 도감</b><span>40종 · 능력치와 고유 효과</span></button></div></section>`);}
-function catalogHeading(title,description){return `<button data-catalog-home>← 도감 메뉴</button><h2>${title}</h2><p>${description}</p>`;}
-function showAugmentCatalog(){showModal(catalogHeading('증강 도감 · 36종','정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다.')+AutoAugments.config.tierOrder.map(tier=>`<section class="catalog-section"><h3>${AutoAugments.tiers[tier].name}</h3><div class="catalog-grid">${AutoAugments.augments.filter(a=>a.tier===tier).map(a=>`<article class="catalog-card augment-${tier}"><small>${a.id}${state.augments.includes(a.id)?' · 이번 원정 선택':''}</small><h3>${a.icon} ${esc(a.name)}</h3><p>${esc(a.text)}</p></article>`).join('')}</div></section>`).join(''));}
-function showItemCatalog(){showModal(catalogHeading('아이템 도감 · 40종','티어별 능력치와 고유 효과를 확인합니다. 장착·해제는 실제 보관함과 캐릭터 정보창에서 진행합니다.')+[1,2,3].map(tier=>`<section class="catalog-section"><h3>${tier}티어</h3><div class="catalog-grid">${AutoItems.items.filter(i=>i.tier===tier).map(i=>`<article class="catalog-card item-tier-${tier}"><div class="catalog-item-heading">${itemIcon(i.id)}<div><small>${i.id} · ${tier}티어</small><h3>${esc(i.name)}</h3></div></div><b>${esc(i.statsText)}</b>${i.effect?`<p>${esc(i.effect).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')}</p>`:''}<small>보유 ${state.inventory.filter(x=>x.id===i.id).length}개</small></article>`).join('')}</div></section>`).join(''));}
-function raiseItemTooltip(anchor){const el=$('itemPopover'),modal=$('modal'),host=modal.open&&modal.contains(anchor)?modal:document.body;if(el.parentElement!==host){if(el.matches?.(':popover-open'))el.hidePopover();host.appendChild(el);}el.setAttribute('popover','manual');el.hidden=false;if(typeof el.showPopover==='function'&&!el.matches(':popover-open'))el.showPopover();}
-function setupCatalogUI(){$('modal').addEventListener('close',hideItemDetail);$('modalContent').addEventListener('click',e=>{if(e.target.closest('[data-catalog-home]')){showCatalog();return;}const button=e.target.closest('[data-catalog]');if(button)({characters:showRoster,bonds:showBonds,augments:showAugmentCatalog,items:showItemCatalog}[button.dataset.catalog])?.();});}
+function showCatalog() {
+  setRecruitOpen(false);
+  showModal(
+    `<section class="catalog-home"><span class="eyebrow">AUTOCHESS · COLLECTION</span><h2>도감</h2><div class="catalog-menu"><button data-catalog="characters"><b>캐릭터 도감</b><span>45명 · 해금 33명</span></button><button data-catalog="bonds"><b>유대 도감</b><span>28종 · 소속 동료와 추천</span></button><button data-catalog="augments"><b>증강 도감</b><span>36종 · 등급과 효과</span></button><button data-catalog="items"><b>아이템 도감</b><span>40종 · 능력치와 고유 효과</span></button></div></section>`,
+  );
+}
+function catalogHeading(title, description) {
+  return `<button data-catalog-home>← 도감 메뉴</button><h2>${title}</h2><p>${description}</p>`;
+}
+function showAugmentCatalog() {
+  showModal(
+    catalogHeading(
+      '증강 도감 · 36종',
+      '정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다.',
+    ) +
+      AutoAugments.config.tierOrder
+        .map(
+          (tier) =>
+            `<section class="catalog-section"><h3>${AutoAugments.tiers[tier].name}</h3><div class="catalog-grid">${AutoAugments.augments
+              .filter((a) => a.tier === tier)
+              .map(
+                (a) =>
+                  `<article class="catalog-card augment-${tier}"><small>${a.id}${state.augments.includes(a.id) ? ' · 이번 원정 선택' : ''}</small><h3>${a.icon} ${esc(a.name)}</h3><p>${esc(a.text)}</p></article>`,
+              )
+              .join('')}</div></section>`,
+        )
+        .join(''),
+  );
+}
+function showItemCatalog() {
+  showModal(
+    catalogHeading(
+      '아이템 도감 · 40종',
+      '티어별 능력치와 고유 효과를 확인합니다. 장착·해제는 실제 보관함과 캐릭터 정보창에서 진행합니다.',
+    ) +
+      [1, 2, 3]
+        .map(
+          (tier) =>
+            `<section class="catalog-section"><h3>${tier}티어</h3><div class="catalog-grid">${AutoItems.items
+              .filter((i) => i.tier === tier)
+              .map(
+                (i) =>
+                  `<article class="catalog-card item-tier-${tier}"><div class="catalog-item-heading">${itemIcon(i.id)}<div><small>${i.id} · ${tier}티어</small><h3>${esc(i.name)}</h3></div></div><b>${esc(i.statsText)}</b>${i.effect ? `<p>${esc(i.effect).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</p>` : ''}<small>보유 ${state.inventory.filter((x) => x.id === i.id).length}개</small></article>`,
+              )
+              .join('')}</div></section>`,
+        )
+        .join(''),
+  );
+}
+function raiseItemTooltip(anchor) {
+  const el = $('itemPopover'),
+    modal = $('modal'),
+    host = modal.open && modal.contains(anchor) ? modal : document.body;
+  if (el.parentElement !== host) {
+    if (el.matches?.(':popover-open')) el.hidePopover();
+    host.appendChild(el);
+  }
+  el.setAttribute('popover', 'manual');
+  el.hidden = false;
+  if (typeof el.showPopover === 'function' && !el.matches(':popover-open')) el.showPopover();
+}
+function setupCatalogUI() {
+  $('modal').addEventListener('close', hideItemDetail);
+  $('modalContent').addEventListener('click', (e) => {
+    if (e.target.closest('[data-catalog-home]')) {
+      showCatalog();
+      return;
+    }
+    const button = e.target.closest('[data-catalog]');
+    if (button)
+      ({
+        characters: showRoster,
+        bonds: showBonds,
+        augments: showAugmentCatalog,
+        items: showItemCatalog,
+      })[button.dataset.catalog]?.();
+  });
+}

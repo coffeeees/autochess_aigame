@@ -12,26 +12,26 @@
 
 | ID | 상태 | 항목 | 판정근거/남은결정 | 소스 |
 | --- | --- | --- | --- | --- |
-| U01 | 구현완료 | 4/5코스트12명해금 | 승인한임시스킬판정·상점·합성·유대·전투연결.정식밸런스확정별도. | [dist/data.js:15](../dist/data.js#L15) · `playable:true` |
-| U02 | 임시 구현 | 16종 새 유대 임시 밸런스 v1 | 요청된 모든 단계 효과 적용. 정식 밸런스 확정은 별도. 4~5코스트도 해금하여6인단계활성가능. | [dist/data.js:44](../dist/data.js#L44) · `experimentalSynergyEffects:` |
-| U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [dist/encounters.js:24](../dist/encounters.js#L24) · `function newProfile` |
+| U01 | 구현완료 | 4/5코스트12명해금 | 승인한임시스킬판정·상점·합성·유대·전투연결.정식밸런스확정별도. | [dist/data.js:80](../dist/data.js#L80) · `playable:true` |
+| U02 | 임시 구현 | 16종 새 유대 임시 밸런스 v1 | 요청된 모든 단계 효과 적용. 정식 밸런스 확정은 별도. 4~5코스트도 해금하여6인단계활성가능. | [dist/data.js:264](../dist/data.js#L264) · `experimentalSynergyEffects:` |
+| U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [dist/encounters.js:135](../dist/encounters.js#L135) · `function newProfile` |
 | U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [dist/index.html:1](../dist/index.html#L1) · `id="homeGachaBtn"` |
 | U05 | 미구현 | 특수아이템2칸 | 예약UI aria-disabled만존재.일반아이템을넣는로직없음. | [dist/index.html:5](../dist/index.html#L5) · `class="special-inventory"` |
-| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [dist/prototype.js:17](../dist/prototype.js#L17) · `function icon` |
+| U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 기존SVG간소화아바타.도트제작계획은0.15.9문서에서이번작업제외. | [dist/prototype.js:146](../dist/prototype.js#L146) · `function icon` |
 | U07 | 범위밖/계획확인필요 | 픽셀자유이동/전투격자제거 | 0.15.9요청에서철회/보류.현재구현완료해야할결함으로분류하지않음. | [docs/AUTOCHESS_v0.15.9_Codex_수정지시서.md:55](archive/requests/AUTOCHESS_v0.15.9_Codex_수정지시서.md#L55) · `## 7.` |
-| U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [dist/data.js:39](../dist/data.js#L39) · `combat:` |
-| U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [dist/data.js:43](../dist/data.js#L43) · `run:` |
-| U10 | 임시 | 레벨요구XP/라운드자동XP | 구매4G/4XP와레벨구조는구현,roundXpProvisional:true. | [dist/progression.js:8](../dist/progression.js#L8) · `roundXpProvisional:true` |
-| U11 | 임시 | 소환수세부값/주변범위/돌진규칙 | plague/fire설정및lightning인라인값,반경/경로테스트가정. | [dist/engine.js:71](../dist/engine.js#L71) · `summon(owner,kind)` |
-| U12 | 확인필요 | 보스고유전투설계 | boss 플래그와보상분기는있지만별도스킬/통계보정없음.정규보스콘텐츠범위미정. | [dist/encounters.js:16](../dist/encounters.js#L16) · `boss:P.roundType` |
-| U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [dist/engine.js:131](../dist/engine.js#L131) · `if(u.regen&&u.hp>0)` |
-| U14 | 확인필요 | I28치명피해방지의출처예외 | ITEM_PROC/아이템파생피해에서는I28생존가드가제외됨.문구의포괄범위와최종의도확인필요.D09참조. | [dist/item-effects.js:10](../dist/item-effects.js#L10) · `function preventDeath` |
-| U15 | 확인필요 | I38회피타중첩/I28파생피해예외 | 현재코드가회피판정전에연속기본공격중첩진행.고유효과의문구와세부조건검토필요. | [dist/item-effects.js:20](../dist/item-effects.js#L20) · `if(has(source,'I38'))` |
-| U16 | 확인필요 | 전투중재접속복원정책 | 진행전투를prepare로복구,중간전투상태저장없음.이미획득보너스는장부에남음.의도된재시도정책인지확인필요. | [dist/prototype.js:9](../dist/prototype.js#L9) · `if(state.roundPhase==='combat')` |
-| U17 | 확인필요 | 저장실패표시/손상세이브복구 | save catch가무시,load검증실패시fresh.사용자복구/클라우드백업없음.이번에알림을추가하지않음. | [dist/prototype.js:10](../dist/prototype.js#L10) · `function save` |
-| U18 | 기획확인필요 | 정규기록/순위/최종클리어영구보상 | 6-5선택과로컬영수증있음.전역최고기록·온라인순위·완료보상규칙은구현확인안됨.새기획필요. | [dist/run-flow-ui.js:4](../dist/run-flow-ui.js#L4) · `function showCompletionSummary` |
-| U19 | 임시 | 7+구간무한밸런스 | 기존구간패턴반복,적scale상한없음/성급3상한,보상fallback유지.의도된장기수치밸런스미확정. | [dist/encounters.js:15](../dist/encounters.js#L15) · `const wave=` |
-| U20 | 범위밖/계획확인필요 | 온라인대전/서버저장/가챠운영 | 싱글로컬프로토타입에서관련경로확인안됨.요청없이기능을추정하지않음. | [dist/prototype.js:2](../dist/prototype.js#L2) · `KEY='starlight-onecost-v1'` |
+| U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [dist/data.js:219](../dist/data.js#L219) · `combat:` |
+| U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [dist/data.js:257](../dist/data.js#L257) · `run:` |
+| U10 | 임시 | 레벨요구XP/라운드자동XP | 구매4G/4XP와레벨구조는구현,roundXpProvisional:true. | [dist/progression.js:21](../dist/progression.js#L21) · `roundXpProvisional:true` |
+| U11 | 임시 | 소환수세부값/주변범위/돌진규칙 | plague/fire설정및lightning인라인값,반경/경로테스트가정. | [dist/engine.js:453](../dist/engine.js#L453) · `summon(owner,kind)` |
+| U12 | 확인필요 | 보스고유전투설계 | boss 플래그와보상분기는있지만별도스킬/통계보정없음.정규보스콘텐츠범위미정. | [dist/encounters.js:99](../dist/encounters.js#L99) · `boss:P.roundType` |
+| U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [dist/engine.js:1053](../dist/engine.js#L1053) · `if(u.regen&&u.hp>0)` |
+| U14 | 확인필요 | I28치명피해방지의출처예외 | ITEM_PROC/아이템파생피해에서는I28생존가드가제외됨.문구의포괄범위와최종의도확인필요.D09참조. | [dist/item-effects.js:43](../dist/item-effects.js#L43) · `function preventDeath` |
+| U15 | 확인필요 | I38회피타중첩/I28파생피해예외 | 현재코드가회피판정전에연속기본공격중첩진행.고유효과의문구와세부조건검토필요. | [dist/item-effects.js:161](../dist/item-effects.js#L161) · `if(has(source,'I38'))` |
+| U16 | 확인필요 | 전투중재접속복원정책 | 진행전투를prepare로복구,중간전투상태저장없음.이미획득보너스는장부에남음.의도된재시도정책인지확인필요. | [dist/prototype.js:93](../dist/prototype.js#L93) · `if(state.roundPhase==='combat')` |
+| U17 | 확인필요 | 저장실패표시/손상세이브복구 | save catch가무시,load검증실패시fresh.사용자복구/클라우드백업없음.이번에알림을추가하지않음. | [dist/prototype.js:103](../dist/prototype.js#L103) · `function save` |
+| U18 | 기획확인필요 | 정규기록/순위/최종클리어영구보상 | 6-5선택과로컬영수증있음.전역최고기록·온라인순위·완료보상규칙은구현확인안됨.새기획필요. | [dist/run-flow-ui.js:13](../dist/run-flow-ui.js#L13) · `function showCompletionSummary` |
+| U19 | 임시 | 7+구간무한밸런스 | 기존구간패턴반복,적scale상한없음/성급3상한,보상fallback유지.의도된장기수치밸런스미확정. | [dist/encounters.js:89](../dist/encounters.js#L89) · `const wave=` |
+| U20 | 범위밖/계획확인필요 | 온라인대전/서버저장/가챠운영 | 싱글로컬프로토타입에서관련경로확인안됨.요청없이기능을추정하지않음. | [dist/prototype.js:7](../dist/prototype.js#L7) · `KEY='starlight-onecost-v1'` |
 
 
 ## 2. 미해금 캐릭터(현재 없음)

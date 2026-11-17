@@ -1,103 +1,891 @@
 'use strict';
-const D=AutoData,E=AutoEngine,C=D.prototypeConfig,P=AutoProgression,W=AutoWorld,V=AutoPreparation,$=id=>document.getElementById(id),KEY='starlight-onecost-v1';
-let state,selected=null,selectedBattle=null,battle=null,lastBattle=null,timer=null,speed=1,nextUid=0,message='',lastResult=null;
-const categoryNames={bond:'유대'},traitColors={화염:'#d87e59',빙결:'#8fc7de',번개:'#d6bb60',대지:'#b69368',바람:'#7eb9a0',물:'#6bace0',신성:'#d5c480',암흑:'#9a87bb',독:'#9ab66c',혈마법:'#c57a87'};
-const short=id=>W.combatSpec(id).name.split(' ').at(-1),num=n=>Math.round(n).toLocaleString('ko-KR'),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function make(id,location='bench',pos=-1,star=1){if(!D.playableIds.includes(id))throw Error('비활성 캐릭터');return {uid:++nextUid,id,location,pos,star};}
-function fresh(){state=P.initialize({health:C.run.startingHealth,gold:C.economy.startingGold,units:V.startingRoster().map(id=>make(id)),shop:['C02','C04','C09','C10','C11']});W.configureNewRun(state,selectedDifficulty);V.normalize(state);}
-
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));const occupied=new Set();if((s?.version===1||s?.version===2)&&(s.boardColumns===undefined||[7,8].includes(s.boardColumns))&&Array.isArray(s.units)&&s.units.every(u=>{if(!D.playableIds.includes(u.id)||!['board','bench'].includes(u.location)||!Number.isInteger(u.uid)||u.star<1||u.star>3)return false;if(u.location==='board'){if(!Number.isInteger(u.pos)||u.pos<(s.boardColumns||8)*4||u.pos>=(s.boardColumns||8)*8||occupied.has(u.pos))return false;occupied.add(u.pos);}return true;})&&s.units.filter(u=>u.location==='board').length<=(s.augments?.includes('P12')?11:10)&&s.units.filter(u=>u.location==='bench').length<=22&&new Set(s.units.map(u=>u.uid)).size===s.units.length&&Number.isFinite(s.gold)&&s.gold>=0&&s.wave>=1&&Array.isArray(s.shop)&&s.shop.every(id=>id===null||D.playableIds.includes(id))){state=W.ensureRunDefaults(P.migrate(s));if(state.roundPhase==='combat')state.roundPhase='prepare';P.ensureAugment(state);nextUid=Math.max(0,...s.units.map(u=>u.uid));return;}}catch{}fresh();}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}}
-let noticeTimer=null,noticeExitTimer=null;
-function tell(s){message=s;const notice=$('message');clearTimeout(noticeTimer);clearTimeout(noticeExitTimer);notice.textContent=s;if(!s){notice.classList.remove('is-visible');notice.hidden=true;return;}notice.hidden=false;notice.getBoundingClientRect?.();notice.classList.add('is-visible');noticeTimer=setTimeout(()=>{notice.classList.remove('is-visible');noticeExitTimer=setTimeout(()=>{notice.hidden=true;},180);},3000);}
-function notify(id,text){if(!AutoNoticePolicy.allows(id))return false;tell(text);return true;}
-function deployed(){return state.units.filter(u=>u.location==='board');}
-function enemyFormation(){const before=state.enemyEncounter?.key,units=W.encounter(state);if(state.enemyEncounter?.key!==before)save();return units;}
-
-function icon(id,summonKind=null){if(W.byId(id))return enemyIcon(id,summonKind);const t=D.byId(id),color=traitColors[t.trait],index=Number(id.slice(1));if(summonKind)return `<svg class="avatar" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="7" fill="#22252a"/><path d="M15 50Q8 31 25 17Q29 5 35 17Q58 31 49 50Z" fill="${summonKind==='fire'?'#e9a15f':summonKind==='lightning'?'#dcc858':summonKind==='specter'?'#b5c7e8':'#9dbd77'}" stroke="#14151b" stroke-width="4"/><circle cx="25" cy="33" r="3"/><circle cx="39" cy="33" r="3"/><path d="M27 42h10" stroke="#111" stroke-width="3"/></svg>`;
- const skin=t.race==='언데드'?'#dad9ca':t.race==='마족'?'#c29bae':t.race==='용족'?'#a9bca0':index===10?'#d2af90':'#f0cfb6';const hair=['#383139','#a8a5af','#282a36','#d7d5a4','#6b91a0','#b8b1bf','#a78c59','#454657','#74836f','#8d7360','#a67d58','#d2c9b7'][(index-1)%12];
- let race='';if(['마족','용족'].includes(t.race))race='<path d="M15 21L12 5L26 17M39 17L52 5L49 24" fill="#c4bca7" stroke="#17151d" stroke-width="3"/>';if(t.race==='수인')race='<path d="M13 26L11 6L29 19M37 19L54 6L52 26" fill="#b59d82" stroke="#17151d" stroke-width="3"/>';if(t.race==='천족')race='<ellipse cx="32" cy="7" rx="14" ry="4" fill="none" stroke="#e4d48c" stroke-width="3"/>';
- const ears=t.race==='엘프'?'<path d="M17 29L5 22L15 40M47 29L59 22L49 40" fill="'+skin+'" stroke="#17151d" stroke-width="3"/>':'';
- const beard=t.race==='드워프'?'<path d="M17 38Q32 62 47 38L43 54L32 61L21 54Z" fill="'+hair+'" stroke="#17151d" stroke-width="2"/>':'';
- let weapon=t.job==='궁수'?'<path d="M55 20Q39 36 55 55L55 20M48 39H62" fill="none" stroke="#ddc79b" stroke-width="3"/>':t.job==='기사'?'<path d="M45 37L60 40L59 54L52 61L44 54Z" fill="#9aabb6" stroke="#17151d" stroke-width="3"/>':t.job==='암살자'?'<path d="M8 39L3 55L12 49Z" fill="#d7dce0" stroke="#17151d" stroke-width="2"/>':['소환사','주술사','마법사'].includes(t.job)?'<path d="M56 27V59" stroke="#bca482" stroke-width="4"/><circle cx="56" cy="25" r="6" fill="'+color+'" stroke="#17151d" stroke-width="3"/>':'<path d="M6 57V31L10 25L14 31V52M2 49H18" fill="#bcc5cf" stroke="#17151d" stroke-width="2"/>';
- return `<svg class="avatar" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="7" fill="#282830"/>${race}<path d="M10 63Q10 43 32 43Q54 43 54 63Z" fill="${color}" stroke="#17151d" stroke-width="3"/>${ears}<ellipse cx="32" cy="29" rx="18" ry="20" fill="${skin}" stroke="#17151d" stroke-width="3"/><path d="M14 27Q10 8 31 10Q54 8 51 28L42 22L37 26L28 21L22 26Z" fill="${hair}" stroke="#17151d" stroke-width="2"/><circle cx="25" cy="32" r="2.5" fill="#20202a"/><circle cx="39" cy="32" r="2.5" fill="#20202a"/><path d="M29 41H35" stroke="#20202a" stroke-width="2.5" stroke-linecap="round"/>${t.race==='언데드'?'<path d="M27 45v4M33 45v4M39 44v4" stroke="#48474b" stroke-width="2"/>':''}${beard}${weapon}</svg>`;
+const D = AutoData,
+  E = AutoEngine,
+  C = D.prototypeConfig,
+  P = AutoProgression,
+  W = AutoWorld,
+  V = AutoPreparation,
+  $ = (id) => document.getElementById(id),
+  KEY = 'starlight-onecost-v1';
+let state,
+  selected = null,
+  selectedBattle = null,
+  battle = null,
+  lastBattle = null,
+  timer = null,
+  speed = 1,
+  nextUid = 0,
+  message = '',
+  lastResult = null;
+const categoryNames = { bond: '유대' },
+  traitColors = {
+    화염: '#d87e59',
+    빙결: '#8fc7de',
+    번개: '#d6bb60',
+    대지: '#b69368',
+    바람: '#7eb9a0',
+    물: '#6bace0',
+    신성: '#d5c480',
+    암흑: '#9a87bb',
+    독: '#9ab66c',
+    혈마법: '#c57a87',
+  };
+const short = (id) => W.combatSpec(id).name.split(' ').at(-1),
+  num = (n) => Math.round(n).toLocaleString('ko-KR'),
+  esc = (s) =>
+    String(s).replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+    );
+function make(id, location = 'bench', pos = -1, star = 1) {
+  if (!D.playableIds.includes(id)) throw Error('비활성 캐릭터');
+  return { uid: ++nextUid, id, location, pos, star };
 }
-function pawn(u,combat=false,artContext=null){const name=u.bonus?'보물 슬라임':u.summon?u.name:short(u.id),hp=combat?Math.max(0,u.hp/u.stats.HP*100):100,mp=combat&&u.stats.MP?u.mp/u.stats.MP*100:0,shield=combat?u.shields.reduce((a,s)=>a+s.amount,0):0,sel=combat?selectedBattle===u.uid:selected===u.uid;return `<div style="--cost-color:${D.costColors[W.combatSpec(u.id).cost||1]}" class="pawn ${u.team==='enemy'?'enemy':''} ${u.summon?'summon':''} ${u.bonus?'bonus-enemy':''} ${sel?'selected':''}">${!u.summon&&(artContext||(typeof AutoCharacterArt!=='undefined'&&AutoCharacterArt.portraits[u.id]&&u.team!=='enemy'))?characterArt(u.id,artContext||'field'):icon(u.id,u.summonKind)}<span class="stars">${u.bonus?'BONUS':u.boss?'BOSS':u.summon?'◆':'★'.repeat(u.star||1)}</span>${combat&&u.statuses.length?`<span class="status-mark">${esc(u.statuses.map(s=>s.label).join(' · '))}</span>`:''}${shield>0?`<span class="shield-mark">◈${num(shield)}</span>`:''}<span class="name">${esc(name)}</span><span class="bars"><span class="bar hp"><i style="width:${hp}%"></i></span><span class="bar mp"><i style="width:${mp}%"></i></span></span></div>`;}
-function characterArt(id,context){return typeof AutoCharacterArt!=='undefined'?AutoCharacterArt.render(id,D.byId(id).cost,context,icon(id)):icon(id);}
-function recruitCardMarkup(id,index){
- if(!id)return '<div class="recruit empty-offer" aria-label="구매한 빈 슬롯"></div>';
- const t=D.byId(id),matches=V.recommendedFor(state,id),owned=state.units.some(u=>u.id===id),preview=V.mergePreview(state,id);
- return `<button style="--cost-color:${D.costColors[t.cost]}" class="recruit ${owned?'owned':''} ${matches.length?'recommended':''} cost-art-${t.cost}" data-buy="${index}" ${battle||state.done||state.roundPhase!=='prepare'?'disabled':''} aria-label="${esc(t.name)} 구매 ${t.cost}G${matches.length?' · 추천 '+matches.join(', '):''}" title="${esc(t.name)} · 구매 ${t.cost}G"><span class="recruit-art">${characterArt(id,'shop')}</span>${preview?`<strong class="merge-preview" aria-label="구매 시 ${preview}성 합성">${'★'.repeat(preview)}</strong>`:''}<span class="recruit-info"><b class="name">${esc(t.name)}</b><span class="tags">${t.bonds.map((bond,i)=>`<span class="${matches.includes(bond)?'matched-bond':''}" data-bond-tag="${esc(bond)}"><i aria-hidden="true">${['♟','⚔','✦'][i]}</i>${esc(bond)}</span>`).join('')}</span>${owned?'<em class="owned-badge">✓ 보유 중</em>':''}</span></button>`;
-}
-
-function bondMarkup(s,withRecommend=false){return `<div class="bond ${s.tier?'active':''}" ${!withRecommend?`data-bond-peek="${esc(s.id)}" tabindex="0" role="group" aria-label="${esc(s.name)} 조합 상세"`:""}><div class="bond-top"><span class="bond-icon">${s.category==='race'?'◇':s.category==='job'?'⚔':'✦'}</span><b>${withRecommend?`<button class="bond-members-button" data-bond-members="${esc(s.id)}" aria-label="${esc(s.name)} 캐릭터 보기">${s.name} <small>캐릭터 보기 ↗</small></button>`:s.name}</b>${withRecommend?`<button class="bond-recommend ${(state.recommendedBonds||[]).includes(s.id)?'chosen':''}" aria-pressed="${(state.recommendedBonds||[]).includes(s.id)}" data-recommend="${s.id}">${(state.recommendedBonds||[]).includes(s.id)?'추천 해제':'추천'}</button>`:''}${!withRecommend?`<button class="bond-quick-recommend ${(state.recommendedBonds||[]).includes(s.id)?'chosen':''}" data-recommend-bond="${esc(s.id)}" aria-label="${esc(s.name)} ${(state.recommendedBonds||[]).includes(s.id)?'추천 해제':'추천'}" aria-pressed="${(state.recommendedBonds||[]).includes(s.id)}">${(state.recommendedBonds||[]).includes(s.id)?'★':'☆'}</button>`:''}<span class="count">${s.count} / ${s.thresholds.find(n=>n>s.count)||s.thresholds.at(-1)}</span></div><div class="stages">${s.stages.map(stage=>`<span class="stage ${stage.achieved?'achieved':''} ${!stage.reachable?'locked':''}" title="${stage.reachable?'현재 풀에서 달성 가능':`현재 해금 풀 최대 ${s.possible}종 · 달성 불가능`} ${stage.achieved?'달성':''}">${stage.threshold}${!stage.reachable?' 🔒':''}</span>`).join('')}</div><p class="bond-concept">${s.concept} <span class="temporary">임시 v1</span></p></div>`;}
-function currentBonds(){return battle?battle.synergySnapshot.ally:D.evaluateSynergies(deployed());}
-function renderBonds(){const all=currentBonds();const ordered=Object.keys(categoryNames).flatMap(category=>all.filter(s=>s.category===category&&s.count>0).sort((a,b)=>Number(b.tier>0)-Number(a.tier>0)||b.count-a.count));$('synergies').innerHTML=[...ordered.filter(s=>s.tier>0),...ordered.filter(s=>!s.tier)].map(s=>bondMarkup(s)).join('')||'<p class="empty">동료를 배치하면 해당 조합이 표시됩니다.</p>';$('bondMode').textContent='16종 유대 · 임시 밸런스 v1 적용';}
-function renderBoard(){if(battle){getCombatView().render(battle);return;}if(combatView?.finishing&&lastBattle===combatView.battle){combatView.render(lastBattle);return;}combatView?.reset();const list=battle?battle.alive():[...(state.roundPhase==='prepare'&&!state.done?enemyFormation():[]).map((u,i)=>({...u,uid:-1-i,team:'enemy'})),...deployed()];$('board').innerHTML=Array.from({length:C.board.columns*C.board.rows},(_,p)=>{const u=list.find(x=>x.pos===p),friendly=p>=C.board.columns*C.board.playerFirstRow,own=u&&u.team!=='enemy';return `<button class="cell ${friendly?'player-zone':''} ${p>=(C.board.playerFirstRow-1)*C.board.columns&&p<C.board.playerFirstRow*C.board.columns?'frontier':''} ${u?.team==='enemy'?'occupied-enemy':''}" data-pos="${p}" ${u&&battle?`data-combat="${u.uid}"`:''} ${own&&!battle?`data-unit-uid="${u.uid}" data-unit-drop="${u.uid}"`:''} ${!battle&&(!friendly||state.done)?'disabled':''} aria-label="${u?`${u.team==='enemy'?'적':'아군'} ${u.summon?u.name:W.combatSpec(u.id).name}`:`${Math.floor(p/C.board.columns)+1}행 ${p%C.board.columns+1}열 빈 칸`}">${u?pawn(u,!!battle):''}</button>`;}).join('');}
-
-function selectedUnit(){if(battle&&selectedBattle)return battle.units.find(u=>u.uid===selectedBattle);return state.units.find(u=>u.uid===selected);}
-function renderDetail(){if(dragAction?.active){$('unitPopover').hidden=true;return;}const u=selectedUnit();if(!u){$('unitPopover').hidden=true;$('detail').innerHTML='<p class="hint">캐릭터를 클릭하면 능력치 10종과 스킬을 확인할 수 있습니다.</p>';return;}$('unitPopover').hidden=false;const t=W.combatSpec(u.id),s=battle&&u.stats?battle.stats(u):P.previewStats(state,u);$('detail').innerHTML=`<div class="identity">${icon(u.id,u.summonKind)}<div><span class="temporary">테스트용 제안</span><h3>${u.summon?u.name:t.name}</h3><span class="tags">${u.id} · ${t.race} / ${t.job} / ${t.trait}</span></div></div><div class="stat-grid">${D.statKeys.map(k=>`<span>${k}<b>${['CTH','CTC','DOD'].includes(k)?num(s[k])+'%':k==='AS'?s[k].toFixed(2):num(s[k])}</b></span>`).join('')}</div>${battle&&u.stats?`<p>HP ${num(u.hp)} / ${num(u.stats.HP)}<br>MP ${num(u.mp)} / ${num(u.stats.MP)}</p><p>${u.statuses.map(e=>`<span class="status-chip">${esc(e.label)} ${Math.max(0,e.expires-battle.time).toFixed(1)}s</span>`).join('')||'상태이상 없음'}</p>`:''}${unitEquipment(u)}<p class="skill-copy"><strong>${D.skills[u.skillId||u.id].name} · ${D.skills[u.skillId||u.id].coefficient}</strong><br>${D.skills[u.skillId||u.id].text}</p><p class="hint">해당 유대 · 전장 기준: ${currentBonds().filter(b=>D.hasBond(t,b.name)).map(b=>`${b.name} ${b.threshold?b.threshold+'명 단계':'미달성'}`).join(' · ')}</p>`;}
-function renderDebug(){renderDamage();const b=battle||lastBattle;if(!b){$('combatStats').innerHTML='<span>전투 시작 후 HP·MP·효과·로그가 표시됩니다.</span>';$('unitDebug').innerHTML='';return;}$('combatStats').innerHTML=[['물리 피해',b.statsTotal.physical],['마법 피해',b.statsTotal.magic],['회복',b.statsTotal.healing],['생성 보호막',b.statsTotal.shielding],['소환',b.statsTotal.summons]].map(([label,value])=>`<span>${label}<b>${num(value)}</b></span>`).join('');$('unitDebug').innerHTML=b.units.map(u=>`<tr class="${u.dead?'dead':''}" data-debug="${u.uid}"><td>${u.team==='ally'?'아군':'적'} · ${u.name}${u.summon?' (소환수)':''}</td><td>${num(u.hp)} / ${num(u.stats.HP)}</td><td>${num(u.mp)} / ${num(u.stats.MP)}</td><td>${u.statuses.map(e=>esc(e.label)).join(' · ')||'—'}${u.shields.length?` · ◈ ${num(u.shields.reduce((a,s)=>a+s.amount,0))}`:''}</td><td>${num(u.damageDone)}</td></tr>`).join('');$('logCount').textContent=`· ${b.logs.length}개`;$('log').innerHTML=b.logs.filter(r=>r.kind!=='move').slice(-40).reverse().map(r=>`<div class="${r.kind}"><span class="log-time">${r.time.toFixed(1)}s</span>${esc(r.message)}</div>`).join('');}
-function render(){const on=!!battle;$('wave').textContent=P.label(state);$('phase').textContent=on?'자동 전투 중':state.done?'원정 종료':state.roundPhase==='augment'?'증강 선택':P.roundType(state.stage,state.round)==='SUPPLY'?'안전 보급':'배치 준비';renderHealth(state.health);$('gold').textContent=state.gold+' G';$('capacity').textContent=deployed().length+' / '+P.capacity(state);$('deploymentCount').textContent=$('capacity').textContent;$('opponent').textContent=P.roundType(state.stage,state.round)==='SUPPLY'?'안전 보급':P.roundType(state.stage,state.round)==='BOSS'?'보스 · '+enemyFormation().length+'명':enemyFormation().length+'명';renderBonds();renderBoard();renderDetail();V.normalize(state);const bench=state.units.filter(u=>u.location==='bench');$('benchCount').textContent=`${bench.length} / ${C.board.benchSize}`;$('bench').innerHTML=Array.from({length:C.board.benchSize},(_,i)=>{const u=bench.find(x=>x.benchSlot===i);return `<button class="bench-slot" data-bench-index="${i}" data-bench="${u?.uid||''}" ${u?`data-unit-uid="${u.uid}" data-unit-drop="${u.uid}"`:''} aria-label="${u?D.byId(u.id).name+' 선택':'대기석 '+(i+1)+'번 빈 칸'}" ${on||state.done?'disabled':''}>${u?pawn(u,false,'bench'):''}</button>`;}).join('')+benchOverflowMarkup(bench);$('shop').innerHTML=state.shop.map(recruitCardMarkup).join('');$('fightBtn').disabled=on||state.done;$('rerollBtn').disabled=on||state.done||state.gold<P.rerollCost(state);$('sellBtn').disabled=on||state.done||!selected;$('recruitBtn').disabled=on||state.done;$('quickMana').disabled=on;$('experimental').disabled=on;$('message').textContent=message;$('recruitGold').textContent=state.gold+' G';$('rerollBtn').textContent='새로고침 '+P.rerollCost(state)+'G';renderOdds();if(typeof renderShopLock==='function')renderShopLock();renderDebug();renderProgression();if(typeof renderBattleUI==='function')renderBattleUI();if(typeof flushMergeEffects==='function')flushMergeEffects();}
-
-function chooseMergeAnchor(copies){return copies.find(u=>u.location==='board')||copies.reduce((a,b)=>(a.benchSlot??Infinity)<=(b.benchSlot??Infinity)?a:b);}
-function merge(origin=null){V.normalize(state);let changed=true;while(changed){changed=false;for(const id of D.playableIds){for(let star=1;star<C.economy.maxStar;star++){const copies=state.units.filter(u=>u.id===id&&u.star===star);if(copies.length>=C.economy.mergeCopies){const keep=chooseMergeAnchor(copies),remove=copies.filter(u=>u!==keep).slice(0,2);if(typeof queueMergeEffect==='function')queueMergeEffect(keep,remove,origin);P.releaseEquipment(state,remove.map(u=>u.uid));state.units=state.units.filter(u=>!remove.includes(u));keep.star++;selected=null;notify('T08',`${D.byId(id).name} ${keep.star}성 자동 합성`);changed=true;break;}}if(changed)break;}}}
-function recruit(id,free=false,slot=-1){const origin=document.querySelector?.(slot>=0?'[data-buy="'+slot+'"]':'[data-free="'+id+'"]')?.getBoundingClientRect?.();if(!V.shopPool(state).includes(id)){notify('T04','이미 3성을 보유한 캐릭터는 판매 후 다시 영입할 수 있습니다.');return;}if(battle||state.done||state.roundPhase!=='prepare'||!D.playableIds.includes(id))return;const canMerge=state.units.filter(u=>u.id===id&&u.star===1).length>=2;if(state.units.filter(u=>u.location==='bench').length>=C.board.benchSize&&!canMerge){notify('T05','대기석이 가득 찼습니다.');return;}if(!free&&state.gold<D.byId(id).cost){notify('T06','골드가 부족합니다.');return;}if(!free)state.gold-=D.byId(id).cost;state.units.push(make(id));V.normalize(state);if(slot>=0)state.shop[slot]=null;notify('T07',`${D.byId(id).name} 영입${free?' · 무료 테스트':''}`);merge(origin);V.normalize(state);V.refreshShop(state);save();render();}
-function roll(){V.rollShop(state);}
-
-function select(uid){if(battle||state.done||state.roundPhase!=='prepare')return;selected=selected===uid?null:uid;render();}
-function place(pos){if(battle||state.done||state.roundPhase!=='prepare')return;const unit=state.units.find(u=>u.location==='board'&&u.pos===pos);if(unit)select(unit.uid);else {selected=null;render();}}
-
-function toBench(){selected=null;render();}
-
-function showModal(html){if(typeof cancelMergeEffects==='function')cancelMergeEffects();if(typeof finishDrag==='function')finishDrag();if(typeof closeBattleOverlays==='function')closeBattleOverlays();$('modal').classList.toggle('compact-modal',html.includes('deployment-warning'));$('closeModal').disabled=false;$('modalContent').innerHTML=html;if(!$('modal').open)$('modal').showModal();}
-function showBonds(){setRecruitOpen(false);const entries=currentBonds();showModal(`<button data-catalog-home>← 도감 메뉴</button><h2>유대 도감 · 전체 조합 · 16종</h2><p id="recommendationStatus" role="status">추천 ${(state.recommendedBonds||[]).length} / 3 · 선택한 버튼을 다시 누르면 해제됩니다.</p><p>전투 시작 시 서로 다른 캐릭터 ID로 계산합니다. 사망 후에도 단계는 유지됩니다. 가장 높은 달성 단계 하나만 적용하며, 서로 다른 유대는 함께 적용할 수 있습니다.</p><p>🔒 현재 1·2·3코스트 풀로 달성 불가능한 단계입니다. 모든 단계는 데이터에 보존됩니다. <span class="temporary">임시 밸런스 v1 · 전투 적용</span></p><div class="modal-bonds">${Object.entries(categoryNames).map(([category,label])=>`<section><h3>${label}</h3>${entries.filter(s=>s.category===category).map(s=>bondMarkup(s,true)).join('')}</section>`).join('')}</div>`);}
-function showRoster(){
- const activeCost=cost=>`<section class="roster-cost-group" data-roster-cost="${cost}"><h3 class="cost-divider" style="--cost-color:${D.costColors[cost]}"><span>${cost}코스트</span></h3><div class="recruit-grid">${D.roster.filter(t=>t.playable&&t.cost===cost).map(t=>`<div class="roster-card"><div class="roster-portrait">${costOrb(t.id)}${icon(t.id)}</div><div><b>${t.id} · ${t.name}</b><small>${t.race} / ${t.job} / ${t.trait}</small><small>유대 ${t.bonds.join(" / ")}</small><small>HP ${t.stats.HP} · MP ${t.stats.MP}</small><button data-inspect="${t.id}">상세</button> <button data-free="${t.id}" ${battle||state.done||!V.shopPool(state).includes(t.id)?'disabled':''}>무료 테스트 영입</button></div></div>`).join('')}</div></section>`;
- const lockedCost=cost=>`<section class="roster-cost-group" data-roster-cost="${cost}"><h3 class="cost-divider" style="--cost-color:${D.costColors[cost]}"><span>${cost}코스트 · 미해금 초안</span></h3><div class="locked-roster">${D.roster.filter(t=>!t.playable&&t.cost===cost).map(t=>`<div class="draft-card"><b>🔒 ${t.id} · ${t.cost}G · ${t.name}</b><span class="draft-tags">${t.race} / ${t.job} / ${t.trait} · 유대 ${t.bonds.join(" / ")}</span><div class="draft-stats">${D.statKeys.map(k=>`<span>${k} <b>${t.stats[k]}${['CTH','CTC','DOD'].includes(k)?'%':''}</b></span>`).join('')}</div><strong>${D.skills[t.id].name}</strong><p>${D.skills[t.id].text}</p><button data-inspect="${t.id}">초안 상세</button><small>스킬 실행 TODO · 상점/전투 비활성</small></div>`).join('')}</div></section>`;
- showModal(`<button data-catalog-home>← 도감 메뉴</button><h2>캐릭터 도감 · 45종</h2><p>C01–C45의 이름·능력치·스킬은 테스트용 제안입니다. 아래 무료 영입은 기능 확인용입니다. 1~5코스트 45명 모두 영입·배치·전투가 가능합니다.</p>${[1,2,3,4,5].map(activeCost).join('')}`);
-}
-function inspect(id,backBond=null){const t=D.byId(id);showModal(`<h2>${t.id} · ${t.name}</h2><span class="temporary">이름·능력치·스킬은 테스트용 제안</span><div class="catalog-portrait">${t.playable?characterArt(id,'detail'):`<div class="draft-placeholder">${t.id}<small>${t.cost}G · 초안</small></div>`}</div><p>${t.race} / ${t.job} / ${t.trait} · ${t.cost}G<br>유대 ${t.bonds.join(" / ")}</p><div class="stat-grid">${D.statKeys.map(k=>`<span>${k}<b>${t.stats[k]}${['CTH','CTC','DOD'].includes(k)?'%':''}</b></span>`).join('')}</div><h3>${D.skills[id].name} · ${D.skills[id].coefficient}</h3><p>${D.skills[id].text}</p>${!t.playable?`<p class="temporary">상점·실제 전투 비활성 / 스킬 실행 미구현</p><h3>TODO · 초안 확인 사항</h3><ul>${D.skills[id].todo.map(note=>`<li>${note}</li>`).join('')}</ul>`:''}<button ${backBond?`data-bond-members="${esc(backBond)}"`:"data-back-roster"}>← ${backBond?esc(backBond)+" 캐릭터":"도감"}</button>`);$('modal').scrollTop=0;}
-function showRules(){showModal(`<h2>테스트용 임시 규칙</h2><p>아래 수치는 확정 밸런스가 아닙니다. 16종 유대의 임시 밸런스 v1 효과는 항상 적용됩니다. 종족·직업·특성은 캐릭터 메타데이터이며 이전 28종 수치 효과는 적용하지 않습니다.</p><ul>${C.todos.map(t=>`<li>TODO · ${t}</li>`).join('')}</ul><h3>기본 전투</h3><p>피해 = 원시 피해 × 100 / (100 + GD). 물리·마법 공통 적용.<br>공격 시 MP +12, 피격 시 +6. 마법 계열은 1.5배. 기본 시작 MP 0, 시전 시 MP 0으로 초기화.<br>기본 공격만 일반 치명타·회피 적용. 스킬 중 C04는 별도 치명타 규칙 사용.<br>7×8 전장, 4방향 BFS 이동, 동일 시전자·동일 상태는 지속시간 갱신.<br>공격·스킬은 uid 순서로 처리. 패배·시간초과 모두 원정대 체력 감소.</p><h3>실험용 유대 효과 설정</h3><p>${C.experimentalSynergyEffects.notice} 상위 단계 하나만 적용합니다. 상세 효과는 유대 도감에서 확인하세요.</p><pre class="rule-box">${esc(JSON.stringify(C,null,2))}</pre>`);}
-function startBattle(confirmed=false){if(typeof cancelPresentationEffects==='function')cancelPresentationEffects();
- if(state.roundPhase==='complete'){showCompletionSummary();return;}if(state.roundPhase==='result'){showResult(state.lastResult);return;}
- if(state.roundPhase==='augment'){showAugment();return;}
- if(state.roundPhase==='supply'){showSupply();return;}
- if(battle||state.done||state.roundPhase!=='prepare')return;
- setRecruitOpen(false);hideItemDetail();
- if(P.roundType(state.stage,state.round)==='SUPPLY'){lastBattle=null;P.beginSupply(state);save();render();showSupply();return;}
- if(!deployed().length||deployed().length>P.capacity(state))return;
- if(confirmed!==true&&V.deploymentStatus(state).shouldWarn){showDeploymentWarning();return;}
- selected=null;selectedBattle=null;lastBattle=null;
- globalThis.performance?.mark('autochess:fight-click');battle=new E.Battle(deployed().map(u=>({...u,bonuses:P.unitBonuses(state,u.uid),itemIds:P.unitItemIds(state,u.uid)})),enemyFormation(),{quickMana:$('quickMana').checked,experimental:$('experimental').checked,allyModifiers:P.allyModifiers(state),enemyDamageMultiplier:W.difficulty(state.difficulty).enemyDamageMultiplier,onUnitKilled:(unit,source)=>{if(source?.team==='ally'){const loot=W.claimBonusLoot(state,unit);if(loot){save();$('gold').textContent=state.gold+' G';notify('T39','보너스 몬스터 처치! '+(loot.kind==='item'?P.itemById(loot.itemId).name:'+'+loot.amount+'G'));renderProgression();}}}});
- state.roundPhase='combat';save();notify('T37','자동 전투 중 · 기존 캐릭터 스킬과 유대 판정은 유지됩니다.');render();globalThis.performance?.mark('autochess:initial-actors-render');if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>globalThis.performance?.mark('autochess:first-animation-frame'));runTimer();
+function fresh() {
+  state = P.initialize({
+    health: C.run.startingHealth,
+    gold: C.economy.startingGold,
+    units: V.startingRoster().map((id) => make(id)),
+    shop: ['C02', 'C04', 'C09', 'C10', 'C11'],
+  });
+  W.configureNewRun(state, selectedDifficulty);
+  V.normalize(state);
 }
 
-function runTimer(fallback=false){clearInterval(timer);if(!fallback&&typeof startCombatWorker==='function'&&startCombatWorker())return;let last=Date.now(),credit=0;timer=setInterval(()=>{if(!battle)return;const now=Date.now();credit+=Math.max(0,now-last)*speed;last=now;let result=null;const frameEvents=[];while(credit>=C.combat.tickSeconds*1000&&!result){credit-=C.combat.tickSeconds*1000;result=battle.tick();if(!battle.startupFirstTick){battle.startupFirstTick=true;globalThis.performance?.mark('autochess:fallback-first-tick');}frameEvents.push(...battle.events);if(frameEvents.length>1600)frameEvents.splice(0,frameEvents.length-1600);}battle.events=frameEvents;if(document.hidden){if(result)endBattle(result);return;}$('clock').textContent=`${battle.time.toFixed(1)}초 · ${speed}배속`;renderBoard();getCombatView().consume(battle,battle.events);if(!battle.startupFirstPaint){battle.startupFirstPaint=true;globalThis.performance?.mark('autochess:fallback-first-tick-frame');}renderDetail();renderDebug();if(result)endBattle(result);},C.combat.tickSeconds*1000/speed);}
-function endBattle(result){
- if(!battle)return;
- clearInterval(timer);if(typeof stopCombatClock==='function')stopCombatClock();timer=null;lastBattle=battle;battle=null;if(typeof warmCombatWorker==='function')warmCombatWorker();selectedBattle=null;
- lastResult=P.settleRound(state,{...result,survivingEnemies:lastBattle.alive('enemy').filter(u=>!u.summon).length,skillUses:{...lastBattle.skillUses},damageRows:V.damageRows(lastBattle)});
- state.lastDamageRows=lastResult.damageRows;const finished=lastBattle,receipt=lastResult;if(document.hidden||$('gameView').hidden){combatView?.reset();save();render();$('clock').textContent='직전 전투 '+result.time+'초';return;}getCombatView().finish(finished,()=>{if(state.lastResult!==receipt||$('gameView').hidden)return;if(document.hidden){render();return;}render();if(typeof presentRoundHealth==='function')void presentRoundHealth(receipt).then(ok=>{if(ok&&state.lastResult===receipt&&!$('gameView').hidden)showResult(receipt);});else showResult(receipt);});save();notify('T40',(lastResult.win?'승리':'후퇴')+' · 총 보상 +'+(lastResult.totalEarned??lastResult.total)+'G');render();$('clock').textContent='직전 전투 '+result.time+'초';
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    const occupied = new Set();
+    if (
+      (s?.version === 1 || s?.version === 2) &&
+      (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
+      Array.isArray(s.units) &&
+      s.units.every((u) => {
+        if (
+          !D.playableIds.includes(u.id) ||
+          !['board', 'bench'].includes(u.location) ||
+          !Number.isInteger(u.uid) ||
+          u.star < 1 ||
+          u.star > 3
+        )
+          return false;
+        if (u.location === 'board') {
+          if (
+            !Number.isInteger(u.pos) ||
+            u.pos < (s.boardColumns || 8) * 4 ||
+            u.pos >= (s.boardColumns || 8) * 8 ||
+            occupied.has(u.pos)
+          )
+            return false;
+          occupied.add(u.pos);
+        }
+        return true;
+      }) &&
+      s.units.filter((u) => u.location === 'board').length <=
+        (s.augments?.includes('P12') ? 11 : 10) &&
+      s.units.filter((u) => u.location === 'bench').length <= 22 &&
+      new Set(s.units.map((u) => u.uid)).size === s.units.length &&
+      Number.isFinite(s.gold) &&
+      s.gold >= 0 &&
+      s.wave >= 1 &&
+      Array.isArray(s.shop) &&
+      s.shop.every((id) => id === null || D.playableIds.includes(id))
+    ) {
+      state = W.ensureRunDefaults(P.migrate(s));
+      if (state.roundPhase === 'combat') state.roundPhase = 'prepare';
+      P.ensureAugment(state);
+      nextUid = Math.max(0, ...s.units.map((u) => u.uid));
+      return;
+    }
+  } catch {}
+  fresh();
+}
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {}
+}
+let noticeTimer = null,
+  noticeExitTimer = null;
+function tell(s) {
+  message = s;
+  const notice = $('message');
+  clearTimeout(noticeTimer);
+  clearTimeout(noticeExitTimer);
+  notice.textContent = s;
+  if (!s) {
+    notice.classList.remove('is-visible');
+    notice.hidden = true;
+    return;
+  }
+  notice.hidden = false;
+  notice.getBoundingClientRect?.();
+  notice.classList.add('is-visible');
+  noticeTimer = setTimeout(() => {
+    notice.classList.remove('is-visible');
+    noticeExitTimer = setTimeout(() => {
+      notice.hidden = true;
+    }, 180);
+  }, 3000);
+}
+function notify(id, text) {
+  if (!AutoNoticePolicy.allows(id)) return false;
+  tell(text);
+  return true;
+}
+function deployed() {
+  return state.units.filter((u) => u.location === 'board');
+}
+function enemyFormation() {
+  const before = state.enemyEncounter?.key,
+    units = W.encounter(state);
+  if (state.enemyEncounter?.key !== before) save();
+  return units;
 }
 
-function showResult(r){if(!r)return;const supply=r.type==='SUPPLY',title=r.done?'원정 종료':supply?'안전 보급 완료':r.type==='BOSS'?(r.win?'보스 전투 승리':'보스 전투 패배'):(r.win?'전투 승리':'전투 패배');showModal(`<div class="result ${!supply?'result-with-damage':''}"><div class="result-overview"><span class="eyebrow">라운드 ${r.key} · ${r.type}</span><br><strong>${supply?'▣':r.win?'✦':'◇'}</strong><h2>${title}</h2><p>${supply?`전투 없이 아이템 ${r.extra?.itemIds?.length||1}개를 획득했습니다. HP 피해 없음.`:r.reason==='timeout'?'시간초과 · 기존 패배 규칙 적용':r.reason==='draw'?'동시 전멸 · 기존 패배 규칙 적용':r.time+'초 전투 종료'}</p><div class="reward-total"><span>이번 라운드 획득 골드</span><b>+${r.totalEarned??r.total} G</b></div><div class="reward-row"><span>${r.type==='BOSS'?'보스 ':''}기본 보상</span><b>+${r.base} G</b></div><div class="reward-row reward-streak"><span>${r.winStreak||0}연승 보너스 · 최대5G</span><b>+${r.streakBonus||0} G</b></div>${r.augmentGold?`<div class="reward-row"><span>증강 승리 보너스</span><b>+${r.augmentGold} G</b></div>`:''}<div class="reward-row"><span>이자 · 보상 전 ${r.before}G / 최대 5G</span><b>+${r.interest} G</b></div>${supply?`<div class="reward-row"><span>보급 추가 골드</span><b>${r.bonusGold?'+'+r.bonusGold+' G':'미획득'}</b></div>`:''}${r.healing?`<div class="reward-row"><span>전투 승리 체력 회복</span><b>+${r.healing} HP</b></div>`:''}${r.extra?`<div class="loot-reward">${r.type==='BOSS'?'보스 추가 보상':'보급 아이템'} · ${r.extra.kind==='items'?r.extra.itemIds.map(id=>P.itemById(id).name).join(' · '):r.extra.kind==='item'?P.itemById(r.extra.itemId).icon+' '+P.itemById(r.extra.itemId).name:'추가 골드 +'+r.bonusGold+'G'}</div>`:''}${r.bossItem?`<div class="loot-reward">보스 확정 아이템 · ${P.itemById(r.bossItem.itemId).name}</div>`:''}${r.monsterLoot?`<div class="bonus-loot-banner">전투 중 보너스 몬스터 · ${r.monsterLoot.kind==='item'?P.itemById(r.monsterLoot.itemId).name:'+'+r.monsterLoot.amount+'G'} (처치 시 지급 완료)</div>`:''}<div class="reward-row"><span>현재 골드</span><b>${r.gold} G</b></div><div class="reward-row"><span>남은 체력</span><b>♥ ${r.health}${r.loss?' (−'+r.loss+')':''}</b></div><div class="reward-row"><span>라운드 XP <small>임시</small></span><b>+${r.xpGained} XP${r.levelAfter>r.levelBefore?' · 레벨 '+r.levelAfter+' 달성':''}</b></div></div>${!supply?`<section class="result-damage"><h3>아군 딜량</h3>${damageChart(r.damageRows||[])}${state.completionChoice==='pending'?completionActions():''}</section>`:''}${state.completionChoice==='pending'?'':`<button class="primary" data-continue>${r.done?'결과 확인':'다음 라운드 →'}</button>`}</div>`);}
+function icon(id, summonKind = null) {
+  if (W.byId(id)) return enemyIcon(id, summonKind);
+  const t = D.byId(id),
+    color = traitColors[t.trait],
+    index = Number(id.slice(1));
+  if (summonKind)
+    return `<svg class="avatar" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="7" fill="#22252a"/><path d="M15 50Q8 31 25 17Q29 5 35 17Q58 31 49 50Z" fill="${summonKind === 'fire' ? '#e9a15f' : summonKind === 'lightning' ? '#dcc858' : summonKind === 'specter' ? '#b5c7e8' : '#9dbd77'}" stroke="#14151b" stroke-width="4"/><circle cx="25" cy="33" r="3"/><circle cx="39" cy="33" r="3"/><path d="M27 42h10" stroke="#111" stroke-width="3"/></svg>`;
+  const skin =
+    t.race === '언데드'
+      ? '#dad9ca'
+      : t.race === '마족'
+        ? '#c29bae'
+        : t.race === '용족'
+          ? '#a9bca0'
+          : index === 10
+            ? '#d2af90'
+            : '#f0cfb6';
+  const hair = [
+    '#383139',
+    '#a8a5af',
+    '#282a36',
+    '#d7d5a4',
+    '#6b91a0',
+    '#b8b1bf',
+    '#a78c59',
+    '#454657',
+    '#74836f',
+    '#8d7360',
+    '#a67d58',
+    '#d2c9b7',
+  ][(index - 1) % 12];
+  let race = '';
+  if (['마족', '용족'].includes(t.race))
+    race =
+      '<path d="M15 21L12 5L26 17M39 17L52 5L49 24" fill="#c4bca7" stroke="#17151d" stroke-width="3"/>';
+  if (t.race === '수인')
+    race =
+      '<path d="M13 26L11 6L29 19M37 19L54 6L52 26" fill="#b59d82" stroke="#17151d" stroke-width="3"/>';
+  if (t.race === '천족')
+    race = '<ellipse cx="32" cy="7" rx="14" ry="4" fill="none" stroke="#e4d48c" stroke-width="3"/>';
+  const ears =
+    t.race === '엘프'
+      ? '<path d="M17 29L5 22L15 40M47 29L59 22L49 40" fill="' +
+        skin +
+        '" stroke="#17151d" stroke-width="3"/>'
+      : '';
+  const beard =
+    t.race === '드워프'
+      ? '<path d="M17 38Q32 62 47 38L43 54L32 61L21 54Z" fill="' +
+        hair +
+        '" stroke="#17151d" stroke-width="2"/>'
+      : '';
+  let weapon =
+    t.job === '궁수'
+      ? '<path d="M55 20Q39 36 55 55L55 20M48 39H62" fill="none" stroke="#ddc79b" stroke-width="3"/>'
+      : t.job === '기사'
+        ? '<path d="M45 37L60 40L59 54L52 61L44 54Z" fill="#9aabb6" stroke="#17151d" stroke-width="3"/>'
+        : t.job === '암살자'
+          ? '<path d="M8 39L3 55L12 49Z" fill="#d7dce0" stroke="#17151d" stroke-width="2"/>'
+          : ['소환사', '주술사', '마법사'].includes(t.job)
+            ? '<path d="M56 27V59" stroke="#bca482" stroke-width="4"/><circle cx="56" cy="25" r="6" fill="' +
+              color +
+              '" stroke="#17151d" stroke-width="3"/>'
+            : '<path d="M6 57V31L10 25L14 31V52M2 49H18" fill="#bcc5cf" stroke="#17151d" stroke-width="2"/>';
+  return `<svg class="avatar" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="7" fill="#282830"/>${race}<path d="M10 63Q10 43 32 43Q54 43 54 63Z" fill="${color}" stroke="#17151d" stroke-width="3"/>${ears}<ellipse cx="32" cy="29" rx="18" ry="20" fill="${skin}" stroke="#17151d" stroke-width="3"/><path d="M14 27Q10 8 31 10Q54 8 51 28L42 22L37 26L28 21L22 26Z" fill="${hair}" stroke="#17151d" stroke-width="2"/><circle cx="25" cy="32" r="2.5" fill="#20202a"/><circle cx="39" cy="32" r="2.5" fill="#20202a"/><path d="M29 41H35" stroke="#20202a" stroke-width="2.5" stroke-linecap="round"/>${t.race === '언데드' ? '<path d="M27 45v4M33 45v4M39 44v4" stroke="#48474b" stroke-width="2"/>' : ''}${beard}${weapon}</svg>`;
+}
+function pawn(u, combat = false, artContext = null) {
+  const name = u.bonus ? '보물 슬라임' : u.summon ? u.name : short(u.id),
+    hp = combat ? Math.max(0, (u.hp / u.stats.HP) * 100) : 100,
+    mp = combat && u.stats.MP ? (u.mp / u.stats.MP) * 100 : 0,
+    shield = combat ? u.shields.reduce((a, s) => a + s.amount, 0) : 0,
+    sel = combat ? selectedBattle === u.uid : selected === u.uid;
+  return `<div style="--cost-color:${D.costColors[W.combatSpec(u.id).cost || 1]}" class="pawn ${u.team === 'enemy' ? 'enemy' : ''} ${u.summon ? 'summon' : ''} ${u.bonus ? 'bonus-enemy' : ''} ${sel ? 'selected' : ''}">${!u.summon && (artContext || (typeof AutoCharacterArt !== 'undefined' && AutoCharacterArt.portraits[u.id] && u.team !== 'enemy')) ? characterArt(u.id, artContext || 'field') : icon(u.id, u.summonKind)}<span class="stars">${u.bonus ? 'BONUS' : u.boss ? 'BOSS' : u.summon ? '◆' : '★'.repeat(u.star || 1)}</span>${combat && u.statuses.length ? `<span class="status-mark">${esc(u.statuses.map((s) => s.label).join(' · '))}</span>` : ''}${shield > 0 ? `<span class="shield-mark">◈${num(shield)}</span>` : ''}<span class="name">${esc(name)}</span><span class="bars"><span class="bar hp"><i style="width:${hp}%"></i></span><span class="bar mp"><i style="width:${mp}%"></i></span></span></div>`;
+}
+function characterArt(id, context) {
+  return typeof AutoCharacterArt !== 'undefined'
+    ? AutoCharacterArt.render(id, D.byId(id).cost, context, icon(id))
+    : icon(id);
+}
+function recruitCardMarkup(id, index) {
+  if (!id) return '<div class="recruit empty-offer" aria-label="구매한 빈 슬롯"></div>';
+  const t = D.byId(id),
+    matches = V.recommendedFor(state, id),
+    owned = state.units.some((u) => u.id === id),
+    preview = V.mergePreview(state, id);
+  return `<button style="--cost-color:${D.costColors[t.cost]}" class="recruit ${owned ? 'owned' : ''} ${matches.length ? 'recommended' : ''} cost-art-${t.cost}" data-buy="${index}" ${battle || state.done || state.roundPhase !== 'prepare' ? 'disabled' : ''} aria-label="${esc(t.name)} 구매 ${t.cost}G${matches.length ? ' · 추천 ' + matches.join(', ') : ''}" title="${esc(t.name)} · 구매 ${t.cost}G"><span class="recruit-art">${characterArt(id, 'shop')}</span>${preview ? `<strong class="merge-preview" aria-label="구매 시 ${preview}성 합성">${'★'.repeat(preview)}</strong>` : ''}<span class="recruit-info"><b class="name">${esc(t.name)}</b><span class="tags">${t.bonds.map((bond, i) => `<span class="${matches.includes(bond) ? 'matched-bond' : ''}" data-bond-tag="${esc(bond)}"><i aria-hidden="true">${['♟', '⚔', '✦'][i]}</i>${esc(bond)}</span>`).join('')}</span>${owned ? '<em class="owned-badge">✓ 보유 중</em>' : ''}</span></button>`;
+}
 
-function resetRun(){if(typeof stopCombatClock==='function')stopCombatClock();if(typeof cancelPresentationEffects==='function')cancelPresentationEffects();combatView?.reset();setRecruitOpen(false);hideItemDetail();clearInterval(timer);battle=null;lastBattle=null;selected=null;selectedBattle=null;nextUid=0;fresh();save();$('quickMana').checked=false;$('experimental').checked=false;$('clock').textContent='진형을 준비하세요';notify('T41','새 원정 · 원하는 동료를 영입해 보세요.');render();$('modal').close();}
-$('board').addEventListener('click',e=>{const cell=e.target.closest('[data-pos]');if(!cell)return;if(battle){if(cell.dataset.combat){selectedBattle=Number(cell.dataset.combat);renderDetail();renderBoard();}}else place(Number(cell.dataset.pos));});
-$('bench').addEventListener('click',e=>{const slot=e.target.closest('[data-bench]');if(slot?.dataset.bench)select(Number(slot.dataset.bench));});
-$('shop').addEventListener('click',e=>{const button=e.target.closest('[data-buy]');if(button){const i=Number(button.dataset.buy);recruit(state.shop[i],false,i);}});
-$('sellBtn').onclick=()=>sellUnit(selected);
-$('rerollBtn').onclick=()=>{if(battle||!V.manualReroll(state))return;save();render();};
-function renderSpeedButton(){const count=speed===1?1:speed===2?2:3;$('speedBtn').innerHTML=[1,2,3].map(i=>'<span aria-hidden="true" class="'+(i<=count?'lit':'')+'">❯</span>').join('');$('speedBtn').title='전투 배속 · '+speed+'배';$('speedBtn').setAttribute('aria-label','전투 배속 '+speed+'배');}
-$('fightBtn').onclick=startBattle;$('speedBtn').onclick=()=>{speed=speed===1?2:speed===2?4:1;renderSpeedButton();if(battle)runTimer();};
-$('bondsBtn').onclick=showBonds;$('rosterBtn').onclick=()=>showCatalog();$('recruitBtn').onclick=showRoster;$('rulesBtn').onclick=showRules;$('experimental').onchange=renderBonds;
-$('guideBtn').onclick=()=>showModal('<h2>AUTOCHESS 플레이 방법</h2><ol><li>상점에서 코스트에 맞는 골드로 동료를 구매하거나, 캐릭터 도감에서 무료 테스트 영입하세요.</li><li>캐릭터를 클릭하면 능력치와 장비가 표시됩니다. 드래그하여 전장/대기석으로 이동하세요.</li><li>아군 위에 놓으면 서로 교체합니다. 동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.</li><li>배속 옆 동료영입 버튼으로 상점을 열 수 있습니다. 보관함 아이템은 아군에게 드래그하여 최대3개 장착합니다.</li><li>같은 ID·같은 성급 3명은 자동 합성됩니다. HP/AD/AP가 성급마다 2배로 증가하는 임시 규칙입니다.</li><li>시작 MP 100%를 켜면 스킬을 빠르게 시험할 수 있습니다. 실제 전투 기본값은 MP 0입니다.</li><li>유대는 시작 진형 기준으로 고정됩니다. 16종 유대 임시 밸런스 v1의 가장 높은 달성 단계 효과가 적용됩니다.</li><li>전투 중 캐릭터를 클릭해 현재 상태를 확인하세요. 아래 전투 디버그에서 모든 유닛·소환수를 확인할 수 있습니다.</li></ol><p>일반 공격은 마법 계열도 AD 물리 피해입니다. 설정과 소환수의 세부 임시 수치는 ‘임시 규칙’에서 볼 수 있습니다. 기존 일러스트판 진행은 별도 저장되어 이 테스트판과 섞이지 않습니다.</p>');
-$('resetBtn').onclick=()=>showModal('<h2>새 원정을 시작할까요?</h2><p>이 1코스트 테스트판의 현재 진행·장비·증강·레벨을 새 원정으로 교체합니다.</p><button class="primary" data-reset>새 원정 시작</button>');
-$('closeModal').onclick=()=>$('modal').close();$('modalContent').addEventListener('click',e=>{if(e.target.closest('[data-cancel-deployment]')){$('modal').close();return;}if(e.target.closest('[data-confirm-deployment]')){state.skipDeploymentWarning=$('skipDeploymentWarning').checked;save();$('modal').close();startBattle(true);return;}const members=e.target.closest('[data-bond-members]');if(members){showBondMembers(members.dataset.bondMembers);return;}if(e.target.closest('[data-back-bonds]')){showBonds();return;}const recommend=e.target.closest('[data-recommend]'),augment=e.target.closest('[data-augment]');if(recommend){const result=V.toggleRecommendation(state,recommend.dataset.recommend);if(result.ok){save();render();showBonds();}else $('recommendationStatus').textContent=result.message;return;}if(augment){if(P.chooseAugment(state,augment.dataset.augment)){V.enterShop(state);save();$('modal').close();render();if(typeof showRoundTransition==='function')showRoundTransition();notify('T35','증강 선택 완료 · '+P.augmentById(augment.dataset.augment).name);}return;}const free=e.target.closest('[data-free]'),inspectButton=e.target.closest('[data-inspect]');if(free){recruit(free.dataset.free,true);showRoster();}if(inspectButton)inspect(inspectButton.dataset.inspect,inspectButton.dataset.fromBond||null);if(e.target.closest('[data-back-roster]'))showRoster();if(e.target.closest('[data-continue]'))continueRound();if(e.target.closest('[data-reset]'))resetRun();});
-$('unitDebug').addEventListener('click',e=>{const row=e.target.closest('[data-debug]');if(!row)return;const b=battle||lastBattle,u=b.units.find(u=>u.uid===Number(row.dataset.debug));if(battle){selectedBattle=u.uid;renderDetail();renderBoard();}else showModal(`<h2>${u.name} · 직전 전투</h2><p>${u.team==='ally'?'아군':'적'} · HP ${num(u.hp)} / ${num(u.stats.HP)} · MP ${num(u.mp)} / ${num(u.stats.MP)}<br>누적 피해 ${num(u.damageDone)} · 회복 ${num(u.healingDone)}</p><pre class="rule-box">${esc(JSON.stringify({stats:b.stats(u),statuses:u.statuses,shields:u.shields,synergies:b.synergySnapshot[u.team].filter(s=>s.tier&&s.members.includes(u.id)).map(s=>({name:s.name,threshold:s.threshold}))},null,2))}</pre>`);});
+function bondMarkup(s, withRecommend = false) {
+  return `<div class="bond ${s.tier ? 'active' : ''}" ${!withRecommend ? `data-bond-peek="${esc(s.id)}" tabindex="0" role="group" aria-label="${esc(s.name)} 조합 상세"` : ''}><div class="bond-top"><span class="bond-icon">${s.category === 'race' ? '◇' : s.category === 'job' ? '⚔' : '✦'}</span><b>${withRecommend ? `<button class="bond-members-button" data-bond-members="${esc(s.id)}" aria-label="${esc(s.name)} 캐릭터 보기">${s.name} <small>캐릭터 보기 ↗</small></button>` : s.name}</b>${withRecommend ? `<button class="bond-recommend ${(state.recommendedBonds || []).includes(s.id) ? 'chosen' : ''}" aria-pressed="${(state.recommendedBonds || []).includes(s.id)}" data-recommend="${s.id}">${(state.recommendedBonds || []).includes(s.id) ? '추천 해제' : '추천'}</button>` : ''}${!withRecommend ? `<button class="bond-quick-recommend ${(state.recommendedBonds || []).includes(s.id) ? 'chosen' : ''}" data-recommend-bond="${esc(s.id)}" aria-label="${esc(s.name)} ${(state.recommendedBonds || []).includes(s.id) ? '추천 해제' : '추천'}" aria-pressed="${(state.recommendedBonds || []).includes(s.id)}">${(state.recommendedBonds || []).includes(s.id) ? '★' : '☆'}</button>` : ''}<span class="count">${s.count} / ${s.thresholds.find((n) => n > s.count) || s.thresholds.at(-1)}</span></div><div class="stages">${s.stages.map((stage) => `<span class="stage ${stage.achieved ? 'achieved' : ''} ${!stage.reachable ? 'locked' : ''}" title="${stage.reachable ? '현재 풀에서 달성 가능' : `현재 해금 풀 최대 ${s.possible}종 · 달성 불가능`} ${stage.achieved ? '달성' : ''}">${stage.threshold}${!stage.reachable ? ' 🔒' : ''}</span>`).join('')}</div><p class="bond-concept">${s.concept} <span class="temporary">임시 v1</span></p></div>`;
+}
+function currentBonds() {
+  return battle ? battle.synergySnapshot.ally : D.evaluateSynergies(deployed());
+}
+function renderBonds() {
+  const all = currentBonds();
+  const ordered = Object.keys(categoryNames).flatMap((category) =>
+    all
+      .filter((s) => s.category === category && s.count > 0)
+      .sort((a, b) => Number(b.tier > 0) - Number(a.tier > 0) || b.count - a.count),
+  );
+  $('synergies').innerHTML =
+    [...ordered.filter((s) => s.tier > 0), ...ordered.filter((s) => !s.tier)]
+      .map((s) => bondMarkup(s))
+      .join('') || '<p class="empty">동료를 배치하면 해당 조합이 표시됩니다.</p>';
+  $('bondMode').textContent = '16종 유대 · 임시 밸런스 v1 적용';
+}
+function renderBoard() {
+  if (battle) {
+    getCombatView().render(battle);
+    return;
+  }
+  if (combatView?.finishing && lastBattle === combatView.battle) {
+    combatView.render(lastBattle);
+    return;
+  }
+  combatView?.reset();
+  const list = battle
+    ? battle.alive()
+    : [
+        ...(state.roundPhase === 'prepare' && !state.done ? enemyFormation() : []).map((u, i) => ({
+          ...u,
+          uid: -1 - i,
+          team: 'enemy',
+        })),
+        ...deployed(),
+      ];
+  $('board').innerHTML = Array.from({ length: C.board.columns * C.board.rows }, (_, p) => {
+    const u = list.find((x) => x.pos === p),
+      friendly = p >= C.board.columns * C.board.playerFirstRow,
+      own = u && u.team !== 'enemy';
+    return `<button class="cell ${friendly ? 'player-zone' : ''} ${p >= (C.board.playerFirstRow - 1) * C.board.columns && p < C.board.playerFirstRow * C.board.columns ? 'frontier' : ''} ${u?.team === 'enemy' ? 'occupied-enemy' : ''}" data-pos="${p}" ${u && battle ? `data-combat="${u.uid}"` : ''} ${own && !battle ? `data-unit-uid="${u.uid}" data-unit-drop="${u.uid}"` : ''} ${!battle && (!friendly || state.done) ? 'disabled' : ''} aria-label="${u ? `${u.team === 'enemy' ? '적' : '아군'} ${u.summon ? u.name : W.combatSpec(u.id).name}` : `${Math.floor(p / C.board.columns) + 1}행 ${(p % C.board.columns) + 1}열 빈 칸`}">${u ? pawn(u, !!battle) : ''}</button>`;
+  }).join('');
+}
+
+function selectedUnit() {
+  if (battle && selectedBattle) return battle.units.find((u) => u.uid === selectedBattle);
+  return state.units.find((u) => u.uid === selected);
+}
+function renderDetail() {
+  if (dragAction?.active) {
+    $('unitPopover').hidden = true;
+    return;
+  }
+  const u = selectedUnit();
+  if (!u) {
+    $('unitPopover').hidden = true;
+    $('detail').innerHTML =
+      '<p class="hint">캐릭터를 클릭하면 능력치 10종과 스킬을 확인할 수 있습니다.</p>';
+    return;
+  }
+  $('unitPopover').hidden = false;
+  const t = W.combatSpec(u.id),
+    s = battle && u.stats ? battle.stats(u) : P.previewStats(state, u);
+  $('detail').innerHTML =
+    `<div class="identity">${icon(u.id, u.summonKind)}<div><span class="temporary">테스트용 제안</span><h3>${u.summon ? u.name : t.name}</h3><span class="tags">${u.id} · ${t.race} / ${t.job} / ${t.trait}</span></div></div><div class="stat-grid">${D.statKeys.map((k) => `<span>${k}<b>${['CTH', 'CTC', 'DOD'].includes(k) ? num(s[k]) + '%' : k === 'AS' ? s[k].toFixed(2) : num(s[k])}</b></span>`).join('')}</div>${battle && u.stats ? `<p>HP ${num(u.hp)} / ${num(u.stats.HP)}<br>MP ${num(u.mp)} / ${num(u.stats.MP)}</p><p>${u.statuses.map((e) => `<span class="status-chip">${esc(e.label)} ${Math.max(0, e.expires - battle.time).toFixed(1)}s</span>`).join('') || '상태이상 없음'}</p>` : ''}${unitEquipment(u)}<p class="skill-copy"><strong>${D.skills[u.skillId || u.id].name} · ${D.skills[u.skillId || u.id].coefficient}</strong><br>${D.skills[u.skillId || u.id].text}</p><p class="hint">해당 유대 · 전장 기준: ${currentBonds()
+      .filter((b) => D.hasBond(t, b.name))
+      .map((b) => `${b.name} ${b.threshold ? b.threshold + '명 단계' : '미달성'}`)
+      .join(' · ')}</p>`;
+}
+function renderDebug() {
+  renderDamage();
+  const b = battle || lastBattle;
+  if (!b) {
+    $('combatStats').innerHTML = '<span>전투 시작 후 HP·MP·효과·로그가 표시됩니다.</span>';
+    $('unitDebug').innerHTML = '';
+    return;
+  }
+  $('combatStats').innerHTML = [
+    ['물리 피해', b.statsTotal.physical],
+    ['마법 피해', b.statsTotal.magic],
+    ['회복', b.statsTotal.healing],
+    ['생성 보호막', b.statsTotal.shielding],
+    ['소환', b.statsTotal.summons],
+  ]
+    .map(([label, value]) => `<span>${label}<b>${num(value)}</b></span>`)
+    .join('');
+  $('unitDebug').innerHTML = b.units
+    .map(
+      (u) =>
+        `<tr class="${u.dead ? 'dead' : ''}" data-debug="${u.uid}"><td>${u.team === 'ally' ? '아군' : '적'} · ${u.name}${u.summon ? ' (소환수)' : ''}</td><td>${num(u.hp)} / ${num(u.stats.HP)}</td><td>${num(u.mp)} / ${num(u.stats.MP)}</td><td>${u.statuses.map((e) => esc(e.label)).join(' · ') || '—'}${u.shields.length ? ` · ◈ ${num(u.shields.reduce((a, s) => a + s.amount, 0))}` : ''}</td><td>${num(u.damageDone)}</td></tr>`,
+    )
+    .join('');
+  $('logCount').textContent = `· ${b.logs.length}개`;
+  $('log').innerHTML = b.logs
+    .filter((r) => r.kind !== 'move')
+    .slice(-40)
+    .reverse()
+    .map(
+      (r) =>
+        `<div class="${r.kind}"><span class="log-time">${r.time.toFixed(1)}s</span>${esc(r.message)}</div>`,
+    )
+    .join('');
+}
+function render() {
+  const on = !!battle;
+  $('wave').textContent = P.label(state);
+  $('phase').textContent = on
+    ? '자동 전투 중'
+    : state.done
+      ? '원정 종료'
+      : state.roundPhase === 'augment'
+        ? '증강 선택'
+        : P.roundType(state.stage, state.round) === 'SUPPLY'
+          ? '안전 보급'
+          : '배치 준비';
+  renderHealth(state.health);
+  $('gold').textContent = state.gold + ' G';
+  $('capacity').textContent = deployed().length + ' / ' + P.capacity(state);
+  $('deploymentCount').textContent = $('capacity').textContent;
+  $('opponent').textContent =
+    P.roundType(state.stage, state.round) === 'SUPPLY'
+      ? '안전 보급'
+      : P.roundType(state.stage, state.round) === 'BOSS'
+        ? '보스 · ' + enemyFormation().length + '명'
+        : enemyFormation().length + '명';
+  renderBonds();
+  renderBoard();
+  renderDetail();
+  V.normalize(state);
+  const bench = state.units.filter((u) => u.location === 'bench');
+  $('benchCount').textContent = `${bench.length} / ${C.board.benchSize}`;
+  $('bench').innerHTML =
+    Array.from({ length: C.board.benchSize }, (_, i) => {
+      const u = bench.find((x) => x.benchSlot === i);
+      return `<button class="bench-slot" data-bench-index="${i}" data-bench="${u?.uid || ''}" ${u ? `data-unit-uid="${u.uid}" data-unit-drop="${u.uid}"` : ''} aria-label="${u ? D.byId(u.id).name + ' 선택' : '대기석 ' + (i + 1) + '번 빈 칸'}" ${on || state.done ? 'disabled' : ''}>${u ? pawn(u, false, 'bench') : ''}</button>`;
+    }).join('') + benchOverflowMarkup(bench);
+  $('shop').innerHTML = state.shop.map(recruitCardMarkup).join('');
+  $('fightBtn').disabled = on || state.done;
+  $('rerollBtn').disabled = on || state.done || state.gold < P.rerollCost(state);
+  $('sellBtn').disabled = on || state.done || !selected;
+  $('recruitBtn').disabled = on || state.done;
+  $('quickMana').disabled = on;
+  $('experimental').disabled = on;
+  $('message').textContent = message;
+  $('recruitGold').textContent = state.gold + ' G';
+  $('rerollBtn').textContent = '새로고침 ' + P.rerollCost(state) + 'G';
+  renderOdds();
+  if (typeof renderShopLock === 'function') renderShopLock();
+  renderDebug();
+  renderProgression();
+  if (typeof renderBattleUI === 'function') renderBattleUI();
+  if (typeof flushMergeEffects === 'function') flushMergeEffects();
+}
+
+function chooseMergeAnchor(copies) {
+  return (
+    copies.find((u) => u.location === 'board') ||
+    copies.reduce((a, b) => ((a.benchSlot ?? Infinity) <= (b.benchSlot ?? Infinity) ? a : b))
+  );
+}
+function merge(origin = null) {
+  V.normalize(state);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const id of D.playableIds) {
+      for (let star = 1; star < C.economy.maxStar; star++) {
+        const copies = state.units.filter((u) => u.id === id && u.star === star);
+        if (copies.length >= C.economy.mergeCopies) {
+          const keep = chooseMergeAnchor(copies),
+            remove = copies.filter((u) => u !== keep).slice(0, 2);
+          if (typeof queueMergeEffect === 'function') queueMergeEffect(keep, remove, origin);
+          P.releaseEquipment(
+            state,
+            remove.map((u) => u.uid),
+          );
+          state.units = state.units.filter((u) => !remove.includes(u));
+          keep.star++;
+          selected = null;
+          notify('T08', `${D.byId(id).name} ${keep.star}성 자동 합성`);
+          changed = true;
+          break;
+        }
+      }
+      if (changed) break;
+    }
+  }
+}
+function recruit(id, free = false, slot = -1) {
+  const origin = document
+    .querySelector?.(slot >= 0 ? '[data-buy="' + slot + '"]' : '[data-free="' + id + '"]')
+    ?.getBoundingClientRect?.();
+  if (!V.shopPool(state).includes(id)) {
+    notify('T04', '이미 3성을 보유한 캐릭터는 판매 후 다시 영입할 수 있습니다.');
+    return;
+  }
+  if (battle || state.done || state.roundPhase !== 'prepare' || !D.playableIds.includes(id)) return;
+  const canMerge = state.units.filter((u) => u.id === id && u.star === 1).length >= 2;
+  if (state.units.filter((u) => u.location === 'bench').length >= C.board.benchSize && !canMerge) {
+    notify('T05', '대기석이 가득 찼습니다.');
+    return;
+  }
+  if (!free && state.gold < D.byId(id).cost) {
+    notify('T06', '골드가 부족합니다.');
+    return;
+  }
+  if (!free) state.gold -= D.byId(id).cost;
+  state.units.push(make(id));
+  V.normalize(state);
+  if (slot >= 0) state.shop[slot] = null;
+  notify('T07', `${D.byId(id).name} 영입${free ? ' · 무료 테스트' : ''}`);
+  merge(origin);
+  V.normalize(state);
+  V.refreshShop(state);
+  save();
+  render();
+}
+function roll() {
+  V.rollShop(state);
+}
+
+function select(uid) {
+  if (battle || state.done || state.roundPhase !== 'prepare') return;
+  selected = selected === uid ? null : uid;
+  render();
+}
+function place(pos) {
+  if (battle || state.done || state.roundPhase !== 'prepare') return;
+  const unit = state.units.find((u) => u.location === 'board' && u.pos === pos);
+  if (unit) select(unit.uid);
+  else {
+    selected = null;
+    render();
+  }
+}
+
+function toBench() {
+  selected = null;
+  render();
+}
+
+function showModal(html) {
+  if (typeof cancelMergeEffects === 'function') cancelMergeEffects();
+  if (typeof finishDrag === 'function') finishDrag();
+  if (typeof closeBattleOverlays === 'function') closeBattleOverlays();
+  $('modal').classList.toggle('compact-modal', html.includes('deployment-warning'));
+  $('closeModal').disabled = false;
+  $('modalContent').innerHTML = html;
+  if (!$('modal').open) $('modal').showModal();
+}
+function showBonds() {
+  setRecruitOpen(false);
+  const entries = currentBonds();
+  showModal(
+    `<button data-catalog-home>← 도감 메뉴</button><h2>유대 도감 · 전체 조합 · 16종</h2><p id="recommendationStatus" role="status">추천 ${(state.recommendedBonds || []).length} / 3 · 선택한 버튼을 다시 누르면 해제됩니다.</p><p>전투 시작 시 서로 다른 캐릭터 ID로 계산합니다. 사망 후에도 단계는 유지됩니다. 가장 높은 달성 단계 하나만 적용하며, 서로 다른 유대는 함께 적용할 수 있습니다.</p><p>🔒 현재 1·2·3코스트 풀로 달성 불가능한 단계입니다. 모든 단계는 데이터에 보존됩니다. <span class="temporary">임시 밸런스 v1 · 전투 적용</span></p><div class="modal-bonds">${Object.entries(
+      categoryNames,
+    )
+      .map(
+        ([category, label]) =>
+          `<section><h3>${label}</h3>${entries
+            .filter((s) => s.category === category)
+            .map((s) => bondMarkup(s, true))
+            .join('')}</section>`,
+      )
+      .join('')}</div>`,
+  );
+}
+function showRoster() {
+  const activeCost = (cost) =>
+    `<section class="roster-cost-group" data-roster-cost="${cost}"><h3 class="cost-divider" style="--cost-color:${D.costColors[cost]}"><span>${cost}코스트</span></h3><div class="recruit-grid">${D.roster
+      .filter((t) => t.playable && t.cost === cost)
+      .map(
+        (t) =>
+          `<div class="roster-card"><div class="roster-portrait">${costOrb(t.id)}${icon(t.id)}</div><div><b>${t.id} · ${t.name}</b><small>${t.race} / ${t.job} / ${t.trait}</small><small>유대 ${t.bonds.join(' / ')}</small><small>HP ${t.stats.HP} · MP ${t.stats.MP}</small><button data-inspect="${t.id}">상세</button> <button data-free="${t.id}" ${battle || state.done || !V.shopPool(state).includes(t.id) ? 'disabled' : ''}>무료 테스트 영입</button></div></div>`,
+      )
+      .join('')}</div></section>`;
+  const lockedCost = (cost) =>
+    `<section class="roster-cost-group" data-roster-cost="${cost}"><h3 class="cost-divider" style="--cost-color:${D.costColors[cost]}"><span>${cost}코스트 · 미해금 초안</span></h3><div class="locked-roster">${D.roster
+      .filter((t) => !t.playable && t.cost === cost)
+      .map(
+        (t) =>
+          `<div class="draft-card"><b>🔒 ${t.id} · ${t.cost}G · ${t.name}</b><span class="draft-tags">${t.race} / ${t.job} / ${t.trait} · 유대 ${t.bonds.join(' / ')}</span><div class="draft-stats">${D.statKeys.map((k) => `<span>${k} <b>${t.stats[k]}${['CTH', 'CTC', 'DOD'].includes(k) ? '%' : ''}</b></span>`).join('')}</div><strong>${D.skills[t.id].name}</strong><p>${D.skills[t.id].text}</p><button data-inspect="${t.id}">초안 상세</button><small>스킬 실행 TODO · 상점/전투 비활성</small></div>`,
+      )
+      .join('')}</div></section>`;
+  showModal(
+    `<button data-catalog-home>← 도감 메뉴</button><h2>캐릭터 도감 · 45종</h2><p>C01–C45의 이름·능력치·스킬은 테스트용 제안입니다. 아래 무료 영입은 기능 확인용입니다. 1~5코스트 45명 모두 영입·배치·전투가 가능합니다.</p>${[1, 2, 3, 4, 5].map(activeCost).join('')}`,
+  );
+}
+function inspect(id, backBond = null) {
+  const t = D.byId(id);
+  showModal(
+    `<h2>${t.id} · ${t.name}</h2><span class="temporary">이름·능력치·스킬은 테스트용 제안</span><div class="catalog-portrait">${t.playable ? characterArt(id, 'detail') : `<div class="draft-placeholder">${t.id}<small>${t.cost}G · 초안</small></div>`}</div><p>${t.race} / ${t.job} / ${t.trait} · ${t.cost}G<br>유대 ${t.bonds.join(' / ')}</p><div class="stat-grid">${D.statKeys.map((k) => `<span>${k}<b>${t.stats[k]}${['CTH', 'CTC', 'DOD'].includes(k) ? '%' : ''}</b></span>`).join('')}</div><h3>${D.skills[id].name} · ${D.skills[id].coefficient}</h3><p>${D.skills[id].text}</p>${!t.playable ? `<p class="temporary">상점·실제 전투 비활성 / 스킬 실행 미구현</p><h3>TODO · 초안 확인 사항</h3><ul>${D.skills[id].todo.map((note) => `<li>${note}</li>`).join('')}</ul>` : ''}<button ${backBond ? `data-bond-members="${esc(backBond)}"` : 'data-back-roster'}>← ${backBond ? esc(backBond) + ' 캐릭터' : '도감'}</button>`,
+  );
+  $('modal').scrollTop = 0;
+}
+function showRules() {
+  showModal(
+    `<h2>테스트용 임시 규칙</h2><p>아래 수치는 확정 밸런스가 아닙니다. 16종 유대의 임시 밸런스 v1 효과는 항상 적용됩니다. 종족·직업·특성은 캐릭터 메타데이터이며 이전 28종 수치 효과는 적용하지 않습니다.</p><ul>${C.todos.map((t) => `<li>TODO · ${t}</li>`).join('')}</ul><h3>기본 전투</h3><p>피해 = 원시 피해 × 100 / (100 + GD). 물리·마법 공통 적용.<br>공격 시 MP +12, 피격 시 +6. 마법 계열은 1.5배. 기본 시작 MP 0, 시전 시 MP 0으로 초기화.<br>기본 공격만 일반 치명타·회피 적용. 스킬 중 C04는 별도 치명타 규칙 사용.<br>7×8 전장, 4방향 BFS 이동, 동일 시전자·동일 상태는 지속시간 갱신.<br>공격·스킬은 uid 순서로 처리. 패배·시간초과 모두 원정대 체력 감소.</p><h3>실험용 유대 효과 설정</h3><p>${C.experimentalSynergyEffects.notice} 상위 단계 하나만 적용합니다. 상세 효과는 유대 도감에서 확인하세요.</p><pre class="rule-box">${esc(JSON.stringify(C, null, 2))}</pre>`,
+  );
+}
+function startBattle(confirmed = false) {
+  if (typeof cancelPresentationEffects === 'function') cancelPresentationEffects();
+  if (state.roundPhase === 'complete') {
+    showCompletionSummary();
+    return;
+  }
+  if (state.roundPhase === 'result') {
+    showResult(state.lastResult);
+    return;
+  }
+  if (state.roundPhase === 'augment') {
+    showAugment();
+    return;
+  }
+  if (state.roundPhase === 'supply') {
+    showSupply();
+    return;
+  }
+  if (battle || state.done || state.roundPhase !== 'prepare') return;
+  setRecruitOpen(false);
+  hideItemDetail();
+  if (P.roundType(state.stage, state.round) === 'SUPPLY') {
+    lastBattle = null;
+    P.beginSupply(state);
+    save();
+    render();
+    showSupply();
+    return;
+  }
+  if (!deployed().length || deployed().length > P.capacity(state)) return;
+  if (confirmed !== true && V.deploymentStatus(state).shouldWarn) {
+    showDeploymentWarning();
+    return;
+  }
+  selected = null;
+  selectedBattle = null;
+  lastBattle = null;
+  globalThis.performance?.mark('autochess:fight-click');
+  battle = new E.Battle(
+    deployed().map((u) => ({
+      ...u,
+      bonuses: P.unitBonuses(state, u.uid),
+      itemIds: P.unitItemIds(state, u.uid),
+    })),
+    enemyFormation(),
+    {
+      quickMana: $('quickMana').checked,
+      experimental: $('experimental').checked,
+      allyModifiers: P.allyModifiers(state),
+      enemyDamageMultiplier: W.difficulty(state.difficulty).enemyDamageMultiplier,
+      onUnitKilled: (unit, source) => {
+        if (source?.team === 'ally') {
+          const loot = W.claimBonusLoot(state, unit);
+          if (loot) {
+            save();
+            $('gold').textContent = state.gold + ' G';
+            notify(
+              'T39',
+              '보너스 몬스터 처치! ' +
+                (loot.kind === 'item' ? P.itemById(loot.itemId).name : '+' + loot.amount + 'G'),
+            );
+            renderProgression();
+          }
+        }
+      },
+    },
+  );
+  state.roundPhase = 'combat';
+  save();
+  notify('T37', '자동 전투 중 · 기존 캐릭터 스킬과 유대 판정은 유지됩니다.');
+  render();
+  globalThis.performance?.mark('autochess:initial-actors-render');
+  if (typeof requestAnimationFrame === 'function')
+    requestAnimationFrame(() => globalThis.performance?.mark('autochess:first-animation-frame'));
+  runTimer();
+}
+
+function runTimer(fallback = false) {
+  clearInterval(timer);
+  if (!fallback && typeof startCombatWorker === 'function' && startCombatWorker()) return;
+  let last = Date.now(),
+    credit = 0;
+  timer = setInterval(
+    () => {
+      if (!battle) return;
+      const now = Date.now();
+      credit += Math.max(0, now - last) * speed;
+      last = now;
+      let result = null;
+      const frameEvents = [];
+      while (credit >= C.combat.tickSeconds * 1000 && !result) {
+        credit -= C.combat.tickSeconds * 1000;
+        result = battle.tick();
+        if (!battle.startupFirstTick) {
+          battle.startupFirstTick = true;
+          globalThis.performance?.mark('autochess:fallback-first-tick');
+        }
+        frameEvents.push(...battle.events);
+        if (frameEvents.length > 1600) frameEvents.splice(0, frameEvents.length - 1600);
+      }
+      battle.events = frameEvents;
+      if (document.hidden) {
+        if (result) endBattle(result);
+        return;
+      }
+      $('clock').textContent = `${battle.time.toFixed(1)}초 · ${speed}배속`;
+      renderBoard();
+      getCombatView().consume(battle, battle.events);
+      if (!battle.startupFirstPaint) {
+        battle.startupFirstPaint = true;
+        globalThis.performance?.mark('autochess:fallback-first-tick-frame');
+      }
+      renderDetail();
+      renderDebug();
+      if (result) endBattle(result);
+    },
+    (C.combat.tickSeconds * 1000) / speed,
+  );
+}
+function endBattle(result) {
+  if (!battle) return;
+  clearInterval(timer);
+  if (typeof stopCombatClock === 'function') stopCombatClock();
+  timer = null;
+  lastBattle = battle;
+  battle = null;
+  if (typeof warmCombatWorker === 'function') warmCombatWorker();
+  selectedBattle = null;
+  lastResult = P.settleRound(state, {
+    ...result,
+    survivingEnemies: lastBattle.alive('enemy').filter((u) => !u.summon).length,
+    skillUses: { ...lastBattle.skillUses },
+    damageRows: V.damageRows(lastBattle),
+  });
+  state.lastDamageRows = lastResult.damageRows;
+  const finished = lastBattle,
+    receipt = lastResult;
+  if (document.hidden || $('gameView').hidden) {
+    combatView?.reset();
+    save();
+    render();
+    $('clock').textContent = '직전 전투 ' + result.time + '초';
+    return;
+  }
+  getCombatView().finish(finished, () => {
+    if (state.lastResult !== receipt || $('gameView').hidden) return;
+    if (document.hidden) {
+      render();
+      return;
+    }
+    render();
+    if (typeof presentRoundHealth === 'function')
+      void presentRoundHealth(receipt).then((ok) => {
+        if (ok && state.lastResult === receipt && !$('gameView').hidden) showResult(receipt);
+      });
+    else showResult(receipt);
+  });
+  save();
+  notify(
+    'T40',
+    (lastResult.win ? '승리' : '후퇴') +
+      ' · 총 보상 +' +
+      (lastResult.totalEarned ?? lastResult.total) +
+      'G',
+  );
+  render();
+  $('clock').textContent = '직전 전투 ' + result.time + '초';
+}
+
+function showResult(r) {
+  if (!r) return;
+  const supply = r.type === 'SUPPLY',
+    title = r.done
+      ? '원정 종료'
+      : supply
+        ? '안전 보급 완료'
+        : r.type === 'BOSS'
+          ? r.win
+            ? '보스 전투 승리'
+            : '보스 전투 패배'
+          : r.win
+            ? '전투 승리'
+            : '전투 패배';
+  showModal(
+    `<div class="result ${!supply ? 'result-with-damage' : ''}"><div class="result-overview"><span class="eyebrow">라운드 ${r.key} · ${r.type}</span><br><strong>${supply ? '▣' : r.win ? '✦' : '◇'}</strong><h2>${title}</h2><p>${supply ? `전투 없이 아이템 ${r.extra?.itemIds?.length || 1}개를 획득했습니다. HP 피해 없음.` : r.reason === 'timeout' ? '시간초과 · 기존 패배 규칙 적용' : r.reason === 'draw' ? '동시 전멸 · 기존 패배 규칙 적용' : r.time + '초 전투 종료'}</p><div class="reward-total"><span>이번 라운드 획득 골드</span><b>+${r.totalEarned ?? r.total} G</b></div><div class="reward-row"><span>${r.type === 'BOSS' ? '보스 ' : ''}기본 보상</span><b>+${r.base} G</b></div><div class="reward-row reward-streak"><span>${r.winStreak || 0}연승 보너스 · 최대5G</span><b>+${r.streakBonus || 0} G</b></div>${r.augmentGold ? `<div class="reward-row"><span>증강 승리 보너스</span><b>+${r.augmentGold} G</b></div>` : ''}<div class="reward-row"><span>이자 · 보상 전 ${r.before}G / 최대 5G</span><b>+${r.interest} G</b></div>${supply ? `<div class="reward-row"><span>보급 추가 골드</span><b>${r.bonusGold ? '+' + r.bonusGold + ' G' : '미획득'}</b></div>` : ''}${r.healing ? `<div class="reward-row"><span>전투 승리 체력 회복</span><b>+${r.healing} HP</b></div>` : ''}${r.extra ? `<div class="loot-reward">${r.type === 'BOSS' ? '보스 추가 보상' : '보급 아이템'} · ${r.extra.kind === 'items' ? r.extra.itemIds.map((id) => P.itemById(id).name).join(' · ') : r.extra.kind === 'item' ? P.itemById(r.extra.itemId).icon + ' ' + P.itemById(r.extra.itemId).name : '추가 골드 +' + r.bonusGold + 'G'}</div>` : ''}${r.bossItem ? `<div class="loot-reward">보스 확정 아이템 · ${P.itemById(r.bossItem.itemId).name}</div>` : ''}${r.monsterLoot ? `<div class="bonus-loot-banner">전투 중 보너스 몬스터 · ${r.monsterLoot.kind === 'item' ? P.itemById(r.monsterLoot.itemId).name : '+' + r.monsterLoot.amount + 'G'} (처치 시 지급 완료)</div>` : ''}<div class="reward-row"><span>현재 골드</span><b>${r.gold} G</b></div><div class="reward-row"><span>남은 체력</span><b>♥ ${r.health}${r.loss ? ' (−' + r.loss + ')' : ''}</b></div><div class="reward-row"><span>라운드 XP <small>임시</small></span><b>+${r.xpGained} XP${r.levelAfter > r.levelBefore ? ' · 레벨 ' + r.levelAfter + ' 달성' : ''}</b></div></div>${!supply ? `<section class="result-damage"><h3>아군 딜량</h3>${damageChart(r.damageRows || [])}${state.completionChoice === 'pending' ? completionActions() : ''}</section>` : ''}${state.completionChoice === 'pending' ? '' : `<button class="primary" data-continue>${r.done ? '결과 확인' : '다음 라운드 →'}</button>`}</div>`,
+  );
+}
+
+function resetRun() {
+  if (typeof stopCombatClock === 'function') stopCombatClock();
+  if (typeof cancelPresentationEffects === 'function') cancelPresentationEffects();
+  combatView?.reset();
+  setRecruitOpen(false);
+  hideItemDetail();
+  clearInterval(timer);
+  battle = null;
+  lastBattle = null;
+  selected = null;
+  selectedBattle = null;
+  nextUid = 0;
+  fresh();
+  save();
+  $('quickMana').checked = false;
+  $('experimental').checked = false;
+  $('clock').textContent = '진형을 준비하세요';
+  notify('T41', '새 원정 · 원하는 동료를 영입해 보세요.');
+  render();
+  $('modal').close();
+}
+$('board').addEventListener('click', (e) => {
+  const cell = e.target.closest('[data-pos]');
+  if (!cell) return;
+  if (battle) {
+    if (cell.dataset.combat) {
+      selectedBattle = Number(cell.dataset.combat);
+      renderDetail();
+      renderBoard();
+    }
+  } else place(Number(cell.dataset.pos));
+});
+$('bench').addEventListener('click', (e) => {
+  const slot = e.target.closest('[data-bench]');
+  if (slot?.dataset.bench) select(Number(slot.dataset.bench));
+});
+$('shop').addEventListener('click', (e) => {
+  const button = e.target.closest('[data-buy]');
+  if (button) {
+    const i = Number(button.dataset.buy);
+    recruit(state.shop[i], false, i);
+  }
+});
+$('sellBtn').onclick = () => sellUnit(selected);
+$('rerollBtn').onclick = () => {
+  if (battle || !V.manualReroll(state)) return;
+  save();
+  render();
+};
+function renderSpeedButton() {
+  const count = speed === 1 ? 1 : speed === 2 ? 2 : 3;
+  $('speedBtn').innerHTML = [1, 2, 3]
+    .map((i) => '<span aria-hidden="true" class="' + (i <= count ? 'lit' : '') + '">❯</span>')
+    .join('');
+  $('speedBtn').title = '전투 배속 · ' + speed + '배';
+  $('speedBtn').setAttribute('aria-label', '전투 배속 ' + speed + '배');
+}
+$('fightBtn').onclick = startBattle;
+$('speedBtn').onclick = () => {
+  speed = speed === 1 ? 2 : speed === 2 ? 4 : 1;
+  renderSpeedButton();
+  if (battle) runTimer();
+};
+$('bondsBtn').onclick = showBonds;
+$('rosterBtn').onclick = () => showCatalog();
+$('recruitBtn').onclick = showRoster;
+$('rulesBtn').onclick = showRules;
+$('experimental').onchange = renderBonds;
+$('guideBtn').onclick = () =>
+  showModal(
+    '<h2>AUTOCHESS 플레이 방법</h2><ol><li>상점에서 코스트에 맞는 골드로 동료를 구매하거나, 캐릭터 도감에서 무료 테스트 영입하세요.</li><li>캐릭터를 클릭하면 능력치와 장비가 표시됩니다. 드래그하여 전장/대기석으로 이동하세요.</li><li>아군 위에 놓으면 서로 교체합니다. 동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.</li><li>배속 옆 동료영입 버튼으로 상점을 열 수 있습니다. 보관함 아이템은 아군에게 드래그하여 최대3개 장착합니다.</li><li>같은 ID·같은 성급 3명은 자동 합성됩니다. HP/AD/AP가 성급마다 2배로 증가하는 임시 규칙입니다.</li><li>시작 MP 100%를 켜면 스킬을 빠르게 시험할 수 있습니다. 실제 전투 기본값은 MP 0입니다.</li><li>유대는 시작 진형 기준으로 고정됩니다. 16종 유대 임시 밸런스 v1의 가장 높은 달성 단계 효과가 적용됩니다.</li><li>전투 중 캐릭터를 클릭해 현재 상태를 확인하세요. 아래 전투 디버그에서 모든 유닛·소환수를 확인할 수 있습니다.</li></ol><p>일반 공격은 마법 계열도 AD 물리 피해입니다. 설정과 소환수의 세부 임시 수치는 ‘임시 규칙’에서 볼 수 있습니다. 기존 일러스트판 진행은 별도 저장되어 이 테스트판과 섞이지 않습니다.</p>',
+  );
+$('resetBtn').onclick = () =>
+  showModal(
+    '<h2>새 원정을 시작할까요?</h2><p>이 1코스트 테스트판의 현재 진행·장비·증강·레벨을 새 원정으로 교체합니다.</p><button class="primary" data-reset>새 원정 시작</button>',
+  );
+$('closeModal').onclick = () => $('modal').close();
+$('modalContent').addEventListener('click', (e) => {
+  if (e.target.closest('[data-cancel-deployment]')) {
+    $('modal').close();
+    return;
+  }
+  if (e.target.closest('[data-confirm-deployment]')) {
+    state.skipDeploymentWarning = $('skipDeploymentWarning').checked;
+    save();
+    $('modal').close();
+    startBattle(true);
+    return;
+  }
+  const members = e.target.closest('[data-bond-members]');
+  if (members) {
+    showBondMembers(members.dataset.bondMembers);
+    return;
+  }
+  if (e.target.closest('[data-back-bonds]')) {
+    showBonds();
+    return;
+  }
+  const recommend = e.target.closest('[data-recommend]'),
+    augment = e.target.closest('[data-augment]');
+  if (recommend) {
+    const result = V.toggleRecommendation(state, recommend.dataset.recommend);
+    if (result.ok) {
+      save();
+      render();
+      showBonds();
+    } else $('recommendationStatus').textContent = result.message;
+    return;
+  }
+  if (augment) {
+    if (P.chooseAugment(state, augment.dataset.augment)) {
+      V.enterShop(state);
+      save();
+      $('modal').close();
+      render();
+      if (typeof showRoundTransition === 'function') showRoundTransition();
+      notify('T35', '증강 선택 완료 · ' + P.augmentById(augment.dataset.augment).name);
+    }
+    return;
+  }
+  const free = e.target.closest('[data-free]'),
+    inspectButton = e.target.closest('[data-inspect]');
+  if (free) {
+    recruit(free.dataset.free, true);
+    showRoster();
+  }
+  if (inspectButton) inspect(inspectButton.dataset.inspect, inspectButton.dataset.fromBond || null);
+  if (e.target.closest('[data-back-roster]')) showRoster();
+  if (e.target.closest('[data-continue]')) continueRound();
+  if (e.target.closest('[data-reset]')) resetRun();
+});
+$('unitDebug').addEventListener('click', (e) => {
+  const row = e.target.closest('[data-debug]');
+  if (!row) return;
+  const b = battle || lastBattle,
+    u = b.units.find((u) => u.uid === Number(row.dataset.debug));
+  if (battle) {
+    selectedBattle = u.uid;
+    renderDetail();
+    renderBoard();
+  } else
+    showModal(
+      `<h2>${u.name} · 직전 전투</h2><p>${u.team === 'ally' ? '아군' : '적'} · HP ${num(u.hp)} / ${num(u.stats.HP)} · MP ${num(u.mp)} / ${num(u.stats.MP)}<br>누적 피해 ${num(u.damageDone)} · 회복 ${num(u.healingDone)}</p><pre class="rule-box">${esc(JSON.stringify({ stats: b.stats(u), statuses: u.statuses, shields: u.shields, synergies: b.synergySnapshot[u.team].filter((s) => s.tier && s.members.includes(u.id)).map((s) => ({ name: s.name, threshold: s.threshold })) }, null, 2))}</pre>`,
+    );
+});
 globalThis.performance?.mark('autochess:init');
-load();V.normalize(state);if(V.repairDeployment(state))state.migrationNotice='중복 배치된 동료를 대기석으로 옮겼습니다. 보유 캐릭터와 장비는 유지됩니다.';V.refreshShop(state);setupStageUI();notify(state.migrationNotice?.startsWith('중복 배치')?'T03':state.migrationNotice?'T02':'T01',state.migrationNotice||'1-1과 1-2는 안전 보급입니다. 동료를 준비하고 아이템을 받아보세요.');render();setupShell();setupInteractions();setupContentUI();if(typeof setupBattleUI==='function')setupBattleUI();if(typeof setupCatalogUI==='function')setupCatalogUI();if(typeof setupRunFlowUI==='function')setupRunFlowUI();globalThis.performance?.mark('autochess:ready');globalThis.performance?.measure('autochess:initialize','autochess:init','autochess:ready');globalThis.performance?.measure('autochess:ready-from-parse','autochess:parse','autochess:ready');
-
-
-
+load();
+V.normalize(state);
+if (V.repairDeployment(state))
+  state.migrationNotice =
+    '중복 배치된 동료를 대기석으로 옮겼습니다. 보유 캐릭터와 장비는 유지됩니다.';
+V.refreshShop(state);
+setupStageUI();
+notify(
+  state.migrationNotice?.startsWith('중복 배치') ? 'T03' : state.migrationNotice ? 'T02' : 'T01',
+  state.migrationNotice || '1-1과 1-2는 안전 보급입니다. 동료를 준비하고 아이템을 받아보세요.',
+);
+render();
+setupShell();
+setupInteractions();
+setupContentUI();
+if (typeof setupBattleUI === 'function') setupBattleUI();
+if (typeof setupCatalogUI === 'function') setupCatalogUI();
+if (typeof setupRunFlowUI === 'function') setupRunFlowUI();
+globalThis.performance?.mark('autochess:ready');
+globalThis.performance?.measure('autochess:initialize', 'autochess:init', 'autochess:ready');
+globalThis.performance?.measure('autochess:ready-from-parse', 'autochess:parse', 'autochess:ready');

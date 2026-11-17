@@ -1,25 +1,300 @@
 'use strict';
-const a=require('node:assert/strict'),D=require('./dist/data.js'),P=require('./dist/progression.js'),V=require('./dist/preparation.js'),W=require('./dist/encounters.js'),{Battle,mitigatedDamage,distance}=require('./dist/engine.js');
-let n=0;function test(name,fn){fn();n++;console.log('PASS '+name);}const near=(x,y)=>a(Math.abs(x-y)<1e-6,`${x} != ${y}`);
-function battle(id,allies=[]){return new Battle([{id,pos:31},...allies],[{id:'E06',pos:24},{id:'E03',pos:23}],{rng:()=>.99});}
-function cast(id){const b=battle(id);b.cast(b.units[0],b.units[1]);return b;}
-function state(level){return V.normalize(Object.assign(P.initialize({health:100,gold:50,units:[],shop:[]}),{level}));}
-test('45 playable, exact cost colors; original 12 stats/skills unchanged covered by baseline',()=>{a.equal(D.playableIds.length,45);a.equal(D.roster.filter(x=>x.cost===2&&x.playable).length,11);a.deepEqual(Object.keys(D.costColors),['1','2','3','4','5']);for(const id of D.playableIds.filter(id=>D.byId(id).cost===2))a.equal(D.skills[id].implemented,true);});
-test('exact referenced level1..10 base table and normalized1/2 cost chances',()=>{a.deepEqual(Object.values(V.baseOdds),[[100,0,0,0,0],[100,0,0,0,0],[100,0,0,0,0],[65,25,10,0,0],[45,33,20,2,0],[30,40,25,5,0],[19,30,40,10,1],[18,25,32,22,3],[15,20,25,30,10],[5,10,20,40,25]]);for(let level=1;level<=10;level++){const s=state(level),odds=V.shopOdds(s),base=V.baseOdds[level];near(odds[0],base[0]);near(odds[1],base[1]);near(odds.reduce((x,y)=>x+y),100);near(odds[2],base[2]);a.deepEqual(odds.slice(3),base.slice(3));}});
-test('boundary tier sampling and uniform per-tier entries, current level used on every roll',()=>{const s=state(3);for(const roll of [0,.8,.999])a.equal(D.byId(V.drawShop(s,()=>roll)).cost,1);s.level=4;const p=V.shopOdds(s)[0]/100;for(const [roll,cost] of [[0,1],[p-1e-8,1],[p,2],[.99999,3]]){let i=0;const rng=()=>i++?0:roll;a.equal(D.byId(V.drawShop(s,rng)).cost,cost);}const selected=new Set();for(let i=0;i<11;i++){let j=0;selected.add(V.drawShop(s,()=>j++?i/11:.7));}a.equal(selected.size,11);});
-test('owned3star filtered, sold2cost restored; exhausted tiers renormalized without locked cards',()=>{const s=state(8);s.units=D.roster.filter(u=>u.cost===1).map((u,i)=>({id:u.id,uid:i,star:3}));near(V.shopOdds(s)[1],25/82*100);near(V.shopOdds(s)[2],32/82*100);a.equal(D.byId(V.drawShop(s,()=>0)).cost,2);s.units.push({id:'C13',uid:50,star:3});a(!V.shopPool(s).includes('C13'));s.units=s.units.filter(u=>u.id!=='C13');a(V.shopPool(s).includes('C13'));s.units=D.playableIds.map((id,i)=>({id,uid:i,star:3}));a.equal(V.drawShop(s),null);});
-test('stage scaling adds two promotions per stage then reaches3star cap',()=>{a.deepEqual(W.stageStars(1,10),Array(10).fill(1));for(let stage=2;stage<=11;stage++){const stars=W.stageStars(stage,10);a.equal(stars.reduce((n,x)=>n+x-1,0),Math.min(20,(stage-1)*2));a(stars.every(x=>x>=1&&x<=3));}a.deepEqual(W.stageStars(6,10),Array(10).fill(2));a.deepEqual(W.stageStars(11,10),Array(10).fill(3));a.deepEqual(W.stageStars(99,10),Array(10).fill(3));});
-test('promoted enemies have actual HP/AD/AP growth; cached encounters stable after reload',()=>{const s=state(4);s.stage=2;s.round=1;const units=W.encounter(s,()=>.5);a.equal(units.filter(u=>u.star===2).length,2);const b=new Battle([{id:'C13',pos:38}],units);for(let i=0;i<units.length;i++){const base=W.byId(units[i].id).stats,mult=2**(units[i].star-1)*units[i].scale;near(b.units[i+1].stats.HP,base.HP*mult);near(b.units[i+1].stats.AD,base.AD*mult);}a.deepEqual(W.encounter(JSON.parse(JSON.stringify(s)),()=>{throw Error('reroll');}),units);});
-test('C13 AP190% target plus adjacent splash and slow20%/3s',()=>{const b=cast('C13'),u=b.units[0];for(const e of b.units.slice(1)){near(e.stats.HP-e.hp,mitigatedDamage(u.stats.AP*1.9,e.stats.GD));near(b.stats(e).AS,e.stats.AS*.8);a.equal(e.statuses[0].expires,3);}});
-test('C14 threeAD85% hits and exactly3 burn ticks at15%AP',()=>{const b=cast('C14'),u=b.units[0],t=b.units[1];a.equal(b.logs.filter(l=>l.kind==='damage').length,3);near(t.stats.HP-t.hp,3*mitigatedDamage(u.stats.AD*.85,t.stats.GD));for(const x of b.units)x.castUntil=999;for(let i=1;i<=3;i++){b.time=i-.1;b.tick(.1);}a.equal(b.logs.filter(l=>l.attackKind==='dot').length,3);});
-test('C15 lowestHP ally healsAP200% and GD15% lasts4sec',()=>{const b=battle('C15',[{id:'C03',pos:32}]),u=b.units[0],ally=b.units[1];ally.hp=100;b.cast(u,b.units[2]);near(ally.hp,100+u.stats.AP*2);near(b.stats(ally).GD,ally.stats.GD*1.15);b.time=4.1;near(b.stats(ally).GD,ally.stats.GD);});
-test('C16 lightning wolf magicAP55%, cap2, duration8sec',()=>{const b=battle('C16'),u=b.units[0];for(let i=0;i<3;i++)b.cast(u,b.units[1]);const wolves=b.units.filter(x=>x.summon);a.equal(wolves.length,2);for(const pet of wolves){near(pet.stats.AD,u.stats.AP*.55);a.equal(pet.attackType,'magic');a.equal(pet.expires,8);}for(const x of b.units)x.castUntil=999;b.time=8;b.tick();a(wolves.every(x=>x.dead));});
-test('C17 cost8% of CURRENT HP, AD230%, heals20% actual damage',()=>{const b=battle('C17'),u=b.units[0],t=b.units[1];u.hp=400;b.cast(u,t);const damage=mitigatedDamage(u.stats.AD*2.3,t.stats.GD);near(u.hp,400*.92+damage*.2);near(t.stats.HP-t.hp,damage);});
-test('C18 lowHP ally healsAP180% and shieldAP120% lasts4sec',()=>{const b=battle('C18',[{id:'C03',pos:32}]),u=b.units[0],ally=b.units[1];ally.hp=100;b.cast(u,b.units[2]);near(ally.hp,100+u.stats.AP*1.8);near(ally.shields[0].amount,u.stats.AP*1.2);a.equal(ally.shields[0].expires,4);});
-test('C19 AP150%, root blocks movement but allows in-range attacks',()=>{const b=cast('C19'),u=b.units[0],t=b.units[1];near(t.stats.HP-t.hp,mitigatedDamage(u.stats.AP*1.5,t.stats.GD));a.equal(t.statuses[0].key,'root');a.equal(t.statuses[0].expires,1.5);const pos=t.pos;a.deepEqual(b.pathToRange(t,{pos:52},1),[]);b.tick();a.equal(t.pos,pos);a(b.logs.some(l=>l.kind==='damage'&&l.source===t.uid));b.time=2;a(b.pathToRange(t,{pos:52},1).length>0);});
-test('C20 currentHP6%, AS30% and AD20% extra attack expire after5sec',()=>{const b=battle('C20'),u=b.units[0],t=b.units[1];u.hp=400;b.cast(u,t);near(u.hp,376);near(b.stats(u).AS,u.stats.AS*1.3);u.castUntil=0;t.castUntil=999;b.tick();const hits=b.logs.filter(l=>l.kind==='damage'&&l.source===u.uid);a(hits.some(l=>l.attackKind==='bonusBasic'));near(hits.find(l=>l.attackKind==='bonusBasic').amount,mitigatedDamage(u.stats.AD*.2,t.stats.GD));b.time=5.1;near(b.stats(u).AS,u.stats.AS);});
-test('C21 AP230%, nearest OTHER ally AP100% shield and lonecaster fallback',()=>{const b=battle('C21',[{id:'C03',pos:32},{id:'C05',pos:53}]),u=b.units[0];b.cast(u,b.units[3]);near(b.units[1].shields[0].amount,u.stats.AP);a.equal(b.units[1].shields[0].expires,4);a.equal(b.units[2].shields.length,0);const alone=cast('C21');near(alone.units[0].shields[0].amount,alone.units[0].stats.AP);});
-test('C22 AD170% and ownGD20% for4sec',()=>{const b=cast('C22'),u=b.units[0],t=b.units[1];near(t.stats.HP-t.hp,mitigatedDamage(u.stats.AD*1.7,t.stats.GD));near(b.stats(u).GD,u.stats.GD*1.2);a.equal(u.statuses[0].expires,4);});
-test('C23 shields self+adjacent only and retaliates50%AP on melee basic without recursion',()=>{const b=battle('C23',[{id:'C03',pos:32},{id:'C05',pos:53}]),u=b.units[0],enemy=b.units[3];b.cast(u,enemy);near(u.shields[0].amount,u.stats.AP*1.4);a.equal(b.units[1].shields.length,1);a.equal(b.units[2].shields.length,0);const hp=enemy.hp;b.deal(enemy,u,10,'physical',{kind:'basic',canCrit:false});near(hp-enemy.hp,mitigatedDamage(u.stats.AP*.5,enemy.stats.GD));a.equal(b.logs.filter(l=>l.attackKind==='counter').length,1);});
-test('all11 two-cost units complete quickMana battles and use skills with bonds on/off',()=>{for(const experimental of [false,true])for(const u of D.roster.filter(x=>x.cost===2)){const b=new Battle([{id:u.id,pos:31},{id:'C05',pos:32}],[{id:'E06',pos:24},{id:'E01',pos:3}],{quickMana:true,experimental,rng:()=>.99});for(let i=0;i<2000&&!b.result;i++)b.tick();a(b.result,u.id);a(b.skillUses[u.id]>0,u.id);const positions=b.alive().map(x=>x.pos);a.equal(new Set(positions).size,positions.length);}});
-console.log('\n'+n+' two-cost/odds/enemy-growth tests passed.');
+const a = require('node:assert/strict'),
+  D = require('./dist/data.js'),
+  P = require('./dist/progression.js'),
+  V = require('./dist/preparation.js'),
+  W = require('./dist/encounters.js'),
+  { Battle, mitigatedDamage, distance } = require('./dist/engine.js');
+let n = 0;
+function test(name, fn) {
+  fn();
+  n++;
+  console.log('PASS ' + name);
+}
+const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
+function battle(id, allies = []) {
+  return new Battle(
+    [{ id, pos: 31 }, ...allies],
+    [
+      { id: 'E06', pos: 24 },
+      { id: 'E03', pos: 23 },
+    ],
+    { rng: () => 0.99 },
+  );
+}
+function cast(id) {
+  const b = battle(id);
+  b.cast(b.units[0], b.units[1]);
+  return b;
+}
+function state(level) {
+  return V.normalize(
+    Object.assign(P.initialize({ health: 100, gold: 50, units: [], shop: [] }), { level }),
+  );
+}
+test('45 playable, exact cost colors; original 12 stats/skills unchanged covered by baseline', () => {
+  a.equal(D.playableIds.length, 45);
+  a.equal(D.roster.filter((x) => x.cost === 2 && x.playable).length, 11);
+  a.deepEqual(Object.keys(D.costColors), ['1', '2', '3', '4', '5']);
+  for (const id of D.playableIds.filter((id) => D.byId(id).cost === 2))
+    a.equal(D.skills[id].implemented, true);
+});
+test('exact referenced level1..10 base table and normalized1/2 cost chances', () => {
+  a.deepEqual(Object.values(V.baseOdds), [
+    [100, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0],
+    [100, 0, 0, 0, 0],
+    [65, 25, 10, 0, 0],
+    [45, 33, 20, 2, 0],
+    [30, 40, 25, 5, 0],
+    [19, 30, 40, 10, 1],
+    [18, 25, 32, 22, 3],
+    [15, 20, 25, 30, 10],
+    [5, 10, 20, 40, 25],
+  ]);
+  for (let level = 1; level <= 10; level++) {
+    const s = state(level),
+      odds = V.shopOdds(s),
+      base = V.baseOdds[level];
+    near(odds[0], base[0]);
+    near(odds[1], base[1]);
+    near(
+      odds.reduce((x, y) => x + y),
+      100,
+    );
+    near(odds[2], base[2]);
+    a.deepEqual(odds.slice(3), base.slice(3));
+  }
+});
+test('boundary tier sampling and uniform per-tier entries, current level used on every roll', () => {
+  const s = state(3);
+  for (const roll of [0, 0.8, 0.999]) a.equal(D.byId(V.drawShop(s, () => roll)).cost, 1);
+  s.level = 4;
+  const p = V.shopOdds(s)[0] / 100;
+  for (const [roll, cost] of [
+    [0, 1],
+    [p - 1e-8, 1],
+    [p, 2],
+    [0.99999, 3],
+  ]) {
+    let i = 0;
+    const rng = () => (i++ ? 0 : roll);
+    a.equal(D.byId(V.drawShop(s, rng)).cost, cost);
+  }
+  const selected = new Set();
+  for (let i = 0; i < 11; i++) {
+    let j = 0;
+    selected.add(V.drawShop(s, () => (j++ ? i / 11 : 0.7)));
+  }
+  a.equal(selected.size, 11);
+});
+test('owned3star filtered, sold2cost restored; exhausted tiers renormalized without locked cards', () => {
+  const s = state(8);
+  s.units = D.roster.filter((u) => u.cost === 1).map((u, i) => ({ id: u.id, uid: i, star: 3 }));
+  near(V.shopOdds(s)[1], (25 / 82) * 100);
+  near(V.shopOdds(s)[2], (32 / 82) * 100);
+  a.equal(D.byId(V.drawShop(s, () => 0)).cost, 2);
+  s.units.push({ id: 'C13', uid: 50, star: 3 });
+  a(!V.shopPool(s).includes('C13'));
+  s.units = s.units.filter((u) => u.id !== 'C13');
+  a(V.shopPool(s).includes('C13'));
+  s.units = D.playableIds.map((id, i) => ({ id, uid: i, star: 3 }));
+  a.equal(V.drawShop(s), null);
+});
+test('stage scaling adds two promotions per stage then reaches3star cap', () => {
+  a.deepEqual(W.stageStars(1, 10), Array(10).fill(1));
+  for (let stage = 2; stage <= 11; stage++) {
+    const stars = W.stageStars(stage, 10);
+    a.equal(
+      stars.reduce((n, x) => n + x - 1, 0),
+      Math.min(20, (stage - 1) * 2),
+    );
+    a(stars.every((x) => x >= 1 && x <= 3));
+  }
+  a.deepEqual(W.stageStars(6, 10), Array(10).fill(2));
+  a.deepEqual(W.stageStars(11, 10), Array(10).fill(3));
+  a.deepEqual(W.stageStars(99, 10), Array(10).fill(3));
+});
+test('promoted enemies have actual HP/AD/AP growth; cached encounters stable after reload', () => {
+  const s = state(4);
+  s.stage = 2;
+  s.round = 1;
+  const units = W.encounter(s, () => 0.5);
+  a.equal(units.filter((u) => u.star === 2).length, 2);
+  const b = new Battle([{ id: 'C13', pos: 38 }], units);
+  for (let i = 0; i < units.length; i++) {
+    const base = W.byId(units[i].id).stats,
+      mult = 2 ** (units[i].star - 1) * units[i].scale;
+    near(b.units[i + 1].stats.HP, base.HP * mult);
+    near(b.units[i + 1].stats.AD, base.AD * mult);
+  }
+  a.deepEqual(
+    W.encounter(JSON.parse(JSON.stringify(s)), () => {
+      throw Error('reroll');
+    }),
+    units,
+  );
+});
+test('C13 AP190% target plus adjacent splash and slow20%/3s', () => {
+  const b = cast('C13'),
+    u = b.units[0];
+  for (const e of b.units.slice(1)) {
+    near(e.stats.HP - e.hp, mitigatedDamage(u.stats.AP * 1.9, e.stats.GD));
+    near(b.stats(e).AS, e.stats.AS * 0.8);
+    a.equal(e.statuses[0].expires, 3);
+  }
+});
+test('C14 threeAD85% hits and exactly3 burn ticks at15%AP', () => {
+  const b = cast('C14'),
+    u = b.units[0],
+    t = b.units[1];
+  a.equal(b.logs.filter((l) => l.kind === 'damage').length, 3);
+  near(t.stats.HP - t.hp, 3 * mitigatedDamage(u.stats.AD * 0.85, t.stats.GD));
+  for (const x of b.units) x.castUntil = 999;
+  for (let i = 1; i <= 3; i++) {
+    b.time = i - 0.1;
+    b.tick(0.1);
+  }
+  a.equal(b.logs.filter((l) => l.attackKind === 'dot').length, 3);
+});
+test('C15 lowestHP ally healsAP200% and GD15% lasts4sec', () => {
+  const b = battle('C15', [{ id: 'C03', pos: 32 }]),
+    u = b.units[0],
+    ally = b.units[1];
+  ally.hp = 100;
+  b.cast(u, b.units[2]);
+  near(ally.hp, 100 + u.stats.AP * 2);
+  near(b.stats(ally).GD, ally.stats.GD * 1.15);
+  b.time = 4.1;
+  near(b.stats(ally).GD, ally.stats.GD);
+});
+test('C16 lightning wolf magicAP55%, cap2, duration8sec', () => {
+  const b = battle('C16'),
+    u = b.units[0];
+  for (let i = 0; i < 3; i++) b.cast(u, b.units[1]);
+  const wolves = b.units.filter((x) => x.summon);
+  a.equal(wolves.length, 2);
+  for (const pet of wolves) {
+    near(pet.stats.AD, u.stats.AP * 0.55);
+    a.equal(pet.attackType, 'magic');
+    a.equal(pet.expires, 8);
+  }
+  for (const x of b.units) x.castUntil = 999;
+  b.time = 8;
+  b.tick();
+  a(wolves.every((x) => x.dead));
+});
+test('C17 cost8% of CURRENT HP, AD230%, heals20% actual damage', () => {
+  const b = battle('C17'),
+    u = b.units[0],
+    t = b.units[1];
+  u.hp = 400;
+  b.cast(u, t);
+  const damage = mitigatedDamage(u.stats.AD * 2.3, t.stats.GD);
+  near(u.hp, 400 * 0.92 + damage * 0.2);
+  near(t.stats.HP - t.hp, damage);
+});
+test('C18 lowHP ally healsAP180% and shieldAP120% lasts4sec', () => {
+  const b = battle('C18', [{ id: 'C03', pos: 32 }]),
+    u = b.units[0],
+    ally = b.units[1];
+  ally.hp = 100;
+  b.cast(u, b.units[2]);
+  near(ally.hp, 100 + u.stats.AP * 1.8);
+  near(ally.shields[0].amount, u.stats.AP * 1.2);
+  a.equal(ally.shields[0].expires, 4);
+});
+test('C19 AP150%, root blocks movement but allows in-range attacks', () => {
+  const b = cast('C19'),
+    u = b.units[0],
+    t = b.units[1];
+  near(t.stats.HP - t.hp, mitigatedDamage(u.stats.AP * 1.5, t.stats.GD));
+  a.equal(t.statuses[0].key, 'root');
+  a.equal(t.statuses[0].expires, 1.5);
+  const pos = t.pos;
+  a.deepEqual(b.pathToRange(t, { pos: 52 }, 1), []);
+  b.tick();
+  a.equal(t.pos, pos);
+  a(b.logs.some((l) => l.kind === 'damage' && l.source === t.uid));
+  b.time = 2;
+  a(b.pathToRange(t, { pos: 52 }, 1).length > 0);
+});
+test('C20 currentHP6%, AS30% and AD20% extra attack expire after5sec', () => {
+  const b = battle('C20'),
+    u = b.units[0],
+    t = b.units[1];
+  u.hp = 400;
+  b.cast(u, t);
+  near(u.hp, 376);
+  near(b.stats(u).AS, u.stats.AS * 1.3);
+  u.castUntil = 0;
+  t.castUntil = 999;
+  b.tick();
+  const hits = b.logs.filter((l) => l.kind === 'damage' && l.source === u.uid);
+  a(hits.some((l) => l.attackKind === 'bonusBasic'));
+  near(
+    hits.find((l) => l.attackKind === 'bonusBasic').amount,
+    mitigatedDamage(u.stats.AD * 0.2, t.stats.GD),
+  );
+  b.time = 5.1;
+  near(b.stats(u).AS, u.stats.AS);
+});
+test('C21 AP230%, nearest OTHER ally AP100% shield and lonecaster fallback', () => {
+  const b = battle('C21', [
+      { id: 'C03', pos: 32 },
+      { id: 'C05', pos: 53 },
+    ]),
+    u = b.units[0];
+  b.cast(u, b.units[3]);
+  near(b.units[1].shields[0].amount, u.stats.AP);
+  a.equal(b.units[1].shields[0].expires, 4);
+  a.equal(b.units[2].shields.length, 0);
+  const alone = cast('C21');
+  near(alone.units[0].shields[0].amount, alone.units[0].stats.AP);
+});
+test('C22 AD170% and ownGD20% for4sec', () => {
+  const b = cast('C22'),
+    u = b.units[0],
+    t = b.units[1];
+  near(t.stats.HP - t.hp, mitigatedDamage(u.stats.AD * 1.7, t.stats.GD));
+  near(b.stats(u).GD, u.stats.GD * 1.2);
+  a.equal(u.statuses[0].expires, 4);
+});
+test('C23 shields self+adjacent only and retaliates50%AP on melee basic without recursion', () => {
+  const b = battle('C23', [
+      { id: 'C03', pos: 32 },
+      { id: 'C05', pos: 53 },
+    ]),
+    u = b.units[0],
+    enemy = b.units[3];
+  b.cast(u, enemy);
+  near(u.shields[0].amount, u.stats.AP * 1.4);
+  a.equal(b.units[1].shields.length, 1);
+  a.equal(b.units[2].shields.length, 0);
+  const hp = enemy.hp;
+  b.deal(enemy, u, 10, 'physical', { kind: 'basic', canCrit: false });
+  near(hp - enemy.hp, mitigatedDamage(u.stats.AP * 0.5, enemy.stats.GD));
+  a.equal(b.logs.filter((l) => l.attackKind === 'counter').length, 1);
+});
+test('all11 two-cost units complete quickMana battles and use skills with bonds on/off', () => {
+  for (const experimental of [false, true])
+    for (const u of D.roster.filter((x) => x.cost === 2)) {
+      const b = new Battle(
+        [
+          { id: u.id, pos: 31 },
+          { id: 'C05', pos: 32 },
+        ],
+        [
+          { id: 'E06', pos: 24 },
+          { id: 'E01', pos: 3 },
+        ],
+        { quickMana: true, experimental, rng: () => 0.99 },
+      );
+      for (let i = 0; i < 2000 && !b.result; i++) b.tick();
+      a(b.result, u.id);
+      a(b.skillUses[u.id] > 0, u.id);
+      const positions = b.alive().map((x) => x.pos);
+      a.equal(new Set(positions).size, positions.length);
+    }
+});
+console.log('\n' + n + ' two-cost/odds/enemy-growth tests passed.');

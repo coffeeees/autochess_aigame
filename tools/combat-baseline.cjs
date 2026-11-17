@@ -62,9 +62,9 @@ function run(name, seed, allies, enemies, options = {}) {
     ticks,
     winner: battle.result && battle.result.winner,
     time: battle.result && battle.result.time,
-    stats: battle.result && Object.fromEntries(
-      Object.entries(battle.result.stats).map(([k, v]) => [k, round(v)]),
-    ),
+    stats:
+      battle.result &&
+      Object.fromEntries(Object.entries(battle.result.stats).map(([k, v]) => [k, round(v)])),
     allyHpLeft: round(units.filter((u) => u.team === 'ally').reduce((a, u) => a + u.hp, 0)),
     enemyHpLeft: round(units.filter((u) => u.team === 'enemy').reduce((a, u) => a + u.hp, 0)),
     skillUses: battle.skillUses,
@@ -84,12 +84,18 @@ function scenarios() {
   // 1) Every playable unit, 5 at a time, 2-star, vs a fixed enemy line.
   for (let g = 0; g < ids.length; g += 5) {
     const group = ids.slice(g, g + 5);
-    out.push(run(
-      `roster-${group.join('-')}`,
-      1000 + g,
-      group.map((id, i) => ({ id, pos: allyCells[i], star: 2 })),
-      ['E03', 'E06', 'E08', 'E01', 'E04'].map((id, i) => ({ id, pos: [17, 18, 16, 3, 4][i], star: 2 })),
-    ));
+    out.push(
+      run(
+        `roster-${group.join('-')}`,
+        1000 + g,
+        group.map((id, i) => ({ id, pos: allyCells[i], star: 2 })),
+        ['E03', 'E06', 'E08', 'E01', 'E04'].map((id, i) => ({
+          id,
+          pos: [17, 18, 16, 3, 4][i],
+          star: 2,
+        })),
+      ),
+    );
   }
 
   // 2) Mirror-ish fights between playable units (exercises every skill vs players).
@@ -97,13 +103,15 @@ function scenarios() {
     const a = ids.slice(g, g + 4);
     const b = ids.slice(g + 4, g + 8);
     if (b.length === 0) continue;
-    out.push(run(
-      `mirror-${g}`,
-      2000 + g,
-      a.map((id, i) => ({ id, pos: allyCells[i] })),
-      b.map((id, i) => ({ id, pos: [17, 18, 16, 19][i] })),
-      { quickMana: true },
-    ));
+    out.push(
+      run(
+        `mirror-${g}`,
+        2000 + g,
+        a.map((id, i) => ({ id, pos: allyCells[i] })),
+        b.map((id, i) => ({ id, pos: [17, 18, 16, 19][i] })),
+        { quickMana: true },
+      ),
+    );
   }
 
   // 3) Items: every item worn at least once.
@@ -111,32 +119,50 @@ function scenarios() {
   for (let k = 0; k < itemIds.length; k += 6) {
     const gear = itemIds.slice(k, k + 6);
     const wearers = [ids[k % ids.length], ids[(k + 7) % ids.length]];
-    const allies = wearers.map((id, i) => {
-      const itemIdsFor = gear.slice(i * 3, i * 3 + 3).filter(Boolean);
-      return { id, pos: allyCells[i + 2], itemIds: itemIdsFor, bonuses: I.bonuses(itemIdsFor) };
-    }).filter((u) => u.itemIds.length);
-    out.push(run(
-      `items-${gear.join('-')}`,
-      3000 + k,
-      allies,
-      [{ id: 'E06', pos: 17, star: 2 }, { id: 'E01', pos: 3 }, { id: 'E03', pos: 18 }],
-    ));
+    const allies = wearers
+      .map((id, i) => {
+        const itemIdsFor = gear.slice(i * 3, i * 3 + 3).filter(Boolean);
+        return { id, pos: allyCells[i + 2], itemIds: itemIdsFor, bonuses: I.bonuses(itemIdsFor) };
+      })
+      .filter((u) => u.itemIds.length);
+    out.push(
+      run(`items-${gear.join('-')}`, 3000 + k, allies, [
+        { id: 'E06', pos: 17, star: 2 },
+        { id: 'E01', pos: 3 },
+        { id: 'E03', pos: 18 },
+      ]),
+    );
   }
 
   // 4) Augments: each augment applied alone on a fixed squad.
   const A = require(path.join(LOGIC, 'augments.js'));
   A.augments.forEach((aug, k) => {
-    out.push(run(
-      `augment-${aug.id}`,
-      4000 + k,
-      ['C01', 'C03', 'C05', 'C09'].map((id, i) => ({ id, pos: allyCells[i + 3] })),
-      [{ id: 'E06', pos: 17, star: 2 }, { id: 'E01', pos: 3 }, { id: 'E03', pos: 18 }],
-      { allyModifiers: { augmentIds: [aug.id] } },
-    ));
+    out.push(
+      run(
+        `augment-${aug.id}`,
+        4000 + k,
+        ['C01', 'C03', 'C05', 'C09'].map((id, i) => ({ id, pos: allyCells[i + 3] })),
+        [
+          { id: 'E06', pos: 17, star: 2 },
+          { id: 'E01', pos: 3 },
+          { id: 'E03', pos: 18 },
+        ],
+        { allyModifiers: { augmentIds: [aug.id] } },
+      ),
+    );
   });
 
   // 5) Real encounters from the generator across stages and difficulties.
-  const stages = [[1, 3], [2, 2], [2, 5], [3, 4], [4, 5], [5, 5], [6, 5], [7, 2]];
+  const stages = [
+    [1, 3],
+    [2, 2],
+    [2, 5],
+    [3, 4],
+    [4, 5],
+    [5, 5],
+    [6, 5],
+    [7, 2],
+  ];
   stages.forEach(([stage, roundNo], k) => {
     for (const difficulty of [1, 5, 10]) {
       const state = { stage, round: roundNo, difficulty };
@@ -152,20 +178,26 @@ function scenarios() {
         pos: allyCells[i],
         star: stage >= 4 ? 2 : 1,
       }));
-      out.push(run(
-        `encounter-${stage}-${roundNo}-d${difficulty}`,
-        5000 + k * 10 + difficulty,
-        squad,
-        enemies.map((u) => ({ ...u })),
-        { enemyDamageMultiplier: W.difficulty(difficulty).enemyDamageMultiplier },
-      ));
+      out.push(
+        run(
+          `encounter-${stage}-${roundNo}-d${difficulty}`,
+          5000 + k * 10 + difficulty,
+          squad,
+          enemies.map((u) => ({ ...u })),
+          { enemyDamageMultiplier: W.difficulty(difficulty).enemyDamageMultiplier },
+        ),
+      );
     }
   });
 
   return out;
 }
 
-const result = { version: '0.15.18', generatedBy: 'tools/combat-baseline.cjs', battles: scenarios() };
+const result = {
+  version: '0.15.18',
+  generatedBy: 'tools/combat-baseline.cjs',
+  battles: scenarios(),
+};
 const json = JSON.stringify(result, null, 2) + '\n';
 
 if (process.argv.includes('--write')) {

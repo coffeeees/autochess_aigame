@@ -1,8 +1,59 @@
 'use strict';
-function renderShopLock(){const button=$('shopLockBtn');button.disabled=!!battle||state.done||state.roundPhase!=='prepare';button.setAttribute('aria-pressed',String(state.shopLocked===true));button.textContent=state.shopLocked?'🔒 잠금 켜짐 · 다음 라운드 1회':'🔓 잠금 꺼짐';button.title='잠그면 다음 라운드에 후보와 빈칸을 유지한 뒤 자동 해제합니다. 수동 새로고침 시 잠금이 해제됩니다.';}
-function completionActions(){return `<section class="completion-choice"><span class="eyebrow">6 ROUND COMPLETE</span><h3>기본 진행 구간을 완료했습니다</h3><p>6-5 전투와 보상 정산이 끝났습니다. 여기서 종료하거나 현재 상태로 7-1부터 계속할 수 있습니다.</p><p class="record-only-note">7라운드부터는 메타레벨(전체레벨) 경험치를 받지 않으며, 기록용으로만 플레이합니다.</p><div class="completion-buttons"><button data-completion="end">게임 종료</button><button class="primary" data-completion="continue">계속 진행</button></div></section>`;}
-function showCompletionSummary(){showModal(`<section class="completion-summary"><span class="eyebrow">EXPEDITION COMPLETE</span><h2>기본 진행 구간 완료</h2><p>6-5까지의 결과와 보상은 이미 저장되었습니다.</p><div class="reward-row"><span>남은 체력</span><b>♥ ${state.health}</b></div><div class="reward-row"><span>보유 골드</span><b>${state.gold} G</b></div><div class="reward-row"><span>완료 노드</span><b>${Object.keys(state.completedRounds).length}</b></div><p>동료·장비·증강과 정산 기록은 이 원정에 보존됩니다.</p><button class="primary" data-completion-home>시작 화면</button></section>`);}
-function cancelRoundTransition(){if(typeof AutoScreenEffects!=='undefined'){AutoScreenEffects.cancel('round');AutoScreenEffects.cancel('stage');}}
-function showRoundTransition(){if($('gameView').hidden||state.done||state.roundPhase!=='prepare')return;return AutoScreenEffects[state.round===1?'round':'stage']({stage:state.stage,round:state.round,type:P.roundType(state.stage,state.round)});}
-function presentRoundHealth(receipt){if($('gameView').hidden||!['BATTLE','BOSS'].includes(receipt.type))return Promise.resolve(false);return AutoScreenEffects.health(receipt);}
-function setupRunFlowUI(){$('shopLockBtn').onclick=()=>{if(battle||!V.editable(state))return;state.shopLocked=!state.shopLocked;save();renderShopLock();};$('modalContent').addEventListener('click',e=>{const choice=e.target.closest('[data-completion]');if(choice&&P.chooseCompletion(state,choice.dataset.completion)){save();if(choice.dataset.completion==='continue'){continueRound();}else {if(typeof cancelPresentationEffects==='function')cancelPresentationEffects();render();showCompletionSummary();}return;}if(e.target.closest('[data-completion-home]'))showHome();});}
+function renderShopLock() {
+  const button = $('shopLockBtn');
+  button.disabled = !!battle || state.done || state.roundPhase !== 'prepare';
+  button.setAttribute('aria-pressed', String(state.shopLocked === true));
+  button.textContent = state.shopLocked ? '🔒 잠금 켜짐 · 다음 라운드 1회' : '🔓 잠금 꺼짐';
+  button.title =
+    '잠그면 다음 라운드에 후보와 빈칸을 유지한 뒤 자동 해제합니다. 수동 새로고침 시 잠금이 해제됩니다.';
+}
+function completionActions() {
+  return `<section class="completion-choice"><span class="eyebrow">6 ROUND COMPLETE</span><h3>기본 진행 구간을 완료했습니다</h3><p>6-5 전투와 보상 정산이 끝났습니다. 여기서 종료하거나 현재 상태로 7-1부터 계속할 수 있습니다.</p><p class="record-only-note">7라운드부터는 메타레벨(전체레벨) 경험치를 받지 않으며, 기록용으로만 플레이합니다.</p><div class="completion-buttons"><button data-completion="end">게임 종료</button><button class="primary" data-completion="continue">계속 진행</button></div></section>`;
+}
+function showCompletionSummary() {
+  showModal(
+    `<section class="completion-summary"><span class="eyebrow">EXPEDITION COMPLETE</span><h2>기본 진행 구간 완료</h2><p>6-5까지의 결과와 보상은 이미 저장되었습니다.</p><div class="reward-row"><span>남은 체력</span><b>♥ ${state.health}</b></div><div class="reward-row"><span>보유 골드</span><b>${state.gold} G</b></div><div class="reward-row"><span>완료 노드</span><b>${Object.keys(state.completedRounds).length}</b></div><p>동료·장비·증강과 정산 기록은 이 원정에 보존됩니다.</p><button class="primary" data-completion-home>시작 화면</button></section>`,
+  );
+}
+function cancelRoundTransition() {
+  if (typeof AutoScreenEffects !== 'undefined') {
+    AutoScreenEffects.cancel('round');
+    AutoScreenEffects.cancel('stage');
+  }
+}
+function showRoundTransition() {
+  if ($('gameView').hidden || state.done || state.roundPhase !== 'prepare') return;
+  return AutoScreenEffects[state.round === 1 ? 'round' : 'stage']({
+    stage: state.stage,
+    round: state.round,
+    type: P.roundType(state.stage, state.round),
+  });
+}
+function presentRoundHealth(receipt) {
+  if ($('gameView').hidden || !['BATTLE', 'BOSS'].includes(receipt.type))
+    return Promise.resolve(false);
+  return AutoScreenEffects.health(receipt);
+}
+function setupRunFlowUI() {
+  $('shopLockBtn').onclick = () => {
+    if (battle || !V.editable(state)) return;
+    state.shopLocked = !state.shopLocked;
+    save();
+    renderShopLock();
+  };
+  $('modalContent').addEventListener('click', (e) => {
+    const choice = e.target.closest('[data-completion]');
+    if (choice && P.chooseCompletion(state, choice.dataset.completion)) {
+      save();
+      if (choice.dataset.completion === 'continue') {
+        continueRound();
+      } else {
+        if (typeof cancelPresentationEffects === 'function') cancelPresentationEffects();
+        render();
+        showCompletionSummary();
+      }
+      return;
+    }
+    if (e.target.closest('[data-completion-home]')) showHome();
+  });
+}

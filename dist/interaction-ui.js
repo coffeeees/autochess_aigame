@@ -1,34 +1,350 @@
 'use strict';
-let dragAction=null,ignoreClickUntil=0,selectedItem=null;
-function costOrb(id){const spec=W.combatSpec(id),cost=spec.cost||1;return `<span class="cost-orb cost-${cost}" style="--cost-color:${D.costColors[cost]}" title="${cost}코스트" aria-label="${cost}코스트">${cost}</span>`;}
-function renderOdds(){const odds=V.shopOdds(state);$('shopOdds').innerHTML=`<b>Lv.${state.level}</b>${odds.slice(0,3).map((n,i)=>`<span class="shop-odd"><span class="odds-cost cost-art-${i+1}">${i+1}G</span><strong>${Number(n.toFixed(2))}%</strong></span>`).join('')}`;}
+let dragAction = null,
+  ignoreClickUntil = 0,
+  selectedItem = null;
+function costOrb(id) {
+  const spec = W.combatSpec(id),
+    cost = spec.cost || 1;
+  return `<span class="cost-orb cost-${cost}" style="--cost-color:${D.costColors[cost]}" title="${cost}코스트" aria-label="${cost}코스트">${cost}</span>`;
+}
+function renderOdds() {
+  const odds = V.shopOdds(state);
+  $('shopOdds').innerHTML = `<b>Lv.${state.level}</b>${odds
+    .slice(0, 3)
+    .map(
+      (n, i) =>
+        `<span class="shop-odd"><span class="odds-cost cost-art-${i + 1}">${i + 1}G</span><strong>${Number(n.toFixed(2))}%</strong></span>`,
+    )
+    .join('')}`;
+}
 
-function damageChart(rows,compact=false){if(!rows?.length)return '<p class="hint damage-empty">전투가 시작되면 아군 딜량을 표시합니다.</p>';const max=Math.max(1,...rows.map(r=>r.damage)),total=rows.reduce((sum,r)=>sum+Math.round(r.damage),0);return `<div class="damage-chart ${compact?'compact':''}" aria-label="아군 누적 피해량">${rows.map(r=>`<div class="damage-row"><div class="damage-name">${icon(r.id)}<span>${esc(D.byId(r.id)?.name||r.name)} <small>${'★'.repeat(r.star||1)}</small></span><b>${num(r.damage)}</b></div><div class="damage-track" role="meter" aria-label="${esc(D.byId(r.id)?.name||r.name)} 딜량" aria-valuemin="0" aria-valuemax="${Math.ceil(max)}" aria-valuenow="${Math.round(r.damage)}"><i style="width:${r.damage/max*100}%"></i></div></div>`).join('')}<div class="damage-total"><span>아군 총 피해</span><b>${num(total)}</b></div></div>`;}
-function renderDamage(){const rows=battle?V.damageRows(battle):lastBattle?V.damageRows(lastBattle):state.lastDamageRows||state.lastResult?.damageRows||[];$('liveDamage').innerHTML=damageChart(rows,true);$('damageMode').textContent=battle?'실시간 · 누적 피해':'';$('combatDamagePanel').hidden=!battle;if(typeof positionCombatDamage==='function')positionCombatDamage();}
-function itemIcon(id){const def=P.itemById(id),shapes={sword:'<path d="M18 7L24 2L25 10L13 23L9 19Z" fill="#e5deef"/><path d="M6 18L14 26M6 26L11 21" stroke="#ccb581" stroke-width="3"/>',armor:'<path d="M6 5L12 3Q16 8 20 3L26 5L30 12L24 15V28H8V15L2 12Z" fill="#b0b8cf"/><path d="M16 9V24" stroke="#68627d" stroke-width="3"/>',crystal:'<path d="M16 2L27 12L21 27L16 31L5 12Z" fill="#b2a0dc"/><path d="M16 2L12 12L16 31L21 12Z" fill="#e4d5fa"/>',necklace:'<path d="M6 4Q6 22 16 24Q26 22 26 4" fill="none" stroke="#d6b66d" stroke-width="3"/><path d="M16 17L23 24L16 31L9 24Z" fill="#d99aa8"/>',glove:'<path d="M7 16V8Q9 4 11 8V15V4Q14 1 15 5V14V3Q18 1 19 5V15V6Q22 4 23 9V20L20 29H10L4 20Q3 14 7 16Z" fill="#a1b6c9"/>',amulet:'<circle cx="16" cy="18" r="11" fill="#b79bdc" stroke="#e1c785" stroke-width="3"/><path d="M12 2L16 7L20 2M16 12V24M11 18H21" fill="none" stroke="#e9ddfa" stroke-width="2"/>',cloak:'<path d="M16 3L24 9L29 29Q16 23 3 29L8 9Z" fill="#9d92bd"/><path d="M10 8Q16 15 22 8L20 3H12Z" fill="#544763"/>',scope:'<circle cx="16" cy="16" r="10" fill="#746689" stroke="#d5c78e" stroke-width="3"/><path d="M1 16H31M16 1V31" stroke="#dfd3ed" stroke-width="2"/>',ring:'<circle cx="16" cy="21" r="9" fill="none" stroke="#d3b571" stroke-width="5"/><path d="M16 1L23 7L16 14L9 7Z" fill="#d1a3d0"/>',feather:'<path d="M7 29L25 3Q4 1 6 23L25 3L20 21Z" fill="#bddbd4"/><path d="M5 30L24 4" stroke="#6d8f85" stroke-width="2"/>'};return `<svg class="item-icon" viewBox="0 0 32 32" aria-hidden="true"><title>${def.name}</title>${shapes[def.iconKey]||shapes.crystal}</svg>`;}
-function itemButton(item,extra=''){const def=P.itemById(item.id);return `<button class="item-slot item-tier-${def.tier} ${selectedItem===item.uid?'selected':''}" data-item-uid="${item.uid}" aria-label="${def.name} · ${def.tier}티어 · ${def.statsText}" title="${def.name} · ${def.statsText}" ${extra}>${itemIcon(item.id)}<small>${def.legacy?'구':def.id.slice(1)}</small></button>`;}
-function unitEquipment(u){const uid=battle&&u.stats?u.persistentUid:u.uid;if(!uid||u.team==='enemy')return '';const items=state.inventory.filter(i=>i.equippedTo===uid);return `<section class="unit-equipment"><div><b>장비 ${items.length} / 3</b><small>드래그로 장착·이동·회수</small></div><div class="equipment-grid" data-unit-drop="${uid}">${Array.from({length:3},(_,i)=>items[i]?itemButton(items[i]):`<div class="item-slot empty-slot" data-unit-drop="${uid}" aria-label="빈 장비 칸">+</div>`).join('')}</div></section>`;}
-function renderInventory(){const loose=state.inventory.filter(i=>i.equippedTo===null),count=Math.max(12,Math.ceil(loose.length/2)*2);$('inventoryPanel')?.style?.setProperty?.('--storage-rows',String(count/2));$('inventoryCount').textContent=loose.length+'개 보관 · 총 '+state.inventory.length+'개';$('inventory').innerHTML=Array.from({length:count},(_,i)=>loose[i]?itemButton(loose[i]):'<div class="item-slot empty-slot" aria-label="빈 보관함 칸"></div>').join('');$('inventoryOverflow').hidden=loose.length<=12;$('inventoryOverflow').textContent=loose.length>12?'추가 '+(loose.length-12)+'개 ↓':'';$('storageHint').textContent='아이템 클릭 → 능력치 · 아군에게 드래그 → 장착';$('itemTrash').disabled=!V.editable(state);$('undoDiscardBtn').disabled=!state.discardedItem||!V.editable(state);if(selectedItem)renderItemDetail();}
-function renderItemDetail(){const item=state.inventory.find(i=>i.uid===selectedItem);if(!item){$('itemPopover').hidden=true;return;}const def=P.itemById(item.id),owner=state.units.find(u=>u.uid===item.equippedTo);$('itemPopover').hidden=false;$('itemDetail').innerHTML=`<div class="item-identity">${itemIcon(item.id)}<div><h3>${def.name}</h3><span class="tier-label item-tier-${def.tier}">${def.tier}티어</span><b>${def.statsText}</b></div></div>${def.effect?`<p class="item-effect">${esc(def.effect).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')}</p>`:''}<p>${owner?esc(D.byId(owner.id).name)+' 장착 중':'보관함에 보관 중'}</p><p class="hint">캐릭터당 최대3개 · 모든 티어 동일 장비 중복 가능 · 같은 ID 고유 효과는 기존 판정 적용</p>${owner?`<button class="full" data-return-item="${item.uid}">보관함으로 회수</button>`:`<button class="full discard-item" data-discard-item="${item.uid}" ${!V.editable(state)?'disabled':''}>휴지통으로 버리기</button>`}`;}
-function positionInfo(el,x,y,anchor=null){const r=el.getBoundingClientRect(),a=anchor&&anchor.width?anchor:{left:x-27,right:x+27,top:y};const right=a.right+10,left=a.left-r.width-10;el.style.left=Math.max(8,Math.min(innerWidth-r.width-8,right+r.width<=innerWidth-8?right:left))+'px';el.style.top=Math.max(8,Math.min(innerHeight-r.height-8,a.top-20))+'px';}
-function hideItemDetail(){selectedItem=null;const el=$('itemPopover');if(el.matches?.(':popover-open'))el.hidePopover();el.hidden=true;if(el.parentElement&&el.parentElement!==document.body)document.body.appendChild(el);}
-function benchOverflowMarkup(bench){const extra=bench.filter(u=>u.benchSlot>=C.board.benchSize),open=document.querySelector?.('#bench .bench-overflow')?.open;return extra.length?`<details class="bench-overflow" ${open?'open':''}><summary>이전 보유 ${extra.length}명 ↗</summary><div class="overflow-copy">전장에 배치하거나 기존 칸과 교체할 수 있습니다.</div><div class="overflow-grid">${extra.map(u=>`<button class="bench-slot" data-bench-index="${u.benchSlot}" data-bench="${u.uid}" data-unit-uid="${u.uid}" data-unit-drop="${u.uid}" aria-label="이전 보유 ${esc(D.byId(u.id).name)}" ${battle||state.done?'disabled':''}>${pawn(u,false,'bench')}</button>`).join('')}</div></details>`:'';}
-function setRecruitOpen(open){$('recruitPopover').hidden=!open;$('recruitPopover').classList?.toggle('expanded',open);$('openRecruitBtn').setAttribute('aria-expanded',String(open));if(open){selected=null;selectedBattle=null;hideItemDetail();$('unitPopover').hidden=true;renderBoard();positionRecruit();} }
-function positionRecruit(){if($('recruitPopover').hidden)return;const panel=$('recruitPopover'),hud=document.querySelector('.game-hud')?.getBoundingClientRect(),bench=document.querySelector('.bench-deck')?.getBoundingClientRect(),width=Math.min(760,innerWidth-24),top=(hud?.bottom||82)+8;panel.style.left=(innerWidth-width)/2+'px';panel.style.top=top+'px';panel.style.width=width+'px';panel.style.maxHeight=Math.max(180,(bench?.top||innerHeight-145)-top-12)+'px';}
-function suppressDragClick(){return Date.now()<ignoreClickUntil;}
-function finishDrag(){if(typeof hideSaleZones==='function')hideSaleZones();document.querySelector('.drag-ghost')?.remove();document.querySelectorAll('.drop-target').forEach(n=>n.classList.remove('drop-target'));document.body.classList.remove('is-dragging');dragAction=null;}
-function dragDropTarget(x,y){return document.elementFromPoint(x,y)?.closest('[data-sell-zone],[data-pos],[data-bench-index],[data-unit-drop],#inventory,#itemTrash');}
-function setupInteractions(){
- $('openRecruitBtn').onclick=()=>setRecruitOpen($('recruitPopover').hidden);$('closeRecruitBtn').onclick=()=>setRecruitOpen(false);$('closeItemPopover').onclick=hideItemDetail;
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dragAction){if(dragAction.active)ignoreClickUntil=Date.now()+400;finishDrag();}if(e.key==='Escape'&&!$('modal').open){setRecruitOpen(false);hideItemDetail();}});
- window.addEventListener('blur',()=>{if(dragAction?.active)ignoreClickUntil=Date.now()+400;finishDrag();});document.addEventListener('visibilitychange',()=>{if(document.hidden)finishDrag();});
- window.addEventListener('resize',positionRecruit);window.addEventListener('scroll',positionRecruit,{passive:true});
- document.addEventListener('click',e=>{if(suppressDragClick())return;const item=e.target.closest('[data-item-uid]');if(item){selectedItem=item.dataset.itemUid;renderItemDetail();raiseItemTooltip(item);positionInfo($('itemPopover'),e.clientX,e.clientY,item.getBoundingClientRect());return;}const back=e.target.closest('[data-return-item]');if(back){if(P.unequip(state,back.dataset.returnItem)){hideItemDetail();save();render();notify('T31','아이템을 보관함으로 회수했습니다.');}return;}if(!e.target.closest('#itemPopover'))hideItemDetail();});
- document.addEventListener('pointerdown',e=>{ignoreClickUntil=0;if(e.button!==0||battle||!V.editable(state)||e.target.closest('#modal'))return;const item=e.target.closest('[data-item-uid]'),unit=e.target.closest('[data-unit-uid]');if(!item&&!unit)return;const el=item||unit;dragAction={pointerId:e.pointerId,kind:item?'item':'unit',uid:item?item.dataset.itemUid:Number(unit.dataset.unitUid),x:e.clientX,y:e.clientY,active:false,html:item?itemIcon(state.inventory.find(i=>i.uid===item.dataset.itemUid).id):icon(state.units.find(u=>u.uid===Number(unit.dataset.unitUid)).id)};});
- document.addEventListener('pointermove',e=>{const a=dragAction;if(!a||e.pointerId!==a.pointerId)return;if(!a.active&&Math.hypot(e.clientX-a.x,e.clientY-a.y)<7)return;if(!a.active){if(typeof cancelMergeEffects==='function')cancelMergeEffects();a.active=true;if(a.kind==='unit')showSaleZones(a.uid);selected=null;selectedBattle=null;hideItemDetail();$('unitPopover').hidden=true;document.body.classList.add('is-dragging');const ghost=document.createElement('div');ghost.className='drag-ghost';ghost.innerHTML=a.html;document.body.appendChild(ghost);}e.preventDefault();const ghost=document.querySelector('.drag-ghost');ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';document.querySelectorAll('.drop-target').forEach(n=>n.classList.remove('drop-target'));dragDropTarget(e.clientX,e.clientY)?.classList.add('drop-target');},{passive:false});
- document.addEventListener('pointerup',e=>{const a=dragAction;if(!a||e.pointerId!==a.pointerId)return;if(!a.active){finishDrag();return;}e.preventDefault();ignoreClickUntil=Date.now()+400;const target=dragDropTarget(e.clientX,e.clientY);if(a.kind==='unit'&&target?.hasAttribute('data-sell-zone')){finishDrag();sellUnit(a.uid);return;}let result={ok:false,message:a.kind==='item'?'아군 캐릭터 또는 보관함에 놓아주세요.':'전장이나 대기석에 놓아주세요.'};if(target){if(a.kind==='unit'){if(target.hasAttribute('data-pos'))result=V.moveUnit(state,a.uid,{location:'board',pos:Number(target.dataset.pos)});else if(target.hasAttribute('data-bench-index'))result=V.moveUnit(state,a.uid,{location:'bench',slot:Number(target.dataset.benchIndex)});}else{const uid=target.dataset.unitDrop||target.dataset.unitUid;if(uid)result=V.transferItem(state,a.uid,Number(uid));else if(target.id==='itemTrash'){result={ok:P.discardItem(state,a.uid),message:'아이템을 버렸습니다. 되돌리기로 복원할 수 있습니다.'};}else if(target.id==='inventory'){const item=state.inventory.find(i=>i.uid===a.uid);result={ok:item?.equippedTo===null||P.unequip(state,a.uid)};}}}finishDrag();if(result.ok){save();render();notify(AutoNoticePolicy.dragId(a.kind,result),result.message||(a.kind==='item'?'아이템 이동 완료':'캐릭터 이동 완료'));}else{render();notify(AutoNoticePolicy.dragId(a.kind,result),result.message||'아이템을 옮길 수 없습니다.');}});
- document.addEventListener('pointercancel',()=>{if(dragAction?.active)ignoreClickUntil=Date.now()+400;finishDrag();});
- document.addEventListener('click',e=>{if(suppressDragClick()){e.preventDefault();e.stopImmediatePropagation();}},true);
- const guide=$('guideBtn').onclick;$('guideBtn').onclick=()=>{setRecruitOpen(false);guide();};
- const rules=$('rulesBtn').onclick;$('rulesBtn').onclick=()=>{setRecruitOpen(false);rules();};
+function damageChart(rows, compact = false) {
+  if (!rows?.length)
+    return '<p class="hint damage-empty">전투가 시작되면 아군 딜량을 표시합니다.</p>';
+  const max = Math.max(1, ...rows.map((r) => r.damage)),
+    total = rows.reduce((sum, r) => sum + Math.round(r.damage), 0);
+  return `<div class="damage-chart ${compact ? 'compact' : ''}" aria-label="아군 누적 피해량">${rows.map((r) => `<div class="damage-row"><div class="damage-name">${icon(r.id)}<span>${esc(D.byId(r.id)?.name || r.name)} <small>${'★'.repeat(r.star || 1)}</small></span><b>${num(r.damage)}</b></div><div class="damage-track" role="meter" aria-label="${esc(D.byId(r.id)?.name || r.name)} 딜량" aria-valuemin="0" aria-valuemax="${Math.ceil(max)}" aria-valuenow="${Math.round(r.damage)}"><i style="width:${(r.damage / max) * 100}%"></i></div></div>`).join('')}<div class="damage-total"><span>아군 총 피해</span><b>${num(total)}</b></div></div>`;
+}
+function renderDamage() {
+  const rows = battle
+    ? V.damageRows(battle)
+    : lastBattle
+      ? V.damageRows(lastBattle)
+      : state.lastDamageRows || state.lastResult?.damageRows || [];
+  $('liveDamage').innerHTML = damageChart(rows, true);
+  $('damageMode').textContent = battle ? '실시간 · 누적 피해' : '';
+  $('combatDamagePanel').hidden = !battle;
+  if (typeof positionCombatDamage === 'function') positionCombatDamage();
+}
+function itemIcon(id) {
+  const def = P.itemById(id),
+    shapes = {
+      sword:
+        '<path d="M18 7L24 2L25 10L13 23L9 19Z" fill="#e5deef"/><path d="M6 18L14 26M6 26L11 21" stroke="#ccb581" stroke-width="3"/>',
+      armor:
+        '<path d="M6 5L12 3Q16 8 20 3L26 5L30 12L24 15V28H8V15L2 12Z" fill="#b0b8cf"/><path d="M16 9V24" stroke="#68627d" stroke-width="3"/>',
+      crystal:
+        '<path d="M16 2L27 12L21 27L16 31L5 12Z" fill="#b2a0dc"/><path d="M16 2L12 12L16 31L21 12Z" fill="#e4d5fa"/>',
+      necklace:
+        '<path d="M6 4Q6 22 16 24Q26 22 26 4" fill="none" stroke="#d6b66d" stroke-width="3"/><path d="M16 17L23 24L16 31L9 24Z" fill="#d99aa8"/>',
+      glove:
+        '<path d="M7 16V8Q9 4 11 8V15V4Q14 1 15 5V14V3Q18 1 19 5V15V6Q22 4 23 9V20L20 29H10L4 20Q3 14 7 16Z" fill="#a1b6c9"/>',
+      amulet:
+        '<circle cx="16" cy="18" r="11" fill="#b79bdc" stroke="#e1c785" stroke-width="3"/><path d="M12 2L16 7L20 2M16 12V24M11 18H21" fill="none" stroke="#e9ddfa" stroke-width="2"/>',
+      cloak:
+        '<path d="M16 3L24 9L29 29Q16 23 3 29L8 9Z" fill="#9d92bd"/><path d="M10 8Q16 15 22 8L20 3H12Z" fill="#544763"/>',
+      scope:
+        '<circle cx="16" cy="16" r="10" fill="#746689" stroke="#d5c78e" stroke-width="3"/><path d="M1 16H31M16 1V31" stroke="#dfd3ed" stroke-width="2"/>',
+      ring: '<circle cx="16" cy="21" r="9" fill="none" stroke="#d3b571" stroke-width="5"/><path d="M16 1L23 7L16 14L9 7Z" fill="#d1a3d0"/>',
+      feather:
+        '<path d="M7 29L25 3Q4 1 6 23L25 3L20 21Z" fill="#bddbd4"/><path d="M5 30L24 4" stroke="#6d8f85" stroke-width="2"/>',
+    };
+  return `<svg class="item-icon" viewBox="0 0 32 32" aria-hidden="true"><title>${def.name}</title>${shapes[def.iconKey] || shapes.crystal}</svg>`;
+}
+function itemButton(item, extra = '') {
+  const def = P.itemById(item.id);
+  return `<button class="item-slot item-tier-${def.tier} ${selectedItem === item.uid ? 'selected' : ''}" data-item-uid="${item.uid}" aria-label="${def.name} · ${def.tier}티어 · ${def.statsText}" title="${def.name} · ${def.statsText}" ${extra}>${itemIcon(item.id)}<small>${def.legacy ? '구' : def.id.slice(1)}</small></button>`;
+}
+function unitEquipment(u) {
+  const uid = battle && u.stats ? u.persistentUid : u.uid;
+  if (!uid || u.team === 'enemy') return '';
+  const items = state.inventory.filter((i) => i.equippedTo === uid);
+  return `<section class="unit-equipment"><div><b>장비 ${items.length} / 3</b><small>드래그로 장착·이동·회수</small></div><div class="equipment-grid" data-unit-drop="${uid}">${Array.from({ length: 3 }, (_, i) => (items[i] ? itemButton(items[i]) : `<div class="item-slot empty-slot" data-unit-drop="${uid}" aria-label="빈 장비 칸">+</div>`)).join('')}</div></section>`;
+}
+function renderInventory() {
+  const loose = state.inventory.filter((i) => i.equippedTo === null),
+    count = Math.max(12, Math.ceil(loose.length / 2) * 2);
+  $('inventoryPanel')?.style?.setProperty?.('--storage-rows', String(count / 2));
+  $('inventoryCount').textContent = loose.length + '개 보관 · 총 ' + state.inventory.length + '개';
+  $('inventory').innerHTML = Array.from({ length: count }, (_, i) =>
+    loose[i]
+      ? itemButton(loose[i])
+      : '<div class="item-slot empty-slot" aria-label="빈 보관함 칸"></div>',
+  ).join('');
+  $('inventoryOverflow').hidden = loose.length <= 12;
+  $('inventoryOverflow').textContent =
+    loose.length > 12 ? '추가 ' + (loose.length - 12) + '개 ↓' : '';
+  $('storageHint').textContent = '아이템 클릭 → 능력치 · 아군에게 드래그 → 장착';
+  $('itemTrash').disabled = !V.editable(state);
+  $('undoDiscardBtn').disabled = !state.discardedItem || !V.editable(state);
+  if (selectedItem) renderItemDetail();
+}
+function renderItemDetail() {
+  const item = state.inventory.find((i) => i.uid === selectedItem);
+  if (!item) {
+    $('itemPopover').hidden = true;
+    return;
+  }
+  const def = P.itemById(item.id),
+    owner = state.units.find((u) => u.uid === item.equippedTo);
+  $('itemPopover').hidden = false;
+  $('itemDetail').innerHTML =
+    `<div class="item-identity">${itemIcon(item.id)}<div><h3>${def.name}</h3><span class="tier-label item-tier-${def.tier}">${def.tier}티어</span><b>${def.statsText}</b></div></div>${def.effect ? `<p class="item-effect">${esc(def.effect).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</p>` : ''}<p>${owner ? esc(D.byId(owner.id).name) + ' 장착 중' : '보관함에 보관 중'}</p><p class="hint">캐릭터당 최대3개 · 모든 티어 동일 장비 중복 가능 · 같은 ID 고유 효과는 기존 판정 적용</p>${owner ? `<button class="full" data-return-item="${item.uid}">보관함으로 회수</button>` : `<button class="full discard-item" data-discard-item="${item.uid}" ${!V.editable(state) ? 'disabled' : ''}>휴지통으로 버리기</button>`}`;
+}
+function positionInfo(el, x, y, anchor = null) {
+  const r = el.getBoundingClientRect(),
+    a = anchor && anchor.width ? anchor : { left: x - 27, right: x + 27, top: y };
+  const right = a.right + 10,
+    left = a.left - r.width - 10;
+  el.style.left =
+    Math.max(
+      8,
+      Math.min(innerWidth - r.width - 8, right + r.width <= innerWidth - 8 ? right : left),
+    ) + 'px';
+  el.style.top = Math.max(8, Math.min(innerHeight - r.height - 8, a.top - 20)) + 'px';
+}
+function hideItemDetail() {
+  selectedItem = null;
+  const el = $('itemPopover');
+  if (el.matches?.(':popover-open')) el.hidePopover();
+  el.hidden = true;
+  if (el.parentElement && el.parentElement !== document.body) document.body.appendChild(el);
+}
+function benchOverflowMarkup(bench) {
+  const extra = bench.filter((u) => u.benchSlot >= C.board.benchSize),
+    open = document.querySelector?.('#bench .bench-overflow')?.open;
+  return extra.length
+    ? `<details class="bench-overflow" ${open ? 'open' : ''}><summary>이전 보유 ${extra.length}명 ↗</summary><div class="overflow-copy">전장에 배치하거나 기존 칸과 교체할 수 있습니다.</div><div class="overflow-grid">${extra.map((u) => `<button class="bench-slot" data-bench-index="${u.benchSlot}" data-bench="${u.uid}" data-unit-uid="${u.uid}" data-unit-drop="${u.uid}" aria-label="이전 보유 ${esc(D.byId(u.id).name)}" ${battle || state.done ? 'disabled' : ''}>${pawn(u, false, 'bench')}</button>`).join('')}</div></details>`
+    : '';
+}
+function setRecruitOpen(open) {
+  $('recruitPopover').hidden = !open;
+  $('recruitPopover').classList?.toggle('expanded', open);
+  $('openRecruitBtn').setAttribute('aria-expanded', String(open));
+  if (open) {
+    selected = null;
+    selectedBattle = null;
+    hideItemDetail();
+    $('unitPopover').hidden = true;
+    renderBoard();
+    positionRecruit();
+  }
+}
+function positionRecruit() {
+  if ($('recruitPopover').hidden) return;
+  const panel = $('recruitPopover'),
+    hud = document.querySelector('.game-hud')?.getBoundingClientRect(),
+    bench = document.querySelector('.bench-deck')?.getBoundingClientRect(),
+    width = Math.min(760, innerWidth - 24),
+    top = (hud?.bottom || 82) + 8;
+  panel.style.left = (innerWidth - width) / 2 + 'px';
+  panel.style.top = top + 'px';
+  panel.style.width = width + 'px';
+  panel.style.maxHeight = Math.max(180, (bench?.top || innerHeight - 145) - top - 12) + 'px';
+}
+function suppressDragClick() {
+  return Date.now() < ignoreClickUntil;
+}
+function finishDrag() {
+  if (typeof hideSaleZones === 'function') hideSaleZones();
+  document.querySelector('.drag-ghost')?.remove();
+  document.querySelectorAll('.drop-target').forEach((n) => n.classList.remove('drop-target'));
+  document.body.classList.remove('is-dragging');
+  dragAction = null;
+}
+function dragDropTarget(x, y) {
+  return document
+    .elementFromPoint(x, y)
+    ?.closest(
+      '[data-sell-zone],[data-pos],[data-bench-index],[data-unit-drop],#inventory,#itemTrash',
+    );
+}
+function setupInteractions() {
+  $('openRecruitBtn').onclick = () => setRecruitOpen($('recruitPopover').hidden);
+  $('closeRecruitBtn').onclick = () => setRecruitOpen(false);
+  $('closeItemPopover').onclick = hideItemDetail;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dragAction) {
+      if (dragAction.active) ignoreClickUntil = Date.now() + 400;
+      finishDrag();
+    }
+    if (e.key === 'Escape' && !$('modal').open) {
+      setRecruitOpen(false);
+      hideItemDetail();
+    }
+  });
+  window.addEventListener('blur', () => {
+    if (dragAction?.active) ignoreClickUntil = Date.now() + 400;
+    finishDrag();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) finishDrag();
+  });
+  window.addEventListener('resize', positionRecruit);
+  window.addEventListener('scroll', positionRecruit, { passive: true });
+  document.addEventListener('click', (e) => {
+    if (suppressDragClick()) return;
+    const item = e.target.closest('[data-item-uid]');
+    if (item) {
+      selectedItem = item.dataset.itemUid;
+      renderItemDetail();
+      raiseItemTooltip(item);
+      positionInfo($('itemPopover'), e.clientX, e.clientY, item.getBoundingClientRect());
+      return;
+    }
+    const back = e.target.closest('[data-return-item]');
+    if (back) {
+      if (P.unequip(state, back.dataset.returnItem)) {
+        hideItemDetail();
+        save();
+        render();
+        notify('T31', '아이템을 보관함으로 회수했습니다.');
+      }
+      return;
+    }
+    if (!e.target.closest('#itemPopover')) hideItemDetail();
+  });
+  document.addEventListener('pointerdown', (e) => {
+    ignoreClickUntil = 0;
+    if (e.button !== 0 || battle || !V.editable(state) || e.target.closest('#modal')) return;
+    const item = e.target.closest('[data-item-uid]'),
+      unit = e.target.closest('[data-unit-uid]');
+    if (!item && !unit) return;
+    const el = item || unit;
+    dragAction = {
+      pointerId: e.pointerId,
+      kind: item ? 'item' : 'unit',
+      uid: item ? item.dataset.itemUid : Number(unit.dataset.unitUid),
+      x: e.clientX,
+      y: e.clientY,
+      active: false,
+      html: item
+        ? itemIcon(state.inventory.find((i) => i.uid === item.dataset.itemUid).id)
+        : icon(state.units.find((u) => u.uid === Number(unit.dataset.unitUid)).id),
+    };
+  });
+  document.addEventListener(
+    'pointermove',
+    (e) => {
+      const a = dragAction;
+      if (!a || e.pointerId !== a.pointerId) return;
+      if (!a.active && Math.hypot(e.clientX - a.x, e.clientY - a.y) < 7) return;
+      if (!a.active) {
+        if (typeof cancelMergeEffects === 'function') cancelMergeEffects();
+        a.active = true;
+        if (a.kind === 'unit') showSaleZones(a.uid);
+        selected = null;
+        selectedBattle = null;
+        hideItemDetail();
+        $('unitPopover').hidden = true;
+        document.body.classList.add('is-dragging');
+        const ghost = document.createElement('div');
+        ghost.className = 'drag-ghost';
+        ghost.innerHTML = a.html;
+        document.body.appendChild(ghost);
+      }
+      e.preventDefault();
+      const ghost = document.querySelector('.drag-ghost');
+      ghost.style.left = e.clientX + 'px';
+      ghost.style.top = e.clientY + 'px';
+      document.querySelectorAll('.drop-target').forEach((n) => n.classList.remove('drop-target'));
+      dragDropTarget(e.clientX, e.clientY)?.classList.add('drop-target');
+    },
+    { passive: false },
+  );
+  document.addEventListener('pointerup', (e) => {
+    const a = dragAction;
+    if (!a || e.pointerId !== a.pointerId) return;
+    if (!a.active) {
+      finishDrag();
+      return;
+    }
+    e.preventDefault();
+    ignoreClickUntil = Date.now() + 400;
+    const target = dragDropTarget(e.clientX, e.clientY);
+    if (a.kind === 'unit' && target?.hasAttribute('data-sell-zone')) {
+      finishDrag();
+      sellUnit(a.uid);
+      return;
+    }
+    let result = {
+      ok: false,
+      message:
+        a.kind === 'item'
+          ? '아군 캐릭터 또는 보관함에 놓아주세요.'
+          : '전장이나 대기석에 놓아주세요.',
+    };
+    if (target) {
+      if (a.kind === 'unit') {
+        if (target.hasAttribute('data-pos'))
+          result = V.moveUnit(state, a.uid, { location: 'board', pos: Number(target.dataset.pos) });
+        else if (target.hasAttribute('data-bench-index'))
+          result = V.moveUnit(state, a.uid, {
+            location: 'bench',
+            slot: Number(target.dataset.benchIndex),
+          });
+      } else {
+        const uid = target.dataset.unitDrop || target.dataset.unitUid;
+        if (uid) result = V.transferItem(state, a.uid, Number(uid));
+        else if (target.id === 'itemTrash') {
+          result = {
+            ok: P.discardItem(state, a.uid),
+            message: '아이템을 버렸습니다. 되돌리기로 복원할 수 있습니다.',
+          };
+        } else if (target.id === 'inventory') {
+          const item = state.inventory.find((i) => i.uid === a.uid);
+          result = { ok: item?.equippedTo === null || P.unequip(state, a.uid) };
+        }
+      }
+    }
+    finishDrag();
+    if (result.ok) {
+      save();
+      render();
+      notify(
+        AutoNoticePolicy.dragId(a.kind, result),
+        result.message || (a.kind === 'item' ? '아이템 이동 완료' : '캐릭터 이동 완료'),
+      );
+    } else {
+      render();
+      notify(
+        AutoNoticePolicy.dragId(a.kind, result),
+        result.message || '아이템을 옮길 수 없습니다.',
+      );
+    }
+  });
+  document.addEventListener('pointercancel', () => {
+    if (dragAction?.active) ignoreClickUntil = Date.now() + 400;
+    finishDrag();
+  });
+  document.addEventListener(
+    'click',
+    (e) => {
+      if (suppressDragClick()) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    },
+    true,
+  );
+  const guide = $('guideBtn').onclick;
+  $('guideBtn').onclick = () => {
+    setRecruitOpen(false);
+    guide();
+  };
+  const rules = $('rulesBtn').onclick;
+  $('rulesBtn').onclick = () => {
+    setRecruitOpen(false);
+    rules();
+  };
 }

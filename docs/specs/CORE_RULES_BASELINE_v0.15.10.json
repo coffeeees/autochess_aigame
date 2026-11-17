@@ -13,5 +13,13 @@
     "dist/item-effects.js": "e36a1f5b03d23a6aa91f1d733f8679a2a44703e63ee980d2f6d7a8312918745e",
     "dist/augments.js": "4c9fb4e1b36120f33e191a3e4c21cfa8c62a8cb190b97b7b3199e394639fcb5e",
     "dist/augment-effects.js": "c4c9454e055ef1d01fd3d966f469ff288057160bece6965a4047675567ebb215"
+  },
+  "formattedFrom": "Prettier 3.3.3 (.prettierrc) output of the v0.15.18-original files, whose hashes equal the hashes above",
+  "formattedHashes": {
+    "dist/higher-cost-drafts.js": "561bae84e2bd0160192bd51bdce17c0a21ef191ba6d65c4e19f59e416d8318b7",
+    "dist/board.js": "00b27d548fe0612b1e18a6939854b2d1305df81232ea6b1dea5b9406a15bae8f",
+    "dist/encounters.js": "f4ba0a64ac1e8ab724883a80534cf9d96ee8dafccf2b26d4baecc42ede4d2905",
+    "dist/augments.js": "3699f3fcea1d58b6ea4f4fac5302309383e20725c31ee1cc9a463e10ea361089",
+    "dist/augment-effects.js": "4f109218c089b2aa54ca7faa2f382214404a2328e0fca987f8a54f5667beb40f"
   }
 }

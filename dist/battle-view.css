@@ -1,7 +1,285 @@
 /* Animated combat is a visual layer over the unchanged preparation grid. */
-.board.combat-mode{position:relative;isolation:isolate;background:radial-gradient(ellipse at 50% 52%,#342a4055,transparent 75%),#101016}.board.combat-mode>.cell{opacity:.33;pointer-events:none;background:#19171f;border-color:#51455c;transition:opacity .3s}.combat-actors,.combat-effects{position:absolute;inset:0;pointer-events:none}.combat-actors{z-index:2}.combat-effects{z-index:4;overflow:hidden;border-radius:7px}.combat-unit{position:absolute;left:0;top:0;padding:0;border:0;background:none!important;border-radius:7px;container-type:size;pointer-events:auto;transition:transform var(--combat-move-ms,320ms) linear;will-change:transform;z-index:2;cursor:pointer;box-shadow:none}.combat-unit::before{content:'';position:absolute;left:12%;right:12%;bottom:-4px;height:8px;background:#0009;border-radius:50%;filter:blur(2px)}.combat-unit:focus-visible{outline:2px solid #e6d7fb;outline-offset:3px}.combat-unit:disabled{opacity:1;cursor:default;pointer-events:none}.combat-body,.combat-sprite{width:100%;height:100%;position:relative;transform-origin:50% 75%}.combat-unit .pawn{width:100%;height:100%;border-radius:8px;background:#211e28;box-shadow:0 4px 12px #0009;pointer-events:none}.combat-unit .pawn .avatar{border-radius:6px}.combat-unit .pawn .name{bottom:10px}.combat-unit .bar{height:3px}.combat-unit .shield-mark{font-size:7px;bottom:20px}.combat-unit .pawn .status-mark{max-width:95%;font-size:6px}.combat-unit.is-defeated{z-index:1}.combat-number{position:absolute;white-space:nowrap;pointer-events:none;font-family:system-ui,'Malgun Gothic',sans-serif;font-variant-numeric:tabular-nums;font-size:clamp(12px,1.3vw,18px);font-weight:850;letter-spacing:-.4px;line-height:1.2;text-shadow:-1px -1px 1px #08060a,1px -1px 1px #08060a,-1px 1px 1px #08060a,1px 1px 1px #08060a,0 2px 4px #000;z-index:7}.number-physical{color:#ffecba}.number-magic{color:#d4b8ff}.number-incoming{color:#ff9eae}.number-dot{color:#c7dca1;font-size:13px;font-weight:750}.number-critical{color:#ffda6c;font-size:clamp(14px,1.5vw,22px);text-shadow:0 0 7px #8c572b,-1px -1px #201322,1px 1px #201322}.number-healing{color:#9ce6b1}.number-shielding{color:#a3d5ff;font-size:12px}.number-evade{color:#ded7e8;font-size:12px}.combat-projectile{position:absolute;pointer-events:none;transform-origin:50% 50%;z-index:3}.physical-bolt{width:19px;height:3px;border-radius:3px;background:#fae3ae;box-shadow:0 0 5px #c9a467}.physical-bolt::after{content:'';position:absolute;right:-3px;top:-3px;border-left:6px solid #ffe7b5;border-top:4px solid transparent;border-bottom:4px solid transparent}.magic-bolt{width:9px;height:9px;background:#dbbdff;border-radius:50%;box-shadow:0 0 7px 3px #a279cd88}.item-bolt{filter:drop-shadow(0 0 3px #e8ce81)}.combat-ring{position:absolute;pointer-events:none;border:2px solid var(--effect-color);box-shadow:0 0 8px var(--effect-color),inset 0 0 7px #ffffff25;border-radius:50%;z-index:2}.ring-cast{border-style:solid;border-width:2px}.ring-heal{background:radial-gradient(transparent,#93d8ae33)}.ring-shield{border-width:3px;box-shadow:0 0 10px #8fb3d799}.ring-slash{border-radius:12% 70%;height:12px!important;border-left:0;border-bottom:0;box-shadow:0 -1px 8px var(--effect-color)}.ring-critical{border-width:3px}.combat-mode .frontier{border-bottom-style:solid}.combat-paused .combat-unit{transition:none}
-@media(max-width:800px){.combat-number{font-size:14px}.number-critical{font-size:17px}.number-dot,.number-shielding,.number-evade{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.combat-unit,.board.combat-mode>.cell{transition:none!important}}
-.combat-number>small{display:block;font-size:8px;font-weight:700;letter-spacing:0;line-height:1.1;text-align:center}.combat-number>b{display:block;font:inherit;line-height:1.15;text-align:center}
+.board.combat-mode {
+  position: relative;
+  isolation: isolate;
+  background: radial-gradient(ellipse at 50% 52%, #342a4055, transparent 75%), #101016;
+}
+.board.combat-mode > .cell {
+  opacity: 0.33;
+  pointer-events: none;
+  background: #19171f;
+  border-color: #51455c;
+  transition: opacity 0.3s;
+}
+.combat-actors,
+.combat-effects {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.combat-actors {
+  z-index: 2;
+}
+.combat-effects {
+  z-index: 4;
+  overflow: hidden;
+  border-radius: 7px;
+}
+.combat-unit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border: 0;
+  background: none !important;
+  border-radius: 7px;
+  container-type: size;
+  pointer-events: auto;
+  transition: transform var(--combat-move-ms, 320ms) linear;
+  will-change: transform;
+  z-index: 2;
+  cursor: pointer;
+  box-shadow: none;
+}
+.combat-unit::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -4px;
+  height: 8px;
+  background: #0009;
+  border-radius: 50%;
+  filter: blur(2px);
+}
+.combat-unit:focus-visible {
+  outline: 2px solid #e6d7fb;
+  outline-offset: 3px;
+}
+.combat-unit:disabled {
+  opacity: 1;
+  cursor: default;
+  pointer-events: none;
+}
+.combat-body,
+.combat-sprite {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-origin: 50% 75%;
+}
+.combat-unit .pawn {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: #211e28;
+  box-shadow: 0 4px 12px #0009;
+  pointer-events: none;
+}
+.combat-unit .pawn .avatar {
+  border-radius: 6px;
+}
+.combat-unit .pawn .name {
+  bottom: 10px;
+}
+.combat-unit .bar {
+  height: 3px;
+}
+.combat-unit .shield-mark {
+  font-size: 7px;
+  bottom: 20px;
+}
+.combat-unit .pawn .status-mark {
+  max-width: 95%;
+  font-size: 6px;
+}
+.combat-unit.is-defeated {
+  z-index: 1;
+}
+.combat-number {
+  position: absolute;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: system-ui, 'Malgun Gothic', sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(12px, 1.3vw, 18px);
+  font-weight: 850;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  text-shadow:
+    -1px -1px 1px #08060a,
+    1px -1px 1px #08060a,
+    -1px 1px 1px #08060a,
+    1px 1px 1px #08060a,
+    0 2px 4px #000;
+  z-index: 7;
+}
+.number-physical {
+  color: #ffecba;
+}
+.number-magic {
+  color: #d4b8ff;
+}
+.number-incoming {
+  color: #ff9eae;
+}
+.number-dot {
+  color: #c7dca1;
+  font-size: 13px;
+  font-weight: 750;
+}
+.number-critical {
+  color: #ffda6c;
+  font-size: clamp(14px, 1.5vw, 22px);
+  text-shadow:
+    0 0 7px #8c572b,
+    -1px -1px #201322,
+    1px 1px #201322;
+}
+.number-healing {
+  color: #9ce6b1;
+}
+.number-shielding {
+  color: #a3d5ff;
+  font-size: 12px;
+}
+.number-evade {
+  color: #ded7e8;
+  font-size: 12px;
+}
+.combat-projectile {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  z-index: 3;
+}
+.physical-bolt {
+  width: 19px;
+  height: 3px;
+  border-radius: 3px;
+  background: #fae3ae;
+  box-shadow: 0 0 5px #c9a467;
+}
+.physical-bolt::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  border-left: 6px solid #ffe7b5;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+.magic-bolt {
+  width: 9px;
+  height: 9px;
+  background: #dbbdff;
+  border-radius: 50%;
+  box-shadow: 0 0 7px 3px #a279cd88;
+}
+.item-bolt {
+  filter: drop-shadow(0 0 3px #e8ce81);
+}
+.combat-ring {
+  position: absolute;
+  pointer-events: none;
+  border: 2px solid var(--effect-color);
+  box-shadow:
+    0 0 8px var(--effect-color),
+    inset 0 0 7px #ffffff25;
+  border-radius: 50%;
+  z-index: 2;
+}
+.ring-cast {
+  border-style: solid;
+  border-width: 2px;
+}
+.ring-heal {
+  background: radial-gradient(transparent, #93d8ae33);
+}
+.ring-shield {
+  border-width: 3px;
+  box-shadow: 0 0 10px #8fb3d799;
+}
+.ring-slash {
+  border-radius: 12% 70%;
+  height: 12px !important;
+  border-left: 0;
+  border-bottom: 0;
+  box-shadow: 0 -1px 8px var(--effect-color);
+}
+.ring-critical {
+  border-width: 3px;
+}
+.combat-mode .frontier {
+  border-bottom-style: solid;
+}
+.combat-paused .combat-unit {
+  transition: none;
+}
+@media (max-width: 800px) {
+  .combat-number {
+    font-size: 14px;
+  }
+  .number-critical {
+    font-size: 17px;
+  }
+  .number-dot,
+  .number-shielding,
+  .number-evade {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .combat-unit,
+  .board.combat-mode > .cell {
+    transition: none !important;
+  }
+}
+.combat-number > small {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.1;
+  text-align: center;
+}
+.combat-number > b {
+  display: block;
+  font: inherit;
+  line-height: 1.15;
+  text-align: center;
+}
 
-.physical-bolt{background:var(--projectile-color,#fae3ae);box-shadow:0 0 6px var(--projectile-color,#c9a467)}.physical-bolt::after{border-left-color:var(--projectile-color,#ffe7b5)}.magic-bolt{background:var(--projectile-color,#dbbdff);box-shadow:0 0 8px 3px var(--projectile-color,#a279cd)}.combat-skill-glow{position:absolute;pointer-events:none;border-radius:50%;background:radial-gradient(circle,transparent 22%,color-mix(in srgb,var(--effect-color) 30%,transparent) 50%,transparent 70%);z-index:1}.combat-skill-spark{position:absolute;width:5px;height:9px;border-radius:50% 50% 20% 20%;background:var(--effect-color);box-shadow:0 0 7px var(--effect-color);pointer-events:none;z-index:2}
+.physical-bolt {
+  background: var(--projectile-color, #fae3ae);
+  box-shadow: 0 0 6px var(--projectile-color, #c9a467);
+}
+.physical-bolt::after {
+  border-left-color: var(--projectile-color, #ffe7b5);
+}
+.magic-bolt {
+  background: var(--projectile-color, #dbbdff);
+  box-shadow: 0 0 8px 3px var(--projectile-color, #a279cd);
+}
+.combat-skill-glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 22%,
+    color-mix(in srgb, var(--effect-color) 30%, transparent) 50%,
+    transparent 70%
+  );
+  z-index: 1;
+}
+.combat-skill-spark {
+  position: absolute;
+  width: 5px;
+  height: 9px;
+  border-radius: 50% 50% 20% 20%;
+  background: var(--effect-color);
+  box-shadow: 0 0 7px var(--effect-color);
+  pointer-events: none;
+  z-index: 2;
+}

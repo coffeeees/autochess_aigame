@@ -8,11 +8,24 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
   const modalOpen = () =>
     p.evaluate(() => {
       const m = document.getElementById('modal');
-      return !!m && !m.hidden && (m.open === undefined || m.open) &&
-        document.getElementById('modalContent').innerText.trim().length > 0;
+      return (
+        !!m &&
+        !m.hidden &&
+        (m.open === undefined || m.open) &&
+        document.getElementById('modalContent').innerText.trim().length > 0
+      );
     });
-  const mt = () => p.evaluate(() => document.getElementById('modalContent').innerText.slice(0, 80).replace(/\n/g, ' | '));
-  const label = () => p.evaluate(() => document.getElementById('stageLabel')?.innerText + ' / ' + document.getElementById('fightBtn')?.innerText.replace(/\n/g, ' '));
+  const mt = () =>
+    p.evaluate(() =>
+      document.getElementById('modalContent').innerText.slice(0, 80).replace(/\n/g, ' | '),
+    );
+  const label = () =>
+    p.evaluate(
+      () =>
+        document.getElementById('stageLabel')?.innerText +
+        ' / ' +
+        document.getElementById('fightBtn')?.innerText.replace(/\n/g, ' '),
+    );
   async function supply() {
     const slots = await p.$$('[data-supply-slot]');
     await slots[0].click();
@@ -24,9 +37,11 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
     await p.waitForTimeout(800);
   }
   async function drag(fromSel, toSel) {
-    const f = await p.$(fromSel), t = await p.$(toSel);
+    const f = await p.$(fromSel),
+      t = await p.$(toSel);
     if (!f || !t) return false;
-    const a = await f.boundingBox(), c = await t.boundingBox();
+    const a = await f.boundingBox(),
+      c = await t.boundingBox();
     await p.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
     await p.mouse.down();
     await p.mouse.move(a.x + a.width / 2 + 10, a.y + a.height / 2 - 10, { steps: 3 });
@@ -49,12 +64,18 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
     if (await modalOpen()) {
       console.log(' modal:', await mt());
       if (await p.$('[data-supply-slot]')) {
-        if (!shot.supply) { await p.screenshot({ path: S('05-supply') }); shot.supply = 1; }
+        if (!shot.supply) {
+          await p.screenshot({ path: S('05-supply') });
+          shot.supply = 1;
+        }
         await supply();
         continue;
       }
       if (await p.$('#modalContent [data-augment]')) {
-        if (!shot.aug) { await p.screenshot({ path: S('06-augment') }); shot.aug = 1; }
+        if (!shot.aug) {
+          await p.screenshot({ path: S('06-augment') });
+          shot.aug = 1;
+        }
         await (await p.$$('#modalContent [data-augment]'))[0].click();
         await p.waitForTimeout(800);
         continue;
@@ -70,14 +91,22 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
       const free = await p.evaluate(() =>
         [...document.querySelectorAll('[data-pos]')]
           .filter((c) => +c.dataset.pos >= 28 && !c.querySelector('[data-unit-uid]'))
-          .map((c) => +c.dataset.pos));
+          .map((c) => +c.dataset.pos),
+      );
       if (!(await p.$('#bench [data-unit-uid]')) || !free.length) break;
       await drag('#bench [data-unit-uid]', `[data-pos="${free[3] ?? free[0]}"]`);
     }
-    if (!shot.deploy && step > 0) { await p.screenshot({ path: S('07-deployed') }); shot.deploy = 1; }
+    if (!shot.deploy && step > 0) {
+      await p.screenshot({ path: S('07-deployed') });
+      shot.deploy = 1;
+    }
     await p.click('#fightBtn');
     await p.waitForTimeout(700);
-    if ((await modalOpen()) && !(await p.$('[data-supply-slot]')) && !(await p.$('#modalContent [data-augment]'))) {
+    if (
+      (await modalOpen()) &&
+      !(await p.$('[data-supply-slot]')) &&
+      !(await p.$('#modalContent [data-augment]'))
+    ) {
       console.log(' confirm?', await mt());
       const btns = await p.$$('#modalContent button');
       if (btns.length) await btns[btns.length - 1].click();
@@ -85,14 +114,25 @@ const S = (n) => (process.env.SHOT_DIR || __dirname + '/shots') + '/' + n + '.pn
     }
     if (!shot.battle && !(await modalOpen())) {
       await p.waitForTimeout(3500);
-      const inBattle = await p.evaluate(() => document.getElementById('fightBtn')?.disabled || document.body.className);
+      const inBattle = await p.evaluate(
+        () => document.getElementById('fightBtn')?.disabled || document.body.className,
+      );
       console.log(' battle?', inBattle);
       await p.screenshot({ path: S('08-battle-' + step) });
     }
     for (let w = 0; w < 60 && !(await modalOpen()); w++) await p.waitForTimeout(500);
   }
-  for (const [btn, name] of [['#rosterBtn','10-codex'],['#settingsBtn','11-settings'],['#moreBtn','12-more'],['#patchBtn','13-patch-notes']]) {
-    if (await modalOpen()) { const bt = await p.$('#closeModal'); if (bt) await bt.click(); await p.waitForTimeout(400); }
+  for (const [btn, name] of [
+    ['#rosterBtn', '10-codex'],
+    ['#settingsBtn', '11-settings'],
+    ['#moreBtn', '12-more'],
+    ['#patchBtn', '13-patch-notes'],
+  ]) {
+    if (await modalOpen()) {
+      const bt = await p.$('#closeModal');
+      if (bt) await bt.click();
+      await p.waitForTimeout(400);
+    }
     await p.click(btn).catch((e) => console.log('miss', btn));
     await p.waitForTimeout(800);
     await p.screenshot({ path: S(name) });

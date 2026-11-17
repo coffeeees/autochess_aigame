@@ -1,29 +1,392 @@
 'use strict';
-const assert=require('node:assert/strict'),D=require('./dist/data.js'),P=require('./dist/progression.js'),{Battle}=require('./dist/engine.js');
-const clone=x=>JSON.parse(JSON.stringify(x)),near=(a,b)=>assert(Math.abs(a-b)<1e-6);
-let count=0;function test(name,fn){fn();count++;console.log('PASS '+name);}
-function state(){return P.initialize({health:100,gold:12,units:[{uid:1,id:'C03',location:'board',pos:38,star:1},{uid:2,id:'C05',location:'board',pos:53,star:1}],shop:D.playableIds.slice(0,5)});}
-function at(stage,round,gold=12){const s=state();s.stage=stage;s.round=round;s.wave=P.ordinal(s);s.gold=gold;return s;}
-function supply(s,rng=()=>.1){P.beginSupply(s,rng);P.toggleSupply(s,0);P.toggleSupply(s,1);return P.confirmSupply(s,rng);}
-function combat(s,winner='ally',rng=()=>.8){s.roundPhase='combat';return P.settleRound(s,{winner,time:10,survivingEnemies:winner==='ally'?0:2},rng);}
-test('round schedules exact through stage6 and same temporary fallback after6',()=>{assert.deepEqual([1,2,3,4,5].map(r=>P.roundType(1,r)),['SUPPLY','SUPPLY','BATTLE','BATTLE','BOSS']);for(let stage=2;stage<=12;stage++)assert.deepEqual([1,2,3,4,5].map(r=>P.roundType(stage,r)),['BATTLE','BATTLE','SUPPLY','BATTLE','BOSS']);});
-test('new run starts level3, 0/6XP and 1-1 safe supply',()=>{const s=state();assert.equal(s.level,3);assert.equal(s.xp,0);assert.equal(P.config.level.requirements[s.level],6);assert.equal(P.capacity(s),3);assert.equal(P.label(s),'1-1');assert.equal(P.roundType(s.stage,s.round),'SUPPLY');});
-test('safe supply grants exactly two chosen items, no HP loss or battle gold/interest',()=>{const s=at(1,1,59),receipt=supply(s,()=>.1);assert.equal(s.inventory.length,2);assert.equal(receipt.extra.kind,'items');assert.equal(s.health,100);assert.equal(s.gold,61);assert.equal(receipt.bonusGold,2);assert.equal(receipt.interest,0);assert.equal(s.xp,2);assert.equal(s.roundPhase,'result');});
-test('repeated supply, reload, or result confirmation cannot duplicate rewards/XP',()=>{const s=state(),receipt=supply(s);const before=clone(s);assert.equal(P.settleRound(s),receipt);assert.deepEqual(s,before);const reloaded=clone(s);P.settleRound(reloaded);assert.deepEqual(reloaded,before);assert(P.advanceRound(s));assert(!P.advanceRound(s));assert.equal(P.label(s),'1-2');});
-test('BATTLE win3 lose1; before-base interest boundaries unchanged',()=>{for(const [gold,interest] of [[0,0],[9,0],[10,1],[49,4],[50,5],[100,5]])for(const winner of ['ally','enemy']){const s=at(1,3,gold),r=combat(s,winner);assert.equal(r.base,winner==='ally'?3:1);assert.equal(r.interest,interest);assert.equal(s.gold,gold+r.base+interest+r.streakBonus);}});
-test('BOSS win5 lose3 and extra gold is separate, stage amounts correct',()=>{for(const [stage,extra] of [[1,5],[2,7],[3,9],[4,11],[5,13],[6,15],[7,15]]){const s=at(stage,5,50),r=combat(s,'ally',()=>.9);assert.equal(r.base,5);assert.equal(r.interest,5);assert.equal(r.bonusGold,extra);assert.equal(r.total,5+5+extra+1);assert.equal(s.inventory.length,1);const lost=at(stage,5,50),loss=combat(lost,'enemy');assert.equal(loss.base,3);assert.equal(loss.interest,5);assert.equal(loss.extra,null);assert.equal(loss.bonusGold,0);}});
-test('boss guaranteed item plus unchanged60% gold boundary; one item only',()=>{for(const [roll,isGold] of [[0,false],[.39999,false],[.4,true],[.9999,true]]){const s=at(1,5),r=combat(s,'ally',()=>roll);assert.equal(r.bossItem.kind,'item');assert.equal(s.inventory.length,1);assert.equal(r.extra?.kind,isGold?'gold':undefined);assert.equal(r.bonusGold,isGold?5:0);}});
-test('boss roll and payment occur exactly once after repeated callbacks / reload',()=>{const s=at(1,5);let rolls=0;const rng=()=>{rolls++;return .9;};const r=combat(s,'ally',rng),before=clone(s);P.settleRound(s,{winner:'ally'},rng);P.settleRound(clone(s),{winner:'ally'},rng);assert.equal(rolls,2);assert.deepEqual(s,before);assert(P.advanceRound(s));assert.equal(s.stage,2);assert.equal(s.round,1);assert.equal(s.roundPhase,'prepare');assert.equal(s.completedRounds['1-5'].bonusGold,r.bonusGold);});
-test('XP purchase4G/4XP, carry, multi-level overflow, maximum10',()=>{const s=state();assert(P.buyXp(s));assert.equal(s.gold,8);assert.equal(s.xp,4);assert(P.buyXp(s));assert.equal(s.level,4);assert.equal(s.xp,2);assert.equal(s.gold,4);P.addXp(s,10000);assert.equal(s.level,10);assert.equal(s.xp,0);const gold=s.gold;assert(!P.buyXp(s));assert.equal(s.gold,gold);});
-test('XP cannot be bought during result, combat, augment, gameover, or without funds',()=>{for(const phase of ['result','combat','augment','gameover']){const s=state();s.roundPhase=phase;const before=clone(s);assert(!P.buyXp(s));assert.deepEqual(s,before);}const s=state();s.gold=3;assert(!P.buyXp(s));});
-test('augment gates at 1-3,3-3,5-3 and old stage starts are inactive',()=>{for(let stage=1;stage<=8;stage++)for(let round=1;round<=5;round++){const s=at(stage,round),expected=[1,3,5].includes(stage)&&round===3;assert.equal(P.ensureAugment(s,()=>0),expected);if(expected){assert(!P.advanceRound(s));const id=P.availableAugments(s)[0].id;assert(P.chooseAugment(s,id));assert.equal(s.roundPhase,'prepare');assert(!P.ensureAugment(s));assert(!P.chooseAugment(s,id));}}});
-test('three unique candidates each time, chosen excluded, immediate reward once',()=>{const s=at(1,3,19);P.ensureAugment(s,()=>0);s.augmentState.pendingPick.optionIds=['S09','S10','S11'];assert.equal(P.availableAugments(s).length,3);assert(P.chooseAugment(s,'S09'));assert.equal(s.gold,25);assert.equal(s.xp,0);assert.equal(P.label(s),'1-3');assert.equal(Object.keys(s.completedRounds).length,0);assert(!P.chooseAugment(s,'S09'));s.stage=3;P.ensureAugment(s,()=>0);assert.equal(P.availableAugments(s).length,3);assert(!P.availableAugments(s).some(a=>a.id==='S09'));assert(P.chooseAugment(s,'S01'));s.stage=5;P.ensureAugment(s,()=>0);assert.equal(P.availableAugments(s).length,3);assert(!P.availableAugments(s).some(a=>a.id==='S01'));assert(P.chooseAugment(s,'S02'));assert.equal(s.augmentState.completedPicks.length,3);assert.equal(P.availableAugments(s).length,0);});
-test('pending tier and options survive reload without using RNG again',()=>{const s=at(3,3);P.ensureAugment(s,()=>.5);const restored=clone(s),pending=clone(s.augmentState.pendingPick);assert(P.ensureAugment(restored,()=>{throw Error('rerolled');}));assert.deepEqual(restored.augmentState.pendingPick,pending);assert(P.chooseAugment(restored,pending.optionIds[0]));assert(!P.ensureAugment(clone(restored)));});
-test('items equip, slot limit, free unequip, and actual AD/AP/GD stats',()=>{for(const [id,stat] of [['sword','AD'],['armor','GD'],['crystal','AP']]){const s=state(),item=P.addItem(s,id),base=D.byId('C03').stats[stat];assert(P.equip(s,item.uid,1));assert.equal(P.previewStats(s,s.units[0])[stat],base+10);const other=P.addItem(s,'I26');assert(P.equip(s,other.uid,2));const b=new Battle(s.units.map(u=>({...u,bonuses:P.unitBonuses(s,u.uid)})),[{id:'C10',pos:17}],{allyModifiers:P.allyModifiers(s)});assert.equal(b.units[0].stats[stat],base+10);assert(P.unequip(s,item.uid));assert.equal(s.gold,12);assert.equal(P.previewStats(s,s.units[0])[stat],base);}});
-test('sell/merge release items; unknown or mid-combat equip is rejected',()=>{const s=state(),i=P.addItem(s,'armor');assert(!P.equip(s,i.uid,999));assert(P.equip(s,i.uid,1));P.releaseEquipment(s,[1]);assert.equal(i.equippedTo,null);s.roundPhase='combat';assert(!P.equip(s,i.uid,1));s.roundPhase='prepare';assert(P.equip(s,i.uid,1));s.roundPhase='combat';assert(!P.unequip(s,i.uid));});
-test('training AD+10%, mana+20 cap, no base roster mutation or enemy changes',()=>{const before=clone(D.roster),s=state();s.augments=['training','mana'];const item=P.addItem(s,'sword');P.equip(s,item.uid,1);const b=new Battle(s.units.map(u=>({...u,bonuses:P.unitBonuses(s,u.uid)})),[{id:'C10',pos:17}],{allyModifiers:P.allyModifiers(s)});near(b.units[0].stats.AD,(55+10)*1.1);assert.equal(b.units[0].mp,20);assert.equal(b.units.at(-1).mp,0);const quick=new Battle(s.units,[{id:'C10',pos:17}],{quickMana:true,allyModifiers:P.allyModifiers(s)});assert.equal(quick.units[0].mp,100);assert.deepEqual(D.roster,before);near(P.previewStats(s,s.units[0]).AD,b.units[0].stats.AD);});
-test('recommendation uses playable pool only and includes off-board members',()=>{assert.deepEqual(P.recommendedMembers('철혈'),['C03','C10','C22','C23','C36']);assert.deepEqual(P.recommendedMembers('금단'),['C02','C08','C17','C20','C35','C38','C43']);assert.deepEqual(P.recommendedMembers('생명'),['C05','C18','C19','C30','C34','C39']);assert.deepEqual(P.recommendedMembers('invalid'),[]);});
-test('stage transitions across 6 stages; exactly three augment selections',()=>{const s=state();let receipts=0,supplies=0,bosses=0,choices=0;while(s.stage<=6){if(s.roundPhase==='augment'){const candidate=P.availableAugments(s)[0];assert(candidate);assert(P.chooseAugment(s,candidate.id));choices++;}const type=P.roundType(s.stage,s.round);if(type==='SUPPLY'){supply(s,()=>.1);supplies++;}else{combat(s);if(type==='BOSS')bosses++;}receipts++;if(s.completionChoice==='pending')assert(P.chooseCompletion(s,'continue'));assert(P.advanceRound(s));}assert.equal(receipts,30);assert.equal(supplies,7);assert.equal(bosses,6);assert.equal(choices,3);assert.equal(P.label(s),'7-1');assert.equal(s.roundPhase,'prepare');assert.equal(s.done,false);assert.equal(Object.keys(s.completedRounds).length,30);});
-test('loss preserves units; HP0 stops progression and supply has no damage',()=>{const s=at(1,3),units=clone(s.units);s.health=2;const r=combat(s,'enemy');assert.equal(s.health,0);assert(s.done);assert.equal(r.loss,2);assert.deepEqual(s.units,units);assert(!P.advanceRound(s));assert(!P.chooseAugment(s,'funds'));});
-test('old saves retain characters, gold, HP and deployed capacity during migration',()=>{const old={version:1,wave:6,gold:43,health:72,units:Array.from({length:5},(_,i)=>({id:D.playableIds[i],uid:i+1,location:'board',pos:32+i,star:1})),shop:[],done:false};const migrated=P.migrate(clone(old));assert.equal(migrated.gold,43);assert.equal(migrated.health,72);assert.deepEqual(migrated.units.map(u=>({...u,pos:0})),old.units.map(u=>({...u,pos:0})));assert.deepEqual(migrated.units.map(u=>u.pos),[28,29,30,31,32]);assert.equal(migrated.level,5);assert.equal(P.label(migrated),'2-1');assert.equal(migrated.roundPhase,'prepare');});
-console.log('\n'+count+' progression tests passed.');
+const assert = require('node:assert/strict'),
+  D = require('./dist/data.js'),
+  P = require('./dist/progression.js'),
+  { Battle } = require('./dist/engine.js');
+const clone = (x) => JSON.parse(JSON.stringify(x)),
+  near = (a, b) => assert(Math.abs(a - b) < 1e-6);
+let count = 0;
+function test(name, fn) {
+  fn();
+  count++;
+  console.log('PASS ' + name);
+}
+function state() {
+  return P.initialize({
+    health: 100,
+    gold: 12,
+    units: [
+      { uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 },
+      { uid: 2, id: 'C05', location: 'board', pos: 53, star: 1 },
+    ],
+    shop: D.playableIds.slice(0, 5),
+  });
+}
+function at(stage, round, gold = 12) {
+  const s = state();
+  s.stage = stage;
+  s.round = round;
+  s.wave = P.ordinal(s);
+  s.gold = gold;
+  return s;
+}
+function supply(s, rng = () => 0.1) {
+  P.beginSupply(s, rng);
+  P.toggleSupply(s, 0);
+  P.toggleSupply(s, 1);
+  return P.confirmSupply(s, rng);
+}
+function combat(s, winner = 'ally', rng = () => 0.8) {
+  s.roundPhase = 'combat';
+  return P.settleRound(s, { winner, time: 10, survivingEnemies: winner === 'ally' ? 0 : 2 }, rng);
+}
+test('round schedules exact through stage6 and same temporary fallback after6', () => {
+  assert.deepEqual(
+    [1, 2, 3, 4, 5].map((r) => P.roundType(1, r)),
+    ['SUPPLY', 'SUPPLY', 'BATTLE', 'BATTLE', 'BOSS'],
+  );
+  for (let stage = 2; stage <= 12; stage++)
+    assert.deepEqual(
+      [1, 2, 3, 4, 5].map((r) => P.roundType(stage, r)),
+      ['BATTLE', 'BATTLE', 'SUPPLY', 'BATTLE', 'BOSS'],
+    );
+});
+test('new run starts level3, 0/6XP and 1-1 safe supply', () => {
+  const s = state();
+  assert.equal(s.level, 3);
+  assert.equal(s.xp, 0);
+  assert.equal(P.config.level.requirements[s.level], 6);
+  assert.equal(P.capacity(s), 3);
+  assert.equal(P.label(s), '1-1');
+  assert.equal(P.roundType(s.stage, s.round), 'SUPPLY');
+});
+test('safe supply grants exactly two chosen items, no HP loss or battle gold/interest', () => {
+  const s = at(1, 1, 59),
+    receipt = supply(s, () => 0.1);
+  assert.equal(s.inventory.length, 2);
+  assert.equal(receipt.extra.kind, 'items');
+  assert.equal(s.health, 100);
+  assert.equal(s.gold, 61);
+  assert.equal(receipt.bonusGold, 2);
+  assert.equal(receipt.interest, 0);
+  assert.equal(s.xp, 2);
+  assert.equal(s.roundPhase, 'result');
+});
+test('repeated supply, reload, or result confirmation cannot duplicate rewards/XP', () => {
+  const s = state(),
+    receipt = supply(s);
+  const before = clone(s);
+  assert.equal(P.settleRound(s), receipt);
+  assert.deepEqual(s, before);
+  const reloaded = clone(s);
+  P.settleRound(reloaded);
+  assert.deepEqual(reloaded, before);
+  assert(P.advanceRound(s));
+  assert(!P.advanceRound(s));
+  assert.equal(P.label(s), '1-2');
+});
+test('BATTLE win3 lose1; before-base interest boundaries unchanged', () => {
+  for (const [gold, interest] of [
+    [0, 0],
+    [9, 0],
+    [10, 1],
+    [49, 4],
+    [50, 5],
+    [100, 5],
+  ])
+    for (const winner of ['ally', 'enemy']) {
+      const s = at(1, 3, gold),
+        r = combat(s, winner);
+      assert.equal(r.base, winner === 'ally' ? 3 : 1);
+      assert.equal(r.interest, interest);
+      assert.equal(s.gold, gold + r.base + interest + r.streakBonus);
+    }
+});
+test('BOSS win5 lose3 and extra gold is separate, stage amounts correct', () => {
+  for (const [stage, extra] of [
+    [1, 5],
+    [2, 7],
+    [3, 9],
+    [4, 11],
+    [5, 13],
+    [6, 15],
+    [7, 15],
+  ]) {
+    const s = at(stage, 5, 50),
+      r = combat(s, 'ally', () => 0.9);
+    assert.equal(r.base, 5);
+    assert.equal(r.interest, 5);
+    assert.equal(r.bonusGold, extra);
+    assert.equal(r.total, 5 + 5 + extra + 1);
+    assert.equal(s.inventory.length, 1);
+    const lost = at(stage, 5, 50),
+      loss = combat(lost, 'enemy');
+    assert.equal(loss.base, 3);
+    assert.equal(loss.interest, 5);
+    assert.equal(loss.extra, null);
+    assert.equal(loss.bonusGold, 0);
+  }
+});
+test('boss guaranteed item plus unchanged60% gold boundary; one item only', () => {
+  for (const [roll, isGold] of [
+    [0, false],
+    [0.39999, false],
+    [0.4, true],
+    [0.9999, true],
+  ]) {
+    const s = at(1, 5),
+      r = combat(s, 'ally', () => roll);
+    assert.equal(r.bossItem.kind, 'item');
+    assert.equal(s.inventory.length, 1);
+    assert.equal(r.extra?.kind, isGold ? 'gold' : undefined);
+    assert.equal(r.bonusGold, isGold ? 5 : 0);
+  }
+});
+test('boss roll and payment occur exactly once after repeated callbacks / reload', () => {
+  const s = at(1, 5);
+  let rolls = 0;
+  const rng = () => {
+    rolls++;
+    return 0.9;
+  };
+  const r = combat(s, 'ally', rng),
+    before = clone(s);
+  P.settleRound(s, { winner: 'ally' }, rng);
+  P.settleRound(clone(s), { winner: 'ally' }, rng);
+  assert.equal(rolls, 2);
+  assert.deepEqual(s, before);
+  assert(P.advanceRound(s));
+  assert.equal(s.stage, 2);
+  assert.equal(s.round, 1);
+  assert.equal(s.roundPhase, 'prepare');
+  assert.equal(s.completedRounds['1-5'].bonusGold, r.bonusGold);
+});
+test('XP purchase4G/4XP, carry, multi-level overflow, maximum10', () => {
+  const s = state();
+  assert(P.buyXp(s));
+  assert.equal(s.gold, 8);
+  assert.equal(s.xp, 4);
+  assert(P.buyXp(s));
+  assert.equal(s.level, 4);
+  assert.equal(s.xp, 2);
+  assert.equal(s.gold, 4);
+  P.addXp(s, 10000);
+  assert.equal(s.level, 10);
+  assert.equal(s.xp, 0);
+  const gold = s.gold;
+  assert(!P.buyXp(s));
+  assert.equal(s.gold, gold);
+});
+test('XP cannot be bought during result, combat, augment, gameover, or without funds', () => {
+  for (const phase of ['result', 'combat', 'augment', 'gameover']) {
+    const s = state();
+    s.roundPhase = phase;
+    const before = clone(s);
+    assert(!P.buyXp(s));
+    assert.deepEqual(s, before);
+  }
+  const s = state();
+  s.gold = 3;
+  assert(!P.buyXp(s));
+});
+test('augment gates at 1-3,3-3,5-3 and old stage starts are inactive', () => {
+  for (let stage = 1; stage <= 8; stage++)
+    for (let round = 1; round <= 5; round++) {
+      const s = at(stage, round),
+        expected = [1, 3, 5].includes(stage) && round === 3;
+      assert.equal(
+        P.ensureAugment(s, () => 0),
+        expected,
+      );
+      if (expected) {
+        assert(!P.advanceRound(s));
+        const id = P.availableAugments(s)[0].id;
+        assert(P.chooseAugment(s, id));
+        assert.equal(s.roundPhase, 'prepare');
+        assert(!P.ensureAugment(s));
+        assert(!P.chooseAugment(s, id));
+      }
+    }
+});
+test('three unique candidates each time, chosen excluded, immediate reward once', () => {
+  const s = at(1, 3, 19);
+  P.ensureAugment(s, () => 0);
+  s.augmentState.pendingPick.optionIds = ['S09', 'S10', 'S11'];
+  assert.equal(P.availableAugments(s).length, 3);
+  assert(P.chooseAugment(s, 'S09'));
+  assert.equal(s.gold, 25);
+  assert.equal(s.xp, 0);
+  assert.equal(P.label(s), '1-3');
+  assert.equal(Object.keys(s.completedRounds).length, 0);
+  assert(!P.chooseAugment(s, 'S09'));
+  s.stage = 3;
+  P.ensureAugment(s, () => 0);
+  assert.equal(P.availableAugments(s).length, 3);
+  assert(!P.availableAugments(s).some((a) => a.id === 'S09'));
+  assert(P.chooseAugment(s, 'S01'));
+  s.stage = 5;
+  P.ensureAugment(s, () => 0);
+  assert.equal(P.availableAugments(s).length, 3);
+  assert(!P.availableAugments(s).some((a) => a.id === 'S01'));
+  assert(P.chooseAugment(s, 'S02'));
+  assert.equal(s.augmentState.completedPicks.length, 3);
+  assert.equal(P.availableAugments(s).length, 0);
+});
+test('pending tier and options survive reload without using RNG again', () => {
+  const s = at(3, 3);
+  P.ensureAugment(s, () => 0.5);
+  const restored = clone(s),
+    pending = clone(s.augmentState.pendingPick);
+  assert(
+    P.ensureAugment(restored, () => {
+      throw Error('rerolled');
+    }),
+  );
+  assert.deepEqual(restored.augmentState.pendingPick, pending);
+  assert(P.chooseAugment(restored, pending.optionIds[0]));
+  assert(!P.ensureAugment(clone(restored)));
+});
+test('items equip, slot limit, free unequip, and actual AD/AP/GD stats', () => {
+  for (const [id, stat] of [
+    ['sword', 'AD'],
+    ['armor', 'GD'],
+    ['crystal', 'AP'],
+  ]) {
+    const s = state(),
+      item = P.addItem(s, id),
+      base = D.byId('C03').stats[stat];
+    assert(P.equip(s, item.uid, 1));
+    assert.equal(P.previewStats(s, s.units[0])[stat], base + 10);
+    const other = P.addItem(s, 'I26');
+    assert(P.equip(s, other.uid, 2));
+    const b = new Battle(
+      s.units.map((u) => ({ ...u, bonuses: P.unitBonuses(s, u.uid) })),
+      [{ id: 'C10', pos: 17 }],
+      { allyModifiers: P.allyModifiers(s) },
+    );
+    assert.equal(b.units[0].stats[stat], base + 10);
+    assert(P.unequip(s, item.uid));
+    assert.equal(s.gold, 12);
+    assert.equal(P.previewStats(s, s.units[0])[stat], base);
+  }
+});
+test('sell/merge release items; unknown or mid-combat equip is rejected', () => {
+  const s = state(),
+    i = P.addItem(s, 'armor');
+  assert(!P.equip(s, i.uid, 999));
+  assert(P.equip(s, i.uid, 1));
+  P.releaseEquipment(s, [1]);
+  assert.equal(i.equippedTo, null);
+  s.roundPhase = 'combat';
+  assert(!P.equip(s, i.uid, 1));
+  s.roundPhase = 'prepare';
+  assert(P.equip(s, i.uid, 1));
+  s.roundPhase = 'combat';
+  assert(!P.unequip(s, i.uid));
+});
+test('training AD+10%, mana+20 cap, no base roster mutation or enemy changes', () => {
+  const before = clone(D.roster),
+    s = state();
+  s.augments = ['training', 'mana'];
+  const item = P.addItem(s, 'sword');
+  P.equip(s, item.uid, 1);
+  const b = new Battle(
+    s.units.map((u) => ({ ...u, bonuses: P.unitBonuses(s, u.uid) })),
+    [{ id: 'C10', pos: 17 }],
+    { allyModifiers: P.allyModifiers(s) },
+  );
+  near(b.units[0].stats.AD, (55 + 10) * 1.1);
+  assert.equal(b.units[0].mp, 20);
+  assert.equal(b.units.at(-1).mp, 0);
+  const quick = new Battle(s.units, [{ id: 'C10', pos: 17 }], {
+    quickMana: true,
+    allyModifiers: P.allyModifiers(s),
+  });
+  assert.equal(quick.units[0].mp, 100);
+  assert.deepEqual(D.roster, before);
+  near(P.previewStats(s, s.units[0]).AD, b.units[0].stats.AD);
+});
+test('recommendation uses playable pool only and includes off-board members', () => {
+  assert.deepEqual(P.recommendedMembers('철혈'), ['C03', 'C10', 'C22', 'C23', 'C36']);
+  assert.deepEqual(P.recommendedMembers('금단'), ['C02', 'C08', 'C17', 'C20', 'C35', 'C38', 'C43']);
+  assert.deepEqual(P.recommendedMembers('생명'), ['C05', 'C18', 'C19', 'C30', 'C34', 'C39']);
+  assert.deepEqual(P.recommendedMembers('invalid'), []);
+});
+test('stage transitions across 6 stages; exactly three augment selections', () => {
+  const s = state();
+  let receipts = 0,
+    supplies = 0,
+    bosses = 0,
+    choices = 0;
+  while (s.stage <= 6) {
+    if (s.roundPhase === 'augment') {
+      const candidate = P.availableAugments(s)[0];
+      assert(candidate);
+      assert(P.chooseAugment(s, candidate.id));
+      choices++;
+    }
+    const type = P.roundType(s.stage, s.round);
+    if (type === 'SUPPLY') {
+      supply(s, () => 0.1);
+      supplies++;
+    } else {
+      combat(s);
+      if (type === 'BOSS') bosses++;
+    }
+    receipts++;
+    if (s.completionChoice === 'pending') assert(P.chooseCompletion(s, 'continue'));
+    assert(P.advanceRound(s));
+  }
+  assert.equal(receipts, 30);
+  assert.equal(supplies, 7);
+  assert.equal(bosses, 6);
+  assert.equal(choices, 3);
+  assert.equal(P.label(s), '7-1');
+  assert.equal(s.roundPhase, 'prepare');
+  assert.equal(s.done, false);
+  assert.equal(Object.keys(s.completedRounds).length, 30);
+});
+test('loss preserves units; HP0 stops progression and supply has no damage', () => {
+  const s = at(1, 3),
+    units = clone(s.units);
+  s.health = 2;
+  const r = combat(s, 'enemy');
+  assert.equal(s.health, 0);
+  assert(s.done);
+  assert.equal(r.loss, 2);
+  assert.deepEqual(s.units, units);
+  assert(!P.advanceRound(s));
+  assert(!P.chooseAugment(s, 'funds'));
+});
+test('old saves retain characters, gold, HP and deployed capacity during migration', () => {
+  const old = {
+    version: 1,
+    wave: 6,
+    gold: 43,
+    health: 72,
+    units: Array.from({ length: 5 }, (_, i) => ({
+      id: D.playableIds[i],
+      uid: i + 1,
+      location: 'board',
+      pos: 32 + i,
+      star: 1,
+    })),
+    shop: [],
+    done: false,
+  };
+  const migrated = P.migrate(clone(old));
+  assert.equal(migrated.gold, 43);
+  assert.equal(migrated.health, 72);
+  assert.deepEqual(
+    migrated.units.map((u) => ({ ...u, pos: 0 })),
+    old.units.map((u) => ({ ...u, pos: 0 })),
+  );
+  assert.deepEqual(
+    migrated.units.map((u) => u.pos),
+    [28, 29, 30, 31, 32],
+  );
+  assert.equal(migrated.level, 5);
+  assert.equal(P.label(migrated), '2-1');
+  assert.equal(migrated.roundPhase, 'prepare');
+});
+console.log('\n' + count + ' progression tests passed.');
