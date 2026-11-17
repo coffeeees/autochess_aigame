@@ -6,14 +6,14 @@
 //   node tools/combat-baseline.cjs            -> print JSON to stdout
 //   node tools/combat-baseline.cjs --write    -> write docs/archive/combat-baseline.json
 //   node tools/combat-baseline.cjs --check    -> compare with the stored file, exit 1 on diff
-// The engine path can be overridden with AUTOCHESS_LOGIC_DIR (default: ./dist).
+// The engine path can be overridden with AUTOCHESS_LOGIC_DIR (default: ./src/legacy).
 
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
 const ROOT = path.resolve(__dirname, '..');
-const LOGIC = path.resolve(ROOT, process.env.AUTOCHESS_LOGIC_DIR || 'dist');
+const LOGIC = path.resolve(ROOT, process.env.AUTOCHESS_LOGIC_DIR || 'src/legacy');
 const OUT = path.join(ROOT, 'docs/archive/combat-baseline.json');
 
 function mulberry32(seed) {

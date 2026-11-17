@@ -3,9 +3,9 @@ const assert = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
   crypto = require('node:crypto'),
-  Art = require('./dist/battle-art'),
-  Screens = require('./dist/screen-effects'),
-  P = require('./dist/progression');
+  Art = require('./src/legacy/battle-art'),
+  Screens = require('./src/legacy/screen-effects'),
+  P = require('./src/legacy/progression');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -14,7 +14,7 @@ function test(name, fn) {
 }
 const near = (a, b) => assert(Math.abs(a - b) < 0.000001, `${a} vs ${b}`);
 test('unaltered new PNG and measured tracks preserve exactly7x8 rectangular cells', () => {
-  const b = fs.readFileSync('dist/' + Art.assets.board),
+  const b = fs.readFileSync('public/' + Art.assets.board),
     c = Art.calibration;
   assert.equal(b.readUInt32BE(16), c.source.width);
   assert.equal(b.readUInt32BE(20), c.source.height);
@@ -33,7 +33,7 @@ test('unaltered new PNG and measured tracks preserve exactly7x8 rectangular cell
 });
 test('real combat measurement and positioning use all56 calibrated centres at multiple scales', () => {
   const ctx = vm.createContext({});
-  vm.runInContext(fs.readFileSync('dist/battle-view.js', 'utf8') + '\nthis.View=CombatView;', ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/battle-view.js', 'utf8') + '\nthis.View=CombatView;', ctx);
   const c = Art.calibration;
   for (const scale of [0.35, 0.6, 1]) {
     const left = 120,
@@ -164,7 +164,7 @@ test('stage2-1 uses cover, stage2-2 and augment destinations use text without mu
       cancel() {},
     },
   });
-  vm.runInContext(fs.readFileSync('dist/run-flow-ui.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/run-flow-ui.js', 'utf8'), ctx);
   const run = () => vm.runInContext('showRoundTransition()', ctx);
   run();
   state.round = 2;

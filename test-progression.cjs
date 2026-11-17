@@ -1,8 +1,8 @@
 'use strict';
 const assert = require('node:assert/strict'),
-  D = require('./dist/data.js'),
-  P = require('./dist/progression.js'),
-  { Battle } = require('./dist/engine.js');
+  D = require('./src/legacy/data.js'),
+  P = require('./src/legacy/progression.js'),
+  { Battle } = require('./src/legacy/engine.js');
 const clone = (x) => JSON.parse(JSON.stringify(x)),
   near = (a, b) => assert(Math.abs(a - b) < 1e-6);
 let count = 0;

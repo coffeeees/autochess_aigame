@@ -1,12 +1,12 @@
 'use strict';
 const a = require('node:assert/strict'),
-  A = require('./dist/augments'),
-  P = require('./dist/progression'),
-  D = require('./dist/data'),
-  I = require('./dist/items'),
-  V = require('./dist/preparation'),
-  F = require('./dist/augment-effects'),
-  { Battle } = require('./dist/engine');
+  A = require('./src/legacy/augments'),
+  P = require('./src/legacy/progression'),
+  D = require('./src/legacy/data'),
+  I = require('./src/legacy/items'),
+  V = require('./src/legacy/preparation'),
+  F = require('./src/legacy/augment-effects'),
+  { Battle } = require('./src/legacy/engine');
 const clone = (x) => JSON.parse(JSON.stringify(x)),
   near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 let count = 0;
@@ -231,7 +231,7 @@ test('all passive stat augments affect actual units, preview equals battle and b
     s.augments = [def.id];
     s.units = [{ id: 'C03', uid: 1, star: 1 }];
     a.deepEqual(P.previewStats(s, s.units[0]), u.stats);
-    a.deepEqual(b.units[2].stats, require('./dist/encounters').byId('E06').stats);
+    a.deepEqual(b.units[2].stats, require('./src/legacy/encounters').byId('E06').stats);
   }
   a.deepEqual(D.roster, before);
 });

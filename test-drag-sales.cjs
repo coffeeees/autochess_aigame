@@ -2,9 +2,9 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -106,10 +106,10 @@ const window = {
 };
 const context = vm.createContext({
   AutoData: D,
-  AutoNoticePolicy: require('./dist/notice-policy'),
+  AutoNoticePolicy: require('./src/legacy/notice-policy'),
   AutoEngine: {},
   AutoProgression: P,
-  AutoWorld: require('./dist/encounters'),
+  AutoWorld: require('./src/legacy/encounters'),
   AutoPreparation: V,
   document,
   window,
@@ -120,10 +120,10 @@ const context = vm.createContext({
   localStorage: { setItem() {} },
   CSS: { escape: (s) => s },
 });
-const source = fs.readFileSync('dist/prototype.js', 'utf8');
+const source = fs.readFileSync('src/legacy/prototype.js', 'utf8');
 vm.runInContext(source.slice(0, source.lastIndexOf('\nload();')), context);
-vm.runInContext(fs.readFileSync('dist/drag-sales.js', 'utf8'), context);
-vm.runInContext(fs.readFileSync('dist/interaction-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/drag-sales.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/interaction-ui.js', 'utf8'), context);
 vm.runInContext(
   'var renders=0,saves=0;render=()=>renders++;save=()=>saves++;setupInteractions();',
   context,

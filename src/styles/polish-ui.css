@@ -2,30 +2,30 @@
    x=461..1211, y=93..824 in its 1672x941 coordinate system. */
 @font-face {
   font-family: GamePretendard;
-  src: url('assets/fonts/Pretendard.woff2') format('woff2');
+  src: url('/assets/fonts/pretendard.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: GameSUIT;
-  src: url('assets/fonts/SUIT.woff2') format('woff2');
+  src: url('/assets/fonts/suit.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: GameNoto;
-  src: url('assets/fonts/NotoSansKR.ttf') format('truetype');
+  src: url('/assets/fonts/noto-sans-kr.ttf') format('truetype');
   font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: GameNanum;
-  src: url('assets/fonts/NanumGothic.ttf') format('truetype');
+  src: url('/assets/fonts/nanum-gothic.ttf') format('truetype');
   font-display: swap;
 }
 @font-face {
   font-family: GameGothicA1;
-  src: url('assets/fonts/GothicA1.ttf') format('truetype');
+  src: url('/assets/fonts/gothic-a1.ttf') format('truetype');
   font-display: swap;
 }
 :root {

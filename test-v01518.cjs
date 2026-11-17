@@ -2,11 +2,11 @@
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  E = require('./dist/engine'),
-  F = require('./dist/bond-effects');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  E = require('./src/legacy/engine'),
+  F = require('./src/legacy/bond-effects');
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function test(n, fn) {
@@ -264,8 +264,8 @@ test('1000ms simulated worker startup stall: old starts at1s, prepare/begin stay
       postMessage: (x) => messages.push(structuredClone(x)),
     });
     ctx.importScripts = (...files) =>
-      files.forEach((f) => vm.runInContext(fs.readFileSync('dist/' + f, 'utf8'), ctx));
-    vm.runInContext(fs.readFileSync('dist/combat-worker.js', 'utf8'), ctx);
+      files.forEach((f) => vm.runInContext(fs.readFileSync('src/legacy/' + f, 'utf8'), ctx));
+    vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), ctx);
     const b = setup('C03')[0],
       input = { battle: JSON.parse(JSON.stringify(b)), now: 0, speed, hidden: false };
     ctx.input = { ...structuredClone(input), type: 'start' };

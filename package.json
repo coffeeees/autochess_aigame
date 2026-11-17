@@ -4,14 +4,22 @@
   "private": true,
   "description": "PvE autochess prototype with 33 playable units, 40 equipment items and patch notes",
   "scripts": {
-    "start": "node serve.cjs",
-    "test": "node test-all.cjs",
-    "format": "prettier --write \"dist/*.js\" \"dist/*.css\" \"*.cjs\" \"tools/*.cjs\""
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:legacy": "node test-all.cjs",
+    "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"*.cjs\" \"tools/*.{cjs,js}\" vite.config.js",
+    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"*.cjs\" \"tools/*.{cjs,js}\" vite.config.js",
+    "baseline:check": "node tools/combat-baseline.cjs --check"
   },
   "engines": {
     "node": ">=18"
   },
   "devDependencies": {
-    "prettier": "3.3.3"
+    "prettier": "3.3.3",
+    "vite": "6.4.5",
+    "vitest": "3.2.6"
   }
 }

@@ -1,12 +1,12 @@
 'use strict';
 const a = require('node:assert/strict'),
   fs = require('fs'),
-  D = require('./dist/data'),
-  B = require('./dist/bonds'),
-  F = require('./dist/bond-effects'),
-  { Battle, mitigatedDamage } = require('./dist/engine'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation');
+  D = require('./src/legacy/data'),
+  B = require('./src/legacy/bonds'),
+  F = require('./src/legacy/bond-effects'),
+  { Battle, mitigatedDamage } = require('./src/legacy/engine'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation');
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function test(name, fn) {
@@ -358,8 +358,8 @@ test('all16 theme snapshots at each tier match real Worker execution and hidden-
         postMessage: (m) => messages.push(structuredClone(m)),
       });
       ctx.importScripts = (...files) =>
-        files.forEach((file) => vm.runInContext(fs.readFileSync('dist/' + file, 'utf8'), ctx));
-      vm.runInContext(fs.readFileSync('dist/combat-worker.js', 'utf8'), ctx);
+        files.forEach((file) => vm.runInContext(fs.readFileSync('src/legacy/' + file, 'utf8'), ctx));
+      vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), ctx);
       ctx.input = {
         type: 'start',
         battle: JSON.parse(JSON.stringify(battle)),

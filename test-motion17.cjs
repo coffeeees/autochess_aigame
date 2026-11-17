@@ -106,8 +106,8 @@ function fixture(reduced = false) {
     clearTimeout: (id) => timers.delete(id),
     matchMedia: () => ({ matches: reduced }),
   });
-  vm.runInContext(fs.readFileSync('dist/impact-health.js', 'utf8'), ctx);
-  vm.runInContext(fs.readFileSync('dist/liquid-xp.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/impact-health.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/liquid-xp.js', 'utf8'), ctx);
   const health = ctx.AutoImpactHealth.create(doc, () => reduced);
   return {
     ctx,

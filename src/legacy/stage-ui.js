@@ -5,9 +5,9 @@ const roundIcons = {
   BOSS: '<path d="M6 8 2 3l1 9 4 3m11-7 4-5-1 9-4 3M6 8q6-5 12 0v8l-6 6-6-6zM8 12l3 1m5-1-3 1M10 17h4"/>',
 };
 const roundAssets = {
-  SUPPLY: 'assets/ui/stage_supply_chest_64.png',
-  BATTLE: 'assets/ui/stage_battle_swords_64.png',
-  BOSS: 'assets/ui/stage_boss_mask_64.png',
+  SUPPLY: 'assets/ui/stage-supply-chest-64.png',
+  BATTLE: 'assets/ui/stage-battle-swords-64.png',
+  BOSS: 'assets/ui/stage-boss-mask-64.png',
 };
 function roundIcon(type) {
   return '<img class="reference-stage-icon" src="' + roundAssets[type] + '" alt="">';

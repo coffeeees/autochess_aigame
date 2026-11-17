@@ -1,12 +1,12 @@
 'use strict';
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
-  I = require('./dist/items.js'),
-  P = require('./dist/progression.js'),
-  D = require('./dist/data.js'),
-  V = require('./dist/preparation.js'),
-  F = require('./dist/item-effects.js'),
-  { Battle, mitigatedDamage } = require('./dist/engine.js');
+  I = require('./src/legacy/items.js'),
+  P = require('./src/legacy/progression.js'),
+  D = require('./src/legacy/data.js'),
+  V = require('./src/legacy/preparation.js'),
+  F = require('./src/legacy/item-effects.js'),
+  { Battle, mitigatedDamage } = require('./src/legacy/engine.js');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -512,7 +512,7 @@ test('all40 random combat combinations finish, no nonfinite stats, no recursive 
   }
 });
 test('patch notes include v0.1..0.15.11 current rules40items and original history', () => {
-  const N = require('./dist/patch-notes');
+  const N = require('./src/legacy/patch-notes');
   a.equal(N.history[0].version, '0.1');
   a.equal(N.history.at(-1).version, '0.15.18');
   a.equal(N.current, '0.15.18');

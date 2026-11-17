@@ -2,13 +2,13 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  W = require('./dist/encounters'),
-  { Battle, mitigatedDamage } = require('./dist/engine'),
-  H = require('./dist/health-effects');
-require('./dist/bond-effects').init = (b) => {
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  W = require('./src/legacy/encounters'),
+  { Battle, mitigatedDamage } = require('./src/legacy/engine'),
+  H = require('./src/legacy/health-effects');
+require('./src/legacy/bond-effects').init = (b) => {
   b.bondPulses = { ally: Infinity, enemy: Infinity };
 };
 let count = 0;
@@ -347,12 +347,12 @@ const elements = new Map(),
   };
 const ctx = vm.createContext({
   AutoData: D,
-  AutoItems: require('./dist/items'),
+  AutoItems: require('./src/legacy/items'),
   AutoEngine: {},
   AutoProgression: P,
   AutoWorld: W,
   AutoPreparation: V,
-  AutoNoticePolicy: require('./dist/notice-policy'),
+  AutoNoticePolicy: require('./src/legacy/notice-policy'),
   document: {
     getElementById: el,
     querySelector: () => null,
@@ -366,11 +366,11 @@ const ctx = vm.createContext({
   clearInterval,
   localStorage: { setItem() {} },
 });
-const code = fs.readFileSync('dist/prototype.js', 'utf8');
+const code = fs.readFileSync('src/legacy/prototype.js', 'utf8');
 vm.runInContext(code.slice(0, code.lastIndexOf('\nload();')), ctx);
-vm.runInContext(fs.readFileSync('dist/interaction-ui.js', 'utf8'), ctx);
-vm.runInContext(fs.readFileSync('dist/content-ui.js', 'utf8'), ctx);
-vm.runInContext(fs.readFileSync('dist/drag-sales.js', 'utf8'), ctx);
+vm.runInContext(fs.readFileSync('src/legacy/interaction-ui.js', 'utf8'), ctx);
+vm.runInContext(fs.readFileSync('src/legacy/content-ui.js', 'utf8'), ctx);
+vm.runInContext(fs.readFileSync('src/legacy/drag-sales.js', 'utf8'), ctx);
 vm.runInContext(
   "function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){}function hideItemDetail(){}function renderOdds(){} state=V.normalize(P.initialize({gold:100,health:100,shop:['C24','C01','C25',null,null],units:[{id:'C24',uid:1,location:'board',pos:31,star:1},{id:'C01',uid:2,location:'bench',benchSlot:0,star:1}]}));state.recommendedBonds=['흑월'];nextUid=2;",
   ctx,
@@ -471,7 +471,7 @@ test('active themes precede inactive themes without changing evaluation', () => 
     matchMedia: () => ({ matches: reduced }),
     pawn: () => '<i></i>',
   });
-  vm.runInContext(fs.readFileSync('dist/presentation-effects.js', 'utf8'), fx);
+  vm.runInContext(fs.readFileSync('src/legacy/presentation-effects.js', 'utf8'), fx);
   const seed = () =>
     vm.runInContext(
       'queueMergeEffect({uid:1},[{uid:2},{uid:3}],{left:0,top:0,width:40,height:40});flushMergeEffects();',

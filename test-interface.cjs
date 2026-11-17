@@ -2,11 +2,11 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  W = require('./dist/encounters'),
-  V = require('./dist/preparation'),
-  A = require('./dist/combat-visuals');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  W = require('./src/legacy/encounters'),
+  V = require('./src/legacy/preparation'),
+  A = require('./src/legacy/combat-visuals');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -54,9 +54,9 @@ const document = {
   },
 };
 const context = vm.createContext({
-  AutoItems: require('./dist/items'),
+  AutoItems: require('./src/legacy/items'),
   AutoData: D,
-  AutoNoticePolicy: require('./dist/notice-policy'),
+  AutoNoticePolicy: require('./src/legacy/notice-policy'),
   AutoEngine: {},
   AutoProgression: P,
   AutoWorld: W,
@@ -68,12 +68,12 @@ const context = vm.createContext({
   clearInterval,
   localStorage: { setItem() {} },
 });
-const code = fs.readFileSync('dist/prototype.js', 'utf8'),
+const code = fs.readFileSync('src/legacy/prototype.js', 'utf8'),
   cut = code.lastIndexOf('\nload();');
 a(cut > 0);
 vm.runInContext(code.slice(0, cut), context);
-vm.runInContext(fs.readFileSync('dist/interaction-ui.js', 'utf8'), context);
-vm.runInContext(fs.readFileSync('dist/content-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/interaction-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/content-ui.js', 'utf8'), context);
 vm.runInContext(
   "state={units:[{uid:1,id:'C01',location:'board',star:1,pos:38}],inventory:[],recommendedBonds:[],stage:1,round:1,roundPhase:'supply',supplyOffer:{options:['I01','I02','I03','I04'],selected:[1]}};function setRecruitOpen(){} function hideItemDetail(){} function suppressDragClick(){return false;} setupContentUI();",
   context,
@@ -137,8 +137,8 @@ test('all ten traits have distinct colors and summoned attacks retain their elem
   a.equal(out[0].sourceTrait, '화염');
 });
 test('augment modal shows one tier, three distinct full effects and explicit confirmation buttons', () => {
-  context.AutoAugments = require('./dist/augments');
-  vm.runInContext(fs.readFileSync('dist/stage-ui.js', 'utf8'), context);
+  context.AutoAugments = require('./src/legacy/augments');
+  vm.runInContext(fs.readFileSync('src/legacy/stage-ui.js', 'utf8'), context);
   vm.runInContext(
     "state.augments=[];state.roundPhase='augment';state.augmentState={version:1,completedPicks:[],skippedPicks:[],pendingPick:{node:'3-3',pick:2,tier:'gold',optionIds:['G01','G08','G12']}};showAugment();",
     context,

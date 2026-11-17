@@ -3,14 +3,14 @@ const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
   crypto = require('node:crypto'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  W = require('./dist/encounters'),
-  I = require('./dist/items'),
-  A = require('./dist/augments'),
-  N = require('./dist/patch-notes'),
-  S = require('./dist/screen-effects');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  W = require('./src/legacy/encounters'),
+  I = require('./src/legacy/items'),
+  A = require('./src/legacy/augments'),
+  N = require('./src/legacy/patch-notes'),
+  S = require('./src/legacy/screen-effects');
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]),
   copy = (x) => JSON.parse(JSON.stringify(x)),
@@ -227,11 +227,11 @@ function integration() {
   };
   const ctx = vm.createContext({
     AutoData: D,
-    AutoEngine: require('./dist/engine'),
+    AutoEngine: require('./src/legacy/engine'),
     AutoProgression: P,
     AutoPreparation: V,
     AutoWorld: W,
-    AutoNoticePolicy: require('./dist/notice-policy'),
+    AutoNoticePolicy: require('./src/legacy/notice-policy'),
     document: {
       getElementById: get,
       querySelector: () => null,
@@ -244,7 +244,7 @@ function integration() {
     localStorage: { setItem() {} },
     console,
   });
-  const text = fs.readFileSync('dist/prototype.js', 'utf8');
+  const text = fs.readFileSync('src/legacy/prototype.js', 'utf8');
   vm.runInContext(text.slice(0, text.lastIndexOf('\nload();')), ctx);
   ctx.saveHook = (x) => saves.push(copy(x));
   ctx.resultHook = (x) => results.push(x);
@@ -339,7 +339,7 @@ test('nine unchanged core modules match baseline; items and preparation intentio
     a.equal(
       crypto
         .createHash('sha256')
-        .update(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'))
+        .update(fs.readFileSync(file.replace(/^dist\//, 'src/legacy/'), 'utf8').replace(/\r\n/g, '\n'))
         .digest('hex'),
       baseline.formattedHashes[file],
       file,

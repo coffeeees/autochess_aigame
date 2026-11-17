@@ -3,8 +3,8 @@
   // Registered source files are unchanged. Frame cropping only excludes transparent
   // padding; logical tracks follow measured line centres, including 1–3px variation.
   const assets = {
-    background: 'assets/ChatGPT 이미지 2026년 11월 13일 오전 02_49_09-1.png',
-    board: 'assets/석조 아치형 7×8 빛나는 격자 보드.png',
+    background: 'assets/battlefield-bg.png',
+    board: 'assets/board-7x8.png',
   };
   const calibration = {
     source: { width: 1659, height: 948 },

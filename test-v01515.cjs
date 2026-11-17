@@ -2,10 +2,10 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  { StepClock } = require('./dist/combat-clock'),
-  { Battle } = require('./dist/engine'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation');
+  { StepClock } = require('./src/legacy/combat-clock'),
+  { Battle } = require('./src/legacy/engine'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation');
 for (const speed of [1, 2, 4]) {
   const c = new StepClock(0, 100, speed);
   a.equal(c.advance(10000), 100 * speed);
@@ -33,8 +33,8 @@ for (const speed of [1, 2, 4])
       postMessage: (data) => messages.push(structuredClone(data)),
     });
     context.importScripts = (...files) =>
-      files.forEach((file) => vm.runInContext(fs.readFileSync('dist/' + file, 'utf8'), context));
-    vm.runInContext(fs.readFileSync('dist/combat-worker.js', 'utf8'), context);
+      files.forEach((file) => vm.runInContext(fs.readFileSync('src/legacy/' + file, 'utf8'), context));
+    vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), context);
     const initial = new Battle(
       [{ id: 'C01', uid: 1, pos: 31, itemIds: ['I28', 'I28'], bonuses: { HP: 800 } }],
       [{ id: 'E01', pos: 3, star: boss ? 3 : 1, boss }],
@@ -82,7 +82,7 @@ a(!V.transferItem(s, P.addItem(s, 'I28').uid, 1).ok);
 const copy = V.normalize(P.migrate(JSON.parse(JSON.stringify(s))));
 a.equal(copy.inventory.filter((i) => i.equippedTo === 1).length, 3);
 a.deepEqual(P.unitBonuses(copy, 1), P.unitBonuses(s, 1));
-a.equal(require('./dist/notice-policy').allows('T24'), false);
+a.equal(require('./src/legacy/notice-policy').allows('T24'), false);
 console.log(
   'PASS duplicateT3 three-slot limit, migration and bonuses survive round-trip; T24 disabled',
 );

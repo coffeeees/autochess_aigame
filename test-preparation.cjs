@@ -1,9 +1,9 @@
 'use strict';
 const a = require('node:assert/strict'),
-  D = require('./dist/data.js'),
-  P = require('./dist/progression.js'),
-  V = require('./dist/preparation.js'),
-  { Battle } = require('./dist/engine.js');
+  D = require('./src/legacy/data.js'),
+  P = require('./src/legacy/progression.js'),
+  V = require('./src/legacy/preparation.js'),
+  { Battle } = require('./src/legacy/engine.js');
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function test(name, fn) {

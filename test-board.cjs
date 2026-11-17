@@ -1,12 +1,12 @@
 'use strict';
 const a = require('node:assert/strict'),
-  B = require('./dist/board'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  W = require('./dist/encounters'),
-  V = require('./dist/preparation'),
-  A = require('./dist/combat-visuals'),
-  { Battle, distance } = require('./dist/engine');
+  B = require('./src/legacy/board'),
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  W = require('./src/legacy/encounters'),
+  V = require('./src/legacy/preparation'),
+  A = require('./src/legacy/combat-visuals'),
+  { Battle, distance } = require('./src/legacy/engine');
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function test(name, fn) {

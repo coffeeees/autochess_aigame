@@ -1,8 +1,8 @@
 'use strict';
 const a = require('node:assert/strict'),
-  A = require('./dist/combat-visuals.js'),
-  I = require('./dist/items.js'),
-  { Battle } = require('./dist/engine.js');
+  A = require('./src/legacy/combat-visuals.js'),
+  I = require('./src/legacy/items.js'),
+  { Battle } = require('./src/legacy/engine.js');
 let n = 0;
 function test(name, fn) {
   fn();

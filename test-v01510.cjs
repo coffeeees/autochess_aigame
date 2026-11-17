@@ -2,13 +2,13 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  W = require('./dist/encounters'),
-  A = require('./dist/augments'),
-  I = require('./dist/items'),
-  N = require('./dist/patch-notes');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  W = require('./src/legacy/encounters'),
+  A = require('./src/legacy/augments'),
+  I = require('./src/legacy/items'),
+  N = require('./src/legacy/patch-notes');
 let count = 0;
 const test = (name, fn) => {
     fn();
@@ -345,7 +345,7 @@ test('patch exports separate approved decisions, Codex additions and notificatio
     '메타레벨',
   ])
     a(md.includes(text), text);
-  a.equal(require('./dist/notice-policy').allows('T08'), false);
+  a.equal(require('./src/legacy/notice-policy').allows('T08'), false);
 });
 const els = new Map(),
   get = (id) => {
@@ -392,7 +392,7 @@ const ctx = vm.createContext({
   AutoPreparation: V,
   AutoItems: I,
   AutoAugments: A,
-  AutoNoticePolicy: require('./dist/notice-policy'),
+  AutoNoticePolicy: require('./src/legacy/notice-policy'),
   AutoPatchNotes: N,
   document: doc,
   console,
@@ -401,10 +401,10 @@ const ctx = vm.createContext({
   clearInterval,
   localStorage: { setItem() {} },
 });
-const src = fs.readFileSync('dist/prototype.js', 'utf8');
+const src = fs.readFileSync('src/legacy/prototype.js', 'utf8');
 vm.runInContext(src.slice(0, src.lastIndexOf('\nload();')), ctx);
 for (const p of ['interaction-ui', 'content-ui', 'catalog-ui', 'run-flow-ui'])
-  vm.runInContext(fs.readFileSync('dist/' + p + '.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/' + p + '.js', 'utf8'), ctx);
 vm.runInContext(
   "function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){} state=P.initialize({gold:25,health:75,units:[],shop:['C24']});setupRunFlowUI();setupCatalogUI();",
   ctx,
@@ -525,7 +525,7 @@ test('round transition wrapper delegates current node without changing state', (
       P,
       $: () => ({ hidden: false }),
     });
-  vm.runInContext(fs.readFileSync('dist/run-flow-ui.js', 'utf8'), scene);
+  vm.runInContext(fs.readFileSync('src/legacy/run-flow-ui.js', 'utf8'), scene);
   const before = copy(scene.state);
   vm.runInContext('showRoundTransition()', scene);
   a.equal(calls.length, 1);
@@ -541,7 +541,7 @@ test('round transition wrapper skips ended/hidden scenes and exposes scoped canc
       P,
       $: () => ({ hidden: true }),
     });
-  vm.runInContext(fs.readFileSync('dist/run-flow-ui.js', 'utf8'), scene);
+  vm.runInContext(fs.readFileSync('src/legacy/run-flow-ui.js', 'utf8'), scene);
   vm.runInContext('showRoundTransition();cancelRoundTransition()', scene);
   a.deepEqual(calls, ['round', 'stage']);
 });

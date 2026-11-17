@@ -3,8 +3,8 @@
   // Change only this registry when a character receives new art. Source PNGs stay separate.
   const portraits = {
     C01: {
-      thumbnail: 'assets/characters/C01_녹스_thumbnail.png',
-      detail: 'assets/characters/C01_녹스.png',
+      thumbnail: 'assets/characters/c01-nox-thumbnail.png',
+      detail: 'assets/characters/c01-nox.png',
       framing: {
         field: { scale: 3.2, x: 50, y: 40 },
         bench: { scale: 1.9, x: 50, y: 40 },

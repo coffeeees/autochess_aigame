@@ -2,10 +2,10 @@
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
-  Pixels = require('./dist/pixel-vfx'),
-  D = require('./dist/data'),
-  { Battle } = require('./dist/engine'),
-  Visuals = require('./dist/combat-visuals');
+  Pixels = require('./src/legacy/pixel-vfx'),
+  D = require('./src/legacy/data'),
+  { Battle } = require('./src/legacy/engine'),
+  Visuals = require('./src/legacy/combat-visuals');
 let count = 0;
 function test(n, fn) {
   fn();
@@ -13,7 +13,7 @@ function test(n, fn) {
   console.log('PASS ' + n);
 }
 test('only real C07 skill compound events select chains; basic gray/C01 yellow mappings unchanged', () => {
-  require('./dist/vfx-events').install(Battle);
+  require('./src/legacy/vfx-events').install(Battle);
   const b = new Battle(
     [{ id: 'C07', pos: 35 }],
     [
@@ -159,7 +159,7 @@ function runner() {
     URL: {},
     console,
   });
-  vm.runInContext(fs.readFileSync('dist/combat-runner.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/combat-runner.js', 'utf8'), ctx);
   return {
     ctx,
     elements,
@@ -221,8 +221,8 @@ test('multi-tick Worker pump preserves early C07 events at4x without extra simul
     postMessage: (m) => output.push(structuredClone(m)),
   });
   ctx.importScripts = (...files) =>
-    files.forEach((f) => vm.runInContext(fs.readFileSync('dist/' + f, 'utf8'), ctx));
-  vm.runInContext(fs.readFileSync('dist/combat-worker.js', 'utf8'), ctx);
+    files.forEach((f) => vm.runInContext(fs.readFileSync('src/legacy/' + f, 'utf8'), ctx));
+  vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), ctx);
   const b = new Battle(
     [{ id: 'C07', pos: 35 }],
     [
@@ -246,19 +246,19 @@ test('multi-tick Worker pump preserves early C07 events at4x without extra simul
   );
 });
 test('shop empty card has no visible success text and 200ms heart exit does not retime HP interpolation', () => {
-  const p = fs.readFileSync('dist/prototype.js', 'utf8');
+  const p = fs.readFileSync('src/legacy/prototype.js', 'utf8');
   a(p.includes('aria-label="구매한 빈 슬롯"></div>'));
   a(!p.includes('<span>영입 완료</span>'));
   // whitespace-insensitive: the source is Prettier-formatted
-  const hp = fs.readFileSync('dist/impact-health.js', 'utf8').replace(/\s+/g, '');
+  const hp = fs.readFileSync('src/legacy/impact-health.js', 'utf8').replace(/\s+/g, '');
   a(hp.includes('duration=small?500:3000'));
   a(hp.includes('offset:2800/3000'));
   a(hp.includes('(elapsed-900)/800'));
 });
 test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale and preserves gear/save', () => {
-  const P = require('./dist/progression'),
-    V = require('./dist/preparation'),
-    W = require('./dist/encounters');
+  const P = require('./src/legacy/progression'),
+    V = require('./src/legacy/preparation'),
+    W = require('./src/legacy/encounters');
   const elements = new Map();
   const el = (id) => {
     if (!elements.has(id))
@@ -274,12 +274,12 @@ test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale a
   };
   const ctx = vm.createContext({
     AutoData: D,
-    AutoEngine: require('./dist/engine'),
+    AutoEngine: require('./src/legacy/engine'),
     AutoWorld: W,
     AutoProgression: P,
     AutoPreparation: V,
-    AutoItems: require('./dist/items'),
-    AutoNoticePolicy: require('./dist/notice-policy'),
+    AutoItems: require('./src/legacy/items'),
+    AutoNoticePolicy: require('./src/legacy/notice-policy'),
     document: {
       getElementById: el,
       querySelector: () => null,
@@ -293,9 +293,9 @@ test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale a
     console,
     localStorage: { setItem() {} },
   });
-  const source = fs.readFileSync('dist/prototype.js', 'utf8');
+  const source = fs.readFileSync('src/legacy/prototype.js', 'utf8');
   vm.runInContext(source.slice(0, source.lastIndexOf('\nload();')), ctx);
-  vm.runInContext(fs.readFileSync('dist/drag-sales.js', 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync('src/legacy/drag-sales.js', 'utf8'), ctx);
   vm.runInContext(
     'function render(){}function save(){}function notify(){}function setRecruitOpen(){}',
     ctx,

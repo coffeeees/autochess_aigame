@@ -2,10 +2,10 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  Policy = require('./dist/notice-policy');
+  D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  Policy = require('./src/legacy/notice-policy');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -67,10 +67,10 @@ const context = vm.createContext({
   AutoData: D,
   AutoEngine: {},
   AutoProgression: P,
-  AutoWorld: require('./dist/encounters'),
+  AutoWorld: require('./src/legacy/encounters'),
   AutoPreparation: V,
   AutoNoticePolicy: Policy,
-  AutoItems: require('./dist/items'),
+  AutoItems: require('./src/legacy/items'),
   document,
   console,
   localStorage: { setItem() {} },
@@ -83,11 +83,11 @@ const context = vm.createContext({
   clearInterval() {},
   matchMedia: () => ({ matches: false }),
 });
-const source = fs.readFileSync('dist/prototype.js', 'utf8');
+const source = fs.readFileSync('src/legacy/prototype.js', 'utf8');
 vm.runInContext(source.slice(0, source.lastIndexOf('\nload();')), context);
-vm.runInContext(fs.readFileSync('dist/interaction-ui.js', 'utf8'), context);
-vm.runInContext(fs.readFileSync('dist/content-ui.js', 'utf8'), context);
-vm.runInContext(fs.readFileSync('dist/stage-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/interaction-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/content-ui.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('src/legacy/stage-ui.js', 'utf8'), context);
 const run = (s) => vm.runInContext(s, context);
 run(
   'var events=[];queueMergeEffect=(keep,removed)=>events.push({center:keep.uid,star:keep.star,parts:removed.map(u=>u.uid)});render=()=>{};save=()=>{};',
@@ -107,7 +107,7 @@ test('all41 IDs have exactly12 retained,28 silent and one approved T28 route', (
     const allowed = run("notify(noticeId,'検証')");
     a.equal(allowed, Policy.retained.includes(id) || id === 'T28');
   }
-  const audit = require('./dist/notice-audit');
+  const audit = require('./src/legacy/notice-audit');
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.equal(audit.rows.filter((r) => r.status.startsWith('삭제')).length, 28);
   a(audit.rows.find((r) => r.id === 'T28').status.includes('승인'));
@@ -248,7 +248,7 @@ test('empty combat is disabled and cannot settle even with forced confirmation; 
   a(!el('fightBtn').disabled);
 });
 test('level animation runs only on real level increases, not initialization or XP-only updates', () => {
-  vm.runInContext(fs.readFileSync('dist/presentation-effects.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('src/legacy/presentation-effects.js', 'utf8'), context);
   el('gameView').hidden = false;
   run('observeLevelEffects(3);observeLevelEffects(3)');
   a.equal(animations.length, 0);

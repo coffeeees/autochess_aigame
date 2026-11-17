@@ -1,9 +1,9 @@
 'use strict';
 const assert = require('node:assert/strict'),
-  D = require('./dist/data.js'),
-  { Battle, mitigatedDamage, distance } = require('./dist/engine.js');
+  D = require('./src/legacy/data.js'),
+  { Battle, mitigatedDamage, distance } = require('./src/legacy/engine.js');
 // Isolate unchanged skill coefficients from the separately tested new bond balance.
-require('./dist/bond-effects').init = (b) => {
+require('./src/legacy/bond-effects').init = (b) => {
   b.bondPulses = { ally: Infinity, enemy: Infinity };
 };
 let passed = 0;

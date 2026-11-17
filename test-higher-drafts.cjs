@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict'),
   fs = require('node:fs'),
-  D = require('./dist/data.js'),
-  { Battle } = require('./dist/engine.js');
+  D = require('./src/legacy/data.js'),
+  { Battle } = require('./src/legacy/engine.js');
 const baseline = JSON.parse(fs.readFileSync('docs/specs/onecost-baseline.json', 'utf8')),
   source = fs.readFileSync('docs/specs/AUTOCHESS_02.md', 'utf8');
 let passed = 0;

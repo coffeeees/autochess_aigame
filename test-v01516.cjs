@@ -2,14 +2,14 @@
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm');
-const D = require('./dist/data'),
-  P = require('./dist/progression'),
-  V = require('./dist/preparation'),
-  W = require('./dist/encounters');
-const E = require('./dist/engine'),
-  Events = require('./dist/vfx-events'),
-  Visuals = require('./dist/combat-visuals'),
-  Pixels = require('./dist/pixel-vfx');
+const D = require('./src/legacy/data'),
+  P = require('./src/legacy/progression'),
+  V = require('./src/legacy/preparation'),
+  W = require('./src/legacy/encounters');
+const E = require('./src/legacy/engine'),
+  Events = require('./src/legacy/vfx-events'),
+  Visuals = require('./src/legacy/combat-visuals'),
+  Pixels = require('./src/legacy/pixel-vfx');
 let count = 0;
 function test(name, fn) {
   fn();
@@ -224,9 +224,9 @@ function uiFixture() {
     clearTimeout,
     localStorage: { setItem() {} },
   });
-  const script = fs.readFileSync('dist/prototype.js', 'utf8');
+  const script = fs.readFileSync('src/legacy/prototype.js', 'utf8');
   vm.runInContext(script.slice(0, script.lastIndexOf('\nload();')), context);
-  vm.runInContext(fs.readFileSync('dist/stage-ui.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('src/legacy/stage-ui.js', 'utf8'), context);
   vm.runInContext(
     "var enemyCalls=0,resets=0,openedDuringEnemy=[];var combatView={reset(){resets++;}};function enemyFormation(){enemyCalls++;openedDuringEnemy.push($('modal').open);return [{id:'E01',uid:-1,pos:3,team:'enemy'}];}function pawn(u){return 'ENEMY_'+u.id;}function render(){renderBoard();}function save(){}function notify(){}",
     context,

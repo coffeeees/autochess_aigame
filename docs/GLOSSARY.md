@@ -188,6 +188,6 @@
 
 ## 7. 저장 및 소스 위치
 
-[dist/data.js:73](../dist/data.js#L73) · `const statKeys=`; [dist/engine.js:75](../dist/engine.js#L75) · `makeUnit(entry,team)`; [dist/progression.js:460](../dist/progression.js#L460) · `const receipt=`; [dist/notice-policy.js:3](../dist/notice-policy.js#L3) · `const retained=`.
+[src/legacy/data.js:73](../src/legacy/data.js#L73) · `const statKeys=`; [src/legacy/engine.js:75](../src/legacy/engine.js#L75) · `makeUnit(entry,team)`; [src/legacy/progression.js:460](../src/legacy/progression.js#L460) · `const receipt=`; [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
 
 문서의정의에없는프로젝트고유약어를새로추측해추가하지않았습니다. 임시숫자/상태차이는 [미구현](UNIMPLEMENTED.md) 및 [불일치](CHANGELOG.md) 참조.
