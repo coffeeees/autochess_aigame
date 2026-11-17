@@ -22,9 +22,9 @@
 | U08 | 임시 | 피해감소/마나/시전시간/이동/목표선정 | 현재실행값있으나원문미확정.최종밸런스확정필요. | [src/core/data/units.js:213](../src/core/data/units.js#L213) · `combat:` |
 | U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [src/core/data/units.js:251](../src/core/data/units.js#L251) · `run:` |
 | U10 | 임시 | 레벨요구XP/라운드자동XP | 구매4G/4XP와레벨구조는구현,roundXpProvisional:true. | [src/core/progression.js:18](../src/core/progression.js#L18) · `roundXpProvisional:true` |
-| U11 | 임시 | 소환수세부값/주변범위/돌진규칙 | plague/fire설정및lightning인라인값,반경/경로테스트가정. | [src/core/combat/battle.js:450](../src/core/combat/battle.js#L450) · `summon(owner,kind)` |
+| U11 | 임시 | 소환수세부값/주변범위/돌진규칙 | plague/fire설정및lightning인라인값,반경/경로테스트가정. | [src/core/combat/battle.js:446](../src/core/combat/battle.js#L446) · `summon(owner,kind)` |
 | U12 | 확인필요 | 보스고유전투설계 | boss 플래그와보상분기는있지만별도스킬/통계보정없음.정규보스콘텐츠범위미정. | [src/core/encounters.js:96](../src/core/encounters.js#L96) · `boss:P.roundType` |
-| U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [src/core/combat/battle.js:1045](../src/core/combat/battle.js#L1045) · `if(u.regen&&u.hp>0)` |
+| U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [src/core/combat/battle.js:598](../src/core/combat/battle.js#L598) · `if(u.regen&&u.hp>0)` |
 | U14 | 확인필요 | I28치명피해방지의출처예외 | ITEM_PROC/아이템파생피해에서는I28생존가드가제외됨.문구의포괄범위와최종의도확인필요.D09참조. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
 | U15 | 확인필요 | I38회피타중첩/I28파생피해예외 | 현재코드가회피판정전에연속기본공격중첩진행.고유효과의문구와세부조건검토필요. | [src/core/combat/item-effects.js:154](../src/core/combat/item-effects.js#L154) · `if(has(source,'I38'))` |
 | U16 | 확인필요 | 전투중재접속복원정책 | 진행전투를prepare로복구,중간전투상태저장없음.이미획득보너스는장부에남음.의도된재시도정책인지확인필요. | [src/legacy/prototype.js:98](../src/legacy/prototype.js#L98) · `if(state.roundPhase==='combat')` |
