@@ -9,6 +9,9 @@
   로직 파일 위치가 바뀌면 `AUTOCHESS_LOGIC_DIR=<경로>`로 지정한다.
 - 1단계 파일 정리 완료: 기획 문서 4종은 `docs/`, 테스트가 대조하는 원본 기획 데이터는 `docs/specs/`, 과거 보고서·지시서·일회성 스크립트는 `docs/archive/`.
 - `docs/archive/scripts/`의 스크립트는 실행하지 않는다(과거 문자열 치환 도구, 일부는 없는 파일을 참조).
+- 1단계 포맷 완료: JS/CSS/테스트는 Prettier(`.prettierrc`) 형식이다. 수정 후 `npx prettier --check "dist/*.js" "dist/*.css" "*.cjs" "tools/*.cjs"`가 통과해야 한다.
+- 문서의 소스 링크(`../dist/x.js#L<n>`)는 줄 번호 기준이다. 코드를 크게 옮기면 링크도 갱신하고 `test-v01511`로 확인한다.
+- 다음 작업: 2단계(Vite + Vitest, src/·public/ 구조, 에셋 영문 파일명, 테스트를 기능별로 재구성). 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D7 보관.
 
 ## 기준 문서
 - 게임 규칙과 수치의 기준은 docs/GAME_DESIGN.md다. 코드와 문서가 다르면 수정하기 전에 사용자에게 묻는다.
