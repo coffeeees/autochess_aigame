@@ -3,11 +3,11 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~6단계 완료. 화면은 `index.html` → `src/ui/`. 기존 화면(legacy.html)은 6단계에서 지웠다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~7단계 완료(재구축 계획 끝). 화면은 `index.html` → `src/ui/`. 기존 화면(legacy.html)은 6단계에서 지웠다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
-- 다음 작업: 7단계(REBUILD_PLAN.md 5장: B1 퍼센트 표기, 글꼴 woff2 부분 집합, 빌드 크기 점검).
+- 남은 일(제안): 큰 그림(배경 2.4MB, C01 일러스트 3MB)을 WebP 등으로 줄이기. 보드 그림 `board-7x8.png`는 칸 측정 해시를 테스트가 검사하므로 바꾸지 않는다.
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
@@ -32,6 +32,9 @@
   `battlefield.ts`(PixiJS 그리기, 전투 중에만 동적 import). 연출은 전투 상태를 읽기만 한다. 화면 연출 신호는 저장소의 `cues`
   (`ScreenCues.tsx`가 재생 후 `doneCue`), 전투 끝 장면은 `finishing`. 연출 시간은 `presentation` 환경을 줄 때만 켜진다(테스트는 끔).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
+- 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).
+- 글꼴: `public/assets/fonts/pretendard-subset.woff2`는 쓰인 글자만 남긴 부분 집합이다. 화면 글에 새 글자를 넣어 테스트가 실패하면
+  `pip install fonttools brotli && python3 tools/subset-font.py`로 다시 만든다(원본은 `assets-src/fonts/`). 배포하지 않는 원본 에셋은 `assets-src/`.
 
 ## 테스트·문서에서 주의할 점
 - 화면 테스트는 `tests/ui-next/`(저장소 동작, 드래그, 흐름, 연출, 스타일 규칙). 화면을 바꾸면 브라우저에서 직접 확인한다.

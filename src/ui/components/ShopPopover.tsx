@@ -1,5 +1,6 @@
 // 영입창: 잠금, 레벨별 확률, 새로고침, 후보 5장. 카드마다 코스트, 유대,
 // 보유 여부, 추천, 구매 시 완성되는 합성을 보여 준다.
+import { percentNumber } from '../../core/format.ts';
 import { costColor, unitDef } from '../data.ts';
 import P from '../../core/progression.js';
 import V from '../../core/preparation.js';
@@ -27,7 +28,7 @@ export function ShopPopover({ ui, actions }: GameProps) {
         <b>Lv.{run.level}</b>
         {odds.map((p, i) => (
           <span key={i} style={{ '--cost-color': costColor(i + 1) }}>
-            {i + 1}G {p}%
+            {i + 1}G {percentNumber(p)}%
           </span>
         ))}
         <button onClick={actions.reroll} disabled={!editable || run.gold < reroll}>

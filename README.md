@@ -59,7 +59,8 @@ npm run format:check
 | `src/content/` | 패치노트·알림 조사표(필요할 때만 불러옴) |
 | `public/assets/` | 이미지와 폰트 (영문 소문자·하이픈 파일명) |
 | `tests/<기능>/` | 기능별 테스트: data, skills, bonds, combat, board, shop, merge, economy, progression, items, augments, encounters, save, rng, render, ui, ui-next(화면 저장소·연출), docs |
-| `tools/` | 전투 기준선 도구 |
+| `tools/` | 전투 기준선 도구, 글꼴 부분 집합 도구(`subset-font.py`) |
+| `assets-src/` | 빌드에 넣지 않는 원본 에셋(전체 글꼴, 쓰지 않는 그림) |
 | `docs/GAME_DESIGN.md` | 게임 규칙과 수치의 기준 문서 |
 | `docs/GLOSSARY.md`, `docs/UNIMPLEMENTED.md`, `docs/CHANGELOG.md` | 용어집, 미구현·확인 필요 목록, 변경 이력 |
 | `docs/REBUILD_PLAN.md` | 재구축 분석 보고서와 단계별 계획 |
