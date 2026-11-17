@@ -770,3 +770,7 @@ v0.15.18 이후 재구축 작업. 단계별 계획은 [REBUILD_PLAN.md](REBUILD_
 - 0단계: 기준선 기록 (`archive/BASELINE.md`).
 - 1단계: 일회성 스크립트·버전 보고서·지시서를 `archive/`로, 원본 기획 데이터를 `specs/`로 옮김. 기획 문서 4종을 `docs/`로 옮기고 이름에서 `AUTOCHESS_` 접두어 제거. JS/CSS를 Prettier로 포맷하고 문서의 소스 줄 링크 204개를 새 줄 번호로 갱신.
 - 2단계: Vite 빌드 도입. 게임 스크립트는 `src/legacy/`, 스타일은 `src/styles/`, 에셋은 `public/assets/`(영문 파일명). 위 문서의 `dist/…` 소스 표기는 이제 `src/legacy/…`를 가리킨다. 테스트는 Vitest로 옮겨 `tests/<기능>/`로 재구성(예전 스위트는 `archive/legacy-tests/`).
+- 3단계: 게임 로직을 `src/core/` ES 모듈로 옮김(위 문서의 `src/legacy/…` 로직 표기는 이제 `src/core/…`). 전투 Worker는 모듈 Worker(`src/worker/`).
+  무작위를 시드 RNG(`src/core/rng.ts`)로 통일하고 런 상태(`rngState`)와 전투(`seed`/`rngState`)에 저장. 확률·규칙은 그대로이고 난수의 출처만 바뀌었다.
+  아이템·증강·유대·VFX 기록을 `Battle.prototype` 덮어쓰기 대신 훅(`combat/hooks.ts`)으로 등록. 스킬 45개를 `combat/skills/`의 레지스트리로 분리.
+  데이터 타입(`src/core/types.ts`)과 TypeScript 검사(`npm run typecheck`) 도입.

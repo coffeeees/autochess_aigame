@@ -3,23 +3,38 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~2단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~3단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D7 과거 파일은 docs/archive에 보관.
-- 다음 작업: 3단계(게임 로직을 ES 모듈로 `src/core/`에 옮기기, 시드 RNG, Battle 덮어쓰기를 훅으로, 스킬 레지스트리).
+- 다음 작업: 4단계(저장 시스템 정비: `save.ts`에 스키마 버전·이관·검증 분리, 저장 실패 알림, 손상 저장 백업).
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
-- `npm test` Vitest 337개. `npm run baseline:check` 전투 결과가 기준선과 같은지 확인. `npm run format:check` Prettier 형식 확인.
-- 엔진을 옮기거나 고친 뒤에는 반드시 `npm run baseline:check`. 로직 위치가 바뀌면 `AUTOCHESS_LOGIC_DIR=<경로>`로 지정한다.
+- `npm test` Vitest. `npm run baseline:check` 전투 결과가 기준선과 같은지 확인. `npm run typecheck` TypeScript 검사.
+  `npm run format:check` Prettier 형식 확인. Node 22.18 이상(도구가 `.ts`를 Node로 직접 불러온다).
+- 전투 엔진·스킬·효과를 고친 뒤에는 반드시 `npm run baseline:check`.
 
-## 현재 구조에서 주의할 점 (3단계 전까지)
-- `src/legacy/*.js`는 전역 변수를 공유하는 일반 스크립트다. 로드 순서는 `index.html`의 `<script defer vite-ignore>` 순서이고,
+## 코드 구조 (3단계 이후)
+- `src/core/`: 게임 로직 ES 모듈. 각 모듈의 기본 내보내기는 예전 `AutoXxx` 객체와 같은 API다.
+  `data/units.js`(명단·스킬 설명·`prototypeConfig`), `data/bonds.js`, `data/higher-cost-drafts.js`, `items.js`, `augments.js`,
+  `progression.js`, `encounters.js`, `preparation.js`, `rng.ts`, `types.ts`,
+  `combat/battle.js`(전투 루프), `combat/hooks.ts`, `combat/skills/cost1~5.js`(스킬 본문), `combat/*-effects.js`, `combat/vfx-events.js`, `combat/clock.js`, `combat/geometry.ts`.
+- 무작위: 상태가 있는 함수는 기본값으로 `runRng(state)`(→ `state.rngState`)를 쓰고, 상태가 없는 함수(`items.draw`, `augments.draw`,
+  `startingRoster`)는 `rng`를 반드시 받는다. 전투는 `seed`로 시작해 `rngState`를 들고 다닌다(Worker에서도 이어짐).
+- 전투 확장: `Battle.use(extension)`. around 훅(`stats/heal/summon/kill/cast/deal/log`)과 이벤트(`start/update`)는 `order` 값 순서로 실행된다.
+  순서표는 `combat/hooks.ts` 머리 주석. 유대 규칙 호출(`Bonds.beforeDamage` 등)은 전투 루프 안의 정해진 지점에서 직접 호출한다.
+- 스킬: `combat/skills/costN.js`의 `Cxx(u, target, s)`를 `this`=전투로 호출한다. 새 스킬은 해당 코스트 파일에 추가한다.
+- `src/worker/`: 전투 Worker. `combat-worker-host.js`가 본체(환경 주입), `combat.worker.js`가 브라우저 진입점.
+- `src/main.js` + `src/legacy-globals.js`: core 모듈을 예전 전역 이름(`AutoData` 등)으로 노출한다. 화면을 다시 만들면(5단계) 없앤다.
+- `src/legacy/*.js`: 아직 전역을 공유하는 화면 스크립트. 로드 순서는 `index.html`의 `<script defer vite-ignore>` 순서이고,
   `tools/vite-legacy-scripts.js`가 개발 서버에서 `/<이름>.js`로 제공하고 빌드 때 `dist/`에 같은 이름으로 복사한다.
-  전투 Worker(`combat-worker.js`)는 `importScripts`로 로직 파일을 이름으로 불러온다. 파일 이름을 바꾸면 이 세 곳을 함께 고친다.
-- 테스트는 `tests/<기능>/<출처>.test.js`. 한 파일에는 예전 스위트 한 개의 테스트만 들어 있고 준비 코드가 복사돼 있다
-  (몇몇 스위트가 `require`로 공유 모듈을 덮어쓰기 때문). Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돈다.
-- 문서의 소스 링크(`../src/legacy/x.js#L<n>`)는 줄 번호 기준이다. 코드를 크게 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
+
+## 테스트·문서에서 주의할 점
+- 테스트는 `tests/<기능>/<출처>.test.js`. 예전 스위트에서 옮긴 파일은 그 스위트의 준비 코드가 복사돼 있다.
+  Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돌고, `tests/setup/legacy-globals.js`가 전역 이름을 채운다.
+- Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.
+- 문서의 소스 링크(`../src/core/x.js#L<n>`)는 줄 번호 기준이다. 코드를 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
+- `docs/specs/CORE_RULES_BASELINE_v0.15.10.json`의 `coreHashes`는 일부 core 모듈의 해시다. 그 모듈을 의도적으로 고쳤을 때만 갱신한다.
 - `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.
 
 ## 기준 문서
@@ -28,7 +43,7 @@
 
 ## 구조
 - src/core/는 순수 게임 로직이다. document, window, localStorage, DOM API를 쓰지 않는다.
-- 무작위는 src/core/rng.ts만 사용한다. Math.random을 직접 호출하지 않는다.
+- 무작위는 src/core/rng.ts만 사용한다. Math.random을 직접 호출하지 않는다(테스트가 검사한다).
 - 전투 확장(아이템, 증강, 유대, VFX 기록)은 훅으로 등록한다. Battle의 메서드를 덮어쓰지 않는다.
 - 화면 코드는 core 함수를 호출하고 상태를 읽기만 한다. 게임 규칙을 화면 코드에 다시 구현하지 않는다.
 - 밸런스 수치는 src/core/data/에만 둔다.

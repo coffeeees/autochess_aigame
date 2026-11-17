@@ -4,7 +4,7 @@
 
 ## 시작하기
 
-Node.js 18 이상이 필요합니다.
+Node.js 22.18 이상이 필요합니다.
 
 ```bash
 npm install
@@ -32,13 +32,17 @@ npm run preview
 npm test
 ```
 
-Vitest로 `tests/` 아래 337개 검사를 실행합니다. 전투 결과가 v0.15.18 기준선과 같은지 확인하려면:
+Vitest로 `tests/` 아래 검사를 실행합니다(v0.15.18의 337개 + 재구축 중 추가한 검사). 전투 결과가 v0.15.18 기준선과 같은지 확인하려면:
 
 ```bash
 npm run baseline:check
 ```
 
-코드 형식 확인:
+TypeScript 검사와 코드 형식 확인:
+
+```bash
+npm run typecheck
+```
 
 ```bash
 npm run format:check
@@ -49,10 +53,13 @@ npm run format:check
 | 경로 | 내용 |
 | --- | --- |
 | `index.html` | 게임 페이지 |
-| `src/legacy/` | 현재 게임 코드 (아직 전역 변수를 공유하는 일반 스크립트, 3단계에서 ES 모듈로 전환) |
+| `src/core/` | 게임 규칙·데이터·전투 엔진 (ES 모듈, DOM 사용 없음). 스킬은 `combat/skills/`, 무작위는 `rng.ts` |
+| `src/worker/` | 전투 Web Worker |
+| `src/main.js` | 브라우저 진입점 (core를 화면 스크립트에 연결) |
+| `src/legacy/` | 화면 스크립트 (아직 전역 변수를 공유하는 일반 스크립트, 5단계에서 재작성) |
 | `src/styles/` | 스타일시트 (index.html의 순서대로 묶임) |
 | `public/assets/` | 이미지와 폰트 (영문 소문자·하이픈 파일명) |
-| `tests/<기능>/` | 기능별 테스트: data, skills, bonds, combat, board, shop, merge, economy, progression, items, augments, encounters, save, render, ui, docs |
+| `tests/<기능>/` | 기능별 테스트: data, skills, bonds, combat, board, shop, merge, economy, progression, items, augments, encounters, save, rng, render, ui, docs |
 | `tools/` | Vite 플러그인, 전투 기준선·화면 촬영 도구 |
 | `docs/GAME_DESIGN.md` | 게임 규칙과 수치의 기준 문서 |
 | `docs/GLOSSARY.md`, `docs/UNIMPLEMENTED.md`, `docs/CHANGELOG.md` | 용어집, 미구현·확인 필요 목록, 변경 이력 |
