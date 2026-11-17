@@ -25,7 +25,13 @@ export function Hud({ ui, actions }: GameProps) {
       <div class={styles.stage}>
         <div class={styles.label}>
           <b>{P.label(run)}</b>
-          <span>{NODE_NAME[type]}</span>
+          <span>
+            {ui.battle
+              ? '자동 전투 중'
+              : run.roundPhase === 'result'
+                ? '라운드 완료'
+                : NODE_NAME[type]}
+          </span>
         </div>
         <ol class={styles.track} aria-label={`스테이지 ${run.stage}`}>
           {[1, 2, 3, 4, 5].map((round) => {

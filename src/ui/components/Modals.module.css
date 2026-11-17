@@ -1,0 +1,219 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: #05060acc;
+  backdrop-filter: blur(3px);
+}
+.dialog {
+  position: relative;
+  width: min(900px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 28px 30px;
+  background: #121624;
+  border: 1px solid #5a6788;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px #000c;
+}
+.dialog h2 {
+  margin: 6px 0 10px;
+  font-size: var(--text-xl);
+}
+.dialog p {
+  color: #c9c3d8;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: 0;
+  font-size: 18px;
+}
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 2px;
+  color: var(--color-muted);
+}
+.hint {
+  color: var(--color-muted);
+}
+.odds {
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  margin-bottom: var(--space-3);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 230px;
+  padding: var(--space-3);
+  text-align: left;
+  background: #1d1b26;
+  border: 2px solid #6b7180;
+}
+.card[data-tier='2'] {
+  border-color: #59b977;
+}
+.card[data-tier='3'] {
+  border-color: #e6c449;
+}
+.card[aria-pressed='true'] {
+  background: #2b2a1d;
+  box-shadow: 0 0 0 2px #ffe08a;
+}
+.cardArt {
+  width: 56px;
+  height: 56px;
+  align-self: center;
+  margin: var(--space-2) 0;
+}
+.cardArt :global(svg) {
+  width: 100%;
+  height: 100%;
+}
+.card small {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.card p {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+.card em {
+  margin-top: auto;
+  font-style: normal;
+  font-size: var(--text-sm);
+  color: var(--color-gold);
+}
+.footer,
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.footer button,
+.buttons button {
+  padding: 12px 18px;
+}
+.augmentTitle {
+  color: var(--augment-color);
+}
+.augments {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+.augment {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  background: #1b1a26;
+  border: 1px solid var(--augment-color);
+  border-radius: var(--radius-md);
+}
+.augment strong {
+  font-size: 24px;
+  color: var(--augment-color);
+}
+.augment h3 {
+  margin: var(--space-2) 0;
+}
+.augment button {
+  margin-top: auto;
+}
+.result {
+  display: grid;
+  gap: var(--space-5);
+}
+.withDamage {
+  grid-template-columns: 1fr 1fr;
+}
+.overview {
+  text-align: center;
+}
+.mark {
+  display: block;
+  font-size: 28px;
+  color: var(--color-gold);
+}
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--space-3) 0;
+  padding: var(--space-4);
+  background: #3a2f1c;
+  border: 1px solid #8c7444;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+.total b {
+  font-size: 28px;
+  color: var(--color-gold);
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 12px;
+  color: #c9c3d8;
+}
+.row[data-tone='gold'] span,
+.row[data-tone='gold'] b {
+  color: var(--color-gold);
+}
+.loot {
+  margin: var(--space-2) 0;
+  padding: var(--space-3);
+  background: #2b2617;
+  border: 1px solid #6b5a35;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-gold);
+}
+.damage h3 {
+  margin-top: 0;
+}
+.next {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(460px, 100%);
+  padding: 13px;
+}
+.completion {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid #8c7444;
+  border-radius: var(--radius-md);
+}
+.remember {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .cards,
+  .augments,
+  .withDamage {
+    grid-template-columns: 1fr;
+  }
+}

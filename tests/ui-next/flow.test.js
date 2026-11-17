@@ -1,0 +1,207 @@
+// 새 화면 저장소의 라운드 흐름: 보급 → 결과 → 다음 라운드 → 증강 → 배치 확인 → 전투 → 결과,
+// 6-5 완료 선택, 전투 실행기(Worker 프로토콜과 메인 스레드 대체 경로).
+import { test } from 'vitest';
+import a from 'node:assert/strict';
+import { createStore } from '../../src/ui/store.ts';
+import { createCombatRunner } from '../../src/ui/combat/runner.ts';
+import { createCombatWorkerHost } from '../../src/worker/combat-worker-host.js';
+import P from '../../src/core/progression.js';
+import V from '../../src/core/preparation.js';
+import Engine from '../../src/core/combat/battle.js';
+
+/** 전투를 그 자리에서 끝까지 계산하는 가짜 실행기 */
+function instantRunner() {
+  const calls = [];
+  return {
+    calls,
+    warm() {},
+    start(battle, h, speed) {
+      calls.push(['start', speed]);
+      let result = null;
+      for (let i = 0; i < 20000 && !result; i++) result = battle.tick();
+      h.onEnd(result);
+    },
+    stop() {},
+    setSpeed: (s) => calls.push(['speed', s]),
+    pause: () => calls.push(['pause']),
+    resume: () => calls.push(['resume']),
+    visibility() {},
+  };
+}
+
+function setup(combat = instantRunner()) {
+  const data = new Map();
+  const store = createStore({
+    storage: {
+      getItem: (k) => data.get(k) ?? null,
+      setItem: (k, v) => data.set(k, v),
+      removeItem: (k) => data.delete(k),
+    },
+    newSeed: () => 21,
+    combat,
+    setTimer: () => 0,
+    clearTimer: () => {},
+  });
+  store.load();
+  store.actions.startRun();
+  return { store, s: () => store.getState(), combat, data };
+}
+
+function takeSupply(store, s) {
+  store.actions.primary();
+  a.equal(s().modal, 'supply');
+  store.actions.toggleSupply(0);
+  store.actions.toggleSupply(1);
+  store.actions.confirmSupply();
+  a.equal(s().modal, 'result');
+  a.equal(s().run.lastResult.type, 'SUPPLY');
+  store.actions.continueRound();
+}
+
+test('1-1·1-2 보급 → 1-3 증강 → 배치 확인 → 전투 → 결과 → 1-4', () => {
+  const { store, s, combat } = setup();
+  takeSupply(store, s);
+  a.equal(P.label(s().run), '1-2');
+  takeSupply(store, s);
+  // 1-3 진입 전 증강
+  a.equal(s().modal, 'augment');
+  const pick = P.availableAugments(s().run)[0].id;
+  store.actions.chooseAugment(pick);
+  a.equal(s().modal, null);
+  a.deepEqual(s().run.augments, [pick]);
+  a.equal(P.label(s().run), '1-3');
+  a.equal(s().run.enemyEncounter.key, '1-3', '적 편성 준비');
+  // 아군 0명이면 전투 시작 안 됨
+  store.actions.primary();
+  a.equal(s().battle, null);
+  // 1명 배치(정원 3) → 배치 부족 확인 창
+  const unit = s().run.units[0];
+  V.moveUnit(s().run, unit.uid, { location: 'board', pos: 38 });
+  store.actions.primary();
+  a.equal(s().modal, 'deploy');
+  store.actions.confirmDeployment(true);
+  a.equal(s().run.skipDeploymentWarning, true);
+  a.deepEqual(combat.calls[0], ['start', 1]);
+  // 즉시 끝나는 가짜 실행기 → 결과 창
+  a.equal(s().battle, null);
+  a.equal(s().modal, 'result');
+  const receipt = s().run.lastResult;
+  a(['BATTLE'].includes(receipt.type));
+  a(Array.isArray(receipt.damageRows) && receipt.damageRows.length === 1);
+  a.equal(s().run.roundPhase, 'result');
+  store.actions.continueRound();
+  a.equal(P.label(s().run), '1-4');
+  a.equal(s().modal, null);
+});
+
+test('결과 단계에서 이어하기·주 버튼은 결과 창을 다시 연다', () => {
+  const { store, s } = setup();
+  store.actions.primary();
+  store.actions.toggleSupply(0);
+  store.actions.toggleSupply(2);
+  store.actions.confirmSupply();
+  store.actions.closeModal();
+  a.equal(s().modal, null);
+  store.actions.primary();
+  a.equal(s().modal, 'result');
+  store.actions.showHome();
+  store.actions.continueRun();
+  a.equal(s().modal, 'result');
+});
+
+test('6-5 완료 뒤 계속 진행은 7-1, 종료는 요약 창', () => {
+  for (const choice of ['continue', 'end']) {
+    const { store, s } = setup();
+    const run = s().run;
+    Object.assign(run, { stage: 6, round: 5, roundPhase: 'combat' });
+    P.settleRound(run, { winner: 'ally', time: 10, survivingEnemies: 0 }, () => 0.5);
+    a.equal(run.completionChoice, 'pending');
+    store.actions.chooseCompletion(choice);
+    if (choice === 'continue') a.equal(P.label(s().run), '7-1');
+    else a.equal(s().modal, 'summary');
+  }
+});
+
+test('배속은 1→2→4→1 순서로 바뀌고 실행기에 전달된다', () => {
+  const { store, s, combat } = setup();
+  store.actions.cycleSpeed();
+  store.actions.cycleSpeed();
+  a.equal(s().speed, 4);
+  store.actions.cycleSpeed();
+  a.equal(s().speed, 1);
+  a.deepEqual(
+    combat.calls.filter((c) => c[0] === 'speed').map((c) => c[1]),
+    [2, 4, 1],
+  );
+});
+
+/** combat-worker-host를 같은 스레드에서 감싼 가짜 Worker */
+function fakeWorkerEnv() {
+  let now = 0;
+  let tick = null;
+  const env = {
+    now: () => now,
+    hidden: () => false,
+    setInterval: () => 0,
+    clearInterval: () => {},
+    createWorker() {
+      const worker = {
+        onmessage: null,
+        onerror: null,
+        terminate() {},
+        postMessage: (data) => host.onmessage({ data: JSON.parse(JSON.stringify(data)) }),
+      };
+      const host = createCombatWorkerHost({
+        postMessage: (m) => worker.onmessage?.({ data: JSON.parse(JSON.stringify(m)) }),
+        now: () => now,
+        setInterval: (fn) => ((tick = fn), 1),
+        clearInterval: () => {},
+        random: Math.random,
+      });
+      return worker;
+    },
+  };
+  return { env, advance: (ms) => ((now += ms), tick?.()) };
+}
+
+test('전투 실행기: Worker 프로토콜로 끝까지 진행하고, 결과가 메인 스레드 계산과 같다', () => {
+  const make = () =>
+    new Engine.Battle([{ id: 'C07', pos: 38 }], [{ id: 'E01', pos: 17 }], { seed: 77 });
+  const direct = make();
+  let r = null;
+  for (let i = 0; i < 20000 && !r; i++) r = direct.tick();
+
+  const { env, advance } = fakeWorkerEnv();
+  const runner = createCombatRunner(env);
+  const battle = make();
+  let ended = null,
+    updates = 0;
+  runner.start(battle, { onUpdate: () => updates++, onEnd: (x) => (ended = x) }, 4);
+  for (let i = 0; i < 5000 && !ended; i++) advance(200);
+  a(ended, '끝까지 진행');
+  a(updates > 0, '중간 스냅샷 반영');
+  a.deepEqual(ended, direct.result);
+  a.deepEqual(
+    battle.units.map((u) => [u.uid, u.hp]),
+    direct.units.map((u) => [u.uid, u.hp]),
+  );
+});
+
+test('전투 실행기: Worker를 못 만들면 메인 스레드에서 계산', () => {
+  let interval = null,
+    now = 0;
+  const runner = createCombatRunner({
+    now: () => now,
+    hidden: () => false,
+    setInterval: (fn) => ((interval = fn), 1),
+    clearInterval: () => {},
+  });
+  const battle = new Engine.Battle([{ id: 'C01', pos: 38 }], [{ id: 'E01', pos: 17 }], { seed: 3 });
+  let ended = null;
+  runner.start(battle, { onUpdate() {}, onEnd: (x) => (ended = x) }, 2);
+  for (let i = 0; i < 5000 && !ended; i++) {
+    now += 100;
+    interval();
+  }
+  a(ended);
+});

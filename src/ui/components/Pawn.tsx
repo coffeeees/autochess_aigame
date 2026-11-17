@@ -11,6 +11,12 @@ type Props = {
   enemy?: boolean;
   selected?: boolean;
   onClick?: () => void;
+  /** 전투 중 HP·MP 비율(0~1)과 보호막 여부 */
+  hp?: number;
+  mp?: number;
+  shielded?: boolean;
+  /** 이름 표시를 바꿀 때(소환수 등) */
+  label?: string;
   /** 누르면 이 캐릭터의 드래그를 시작(왼쪽 버튼만) */
   onDragStart?: (pointerId: number, x: number, y: number) => void;
 };
@@ -23,6 +29,10 @@ export function Pawn({
   selected = false,
   onClick,
   onDragStart,
+  hp,
+  mp,
+  shielded = false,
+  label,
 }: Props) {
   const { name: fullName, cost } = combatant(id);
   const name = fullName.split(' ').at(-1);
@@ -46,7 +56,13 @@ export function Pawn({
       <span class={styles.image}>
         <CharacterImage id={id} context={context} />
       </span>
-      <span class={styles.name}>{name}</span>
+      <span class={styles.name}>{label ?? name}</span>
+      {hp !== undefined && (
+        <span class={styles.bars} aria-label={`HP ${Math.round(hp * 100)}%`}>
+          <i class={styles.hp} data-shielded={shielded} style={{ width: `${hp * 100}%` }} />
+          <i class={styles.mp} style={{ width: `${(mp ?? 0) * 100}%` }} />
+        </span>
+      )}
     </Tag>
   );
 }

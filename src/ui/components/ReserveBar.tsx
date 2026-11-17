@@ -19,6 +19,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
   const maxLevel = run.level >= LEVEL.max;
   const type = P.roundType(run.stage, run.round);
   const selected = run.units.find((u) => u.uid === ui.selected);
+  const main = primaryButton(ui, type);
   return (
     <footer class={styles.bar}>
       <button
@@ -82,10 +83,46 @@ export function ReserveBar({ ui, actions }: GameProps) {
             <small>{run.gold} G</small>
           </button>
         )}
-        <button class={styles.main} data-variant="primary" disabled title="다음 단계에서 연결">
-          {type === 'SUPPLY' ? '보급품 받기 →' : '전투 시작 →'}
+        <button
+          class={styles.main}
+          data-variant="primary"
+          disabled={main.disabled}
+          title={main.title}
+          onClick={() => actions.primary()}
+        >
+          {main.label}
         </button>
       </div>
     </footer>
   );
+}
+
+/** 주 버튼 문구와 활성 조건(v0.15.18 stage-ui.js renderProgression). */
+function primaryButton(ui: GameProps['ui'], type: string) {
+  const run = ui.run!;
+  const phase = run.roundPhase;
+  const deployed = run.units.filter((u) => u.location === 'board').length;
+  if (ui.battle) return { label: '전투 중', disabled: true, title: '' };
+  const emptyBattle = phase === 'prepare' && type !== 'SUPPLY' && !deployed;
+  const label = emptyBattle
+    ? '아군 배치 필요'
+    : phase === 'complete'
+      ? '완료 기록'
+      : phase === 'supply'
+        ? '보급 선택'
+        : phase === 'result'
+          ? '결과 확인'
+          : phase === 'augment'
+            ? '증강 선택'
+            : type === 'SUPPLY'
+              ? '보급품 받기 →'
+              : '전투 시작 →';
+  const disabled =
+    (run.done && phase !== 'complete') ||
+    (phase === 'prepare' && type !== 'SUPPLY' && (!deployed || deployed > P.capacity(run)));
+  return {
+    label,
+    disabled,
+    title: emptyBattle ? '아군을 1명 이상 배치해야 전투를 시작할 수 있습니다.' : '',
+  };
 }
