@@ -16,7 +16,7 @@
     return { trait: trait || '무속성', color: traitPalette[trait] || '#d5cbe3' };
   }
   const B =
-    typeof module !== 'undefined' && module.exports ? require('./board.js') : root.AutoBoard;
+    root.AutoBoard; // set by src/legacy-globals.js (page and tests)
   const point = B.point,
     distance = B.distance;
   function numberText(amount) {

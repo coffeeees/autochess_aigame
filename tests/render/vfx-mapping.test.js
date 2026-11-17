@@ -1,16 +1,22 @@
 // Migrated from the v0.15.18 suite test-v01516.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
+import $vfxEvents from '../../src/core/combat/vfx-events.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm');
-const D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  W = require('../../src/legacy/encounters');
-const E = require('../../src/legacy/engine'),
-  Events = require('../../src/legacy/vfx-events'),
+const D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters;
+const E = $engine,
+  Events = $vfxEvents,
   Visuals = require('../../src/legacy/combat-visuals'),
   Pixels = require('../../src/legacy/pixel-vfx');
 let count = 0;

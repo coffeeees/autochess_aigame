@@ -1,13 +1,19 @@
 // Migrated from the v0.15.18 suite test-vfx18.cjs (tests for: shop).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
   Pixels = require('../../src/legacy/pixel-vfx'),
-  D = require('../../src/legacy/data'),
-  { Battle } = require('../../src/legacy/engine'),
+  D = $data,
+  { Battle } = $engine,
   Visuals = require('../../src/legacy/combat-visuals');
 let count = 0;
 function runner() {
@@ -70,9 +76,9 @@ function runner() {
   };
 }
 test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale and preserves gear/save', () => {
-  const P = require('../../src/legacy/progression'),
-    V = require('../../src/legacy/preparation'),
-    W = require('../../src/legacy/encounters');
+  const P = $progression,
+    V = $preparation,
+    W = $encounters;
   const elements = new Map();
   const el = (id) => {
     if (!elements.has(id))
@@ -88,11 +94,11 @@ test('each of12 new IDs recruits/merges to3star, excludes/reopens pool on sale a
   };
   const ctx = vm.createContext({
     AutoData: D,
-    AutoEngine: require('../../src/legacy/engine'),
+    AutoEngine: $engine,
     AutoWorld: W,
     AutoProgression: P,
     AutoPreparation: V,
-    AutoItems: require('../../src/legacy/items'),
+    AutoItems: $items,
     AutoNoticePolicy: require('../../src/legacy/notice-policy'),
     document: {
       getElementById: el,

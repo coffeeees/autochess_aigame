@@ -1,15 +1,21 @@
 // Migrated from the v0.15.18 suite test-v01518.cjs (tests for: combat).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $bondEffects from '../../src/core/combat/bond-effects.js';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
+import { installCombatWorker } from '../support/combat-worker.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  E = require('../../src/legacy/engine'),
-  F = require('../../src/legacy/bond-effects');
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  E = $engine,
+  F = $bondEffects;
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
@@ -55,9 +61,7 @@ test('1000ms simulated worker startup stall: old starts at1s, prepare/begin stay
       clearInterval() {},
       postMessage: (x) => messages.push(structuredClone(x)),
     });
-    ctx.importScripts = (...files) =>
-      files.forEach((f) => vm.runInContext(fs.readFileSync('src/legacy/' + f, 'utf8'), ctx));
-    vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), ctx);
+    installCombatWorker(ctx);
     const b = setup('C03')[0],
       input = { battle: JSON.parse(JSON.stringify(b)), now: 0, speed, hidden: false };
     ctx.input = { ...structuredClone(input), type: 'start' };

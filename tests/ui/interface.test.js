@@ -1,14 +1,20 @@
 // Migrated from the v0.15.18 suite test-interface.cjs (tests for: ui).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $augments from '../../src/core/augments.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  W = require('../../src/legacy/encounters'),
-  V = require('../../src/legacy/preparation'),
+  D = $data,
+  P = $progression,
+  W = $encounters,
+  V = $preparation,
   A = require('../../src/legacy/combat-visuals');
 let count = 0;
 const elements = new Map();
@@ -51,7 +57,7 @@ const document = {
   },
 };
 const context = vm.createContext({
-  AutoItems: require('../../src/legacy/items'),
+  AutoItems: $items,
   AutoData: D,
   AutoNoticePolicy: require('../../src/legacy/notice-policy'),
   AutoEngine: {},
@@ -134,7 +140,7 @@ test('all ten traits have distinct colors and summoned attacks retain their elem
   a.equal(out[0].sourceTrait, '화염');
 });
 test('augment modal shows one tier, three distinct full effects and explicit confirmation buttons', () => {
-  context.AutoAugments = require('../../src/legacy/augments');
+  context.AutoAugments = $augments;
   vm.runInContext(fs.readFileSync('src/legacy/stage-ui.js', 'utf8'), context);
   vm.runInContext(
     "state.augments=[];state.roundPhase='augment';state.augmentState={version:1,completedPicks:[],skippedPicks:[],pendingPick:{node:'3-3',pick:2,tier:'gold',optionIds:['G01','G08','G12']}};showAugment();",

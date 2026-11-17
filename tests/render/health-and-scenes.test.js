@@ -1,17 +1,24 @@
 // Migrated from the v0.15.18 suite test-v01511.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $augments from '../../src/core/augments.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
   crypto = require('node:crypto'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  W = require('../../src/legacy/encounters'),
-  I = require('../../src/legacy/items'),
-  A = require('../../src/legacy/augments'),
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters,
+  I = $items,
+  A = $augments,
   N = require('../../src/legacy/patch-notes'),
   S = require('../../src/legacy/screen-effects');
 const tests = [];
@@ -229,7 +236,7 @@ function integration() {
   };
   const ctx = vm.createContext({
     AutoData: D,
-    AutoEngine: require('../../src/legacy/engine'),
+    AutoEngine: $engine,
     AutoProgression: P,
     AutoPreparation: V,
     AutoWorld: W,

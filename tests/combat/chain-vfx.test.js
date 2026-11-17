@@ -1,13 +1,16 @@
 // Migrated from the v0.15.18 suite test-vfx18.cjs (tests for: combat).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import { installCombatWorker } from '../support/combat-worker.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
   Pixels = require('../../src/legacy/pixel-vfx'),
-  D = require('../../src/legacy/data'),
-  { Battle } = require('../../src/legacy/engine'),
+  D = $data,
+  { Battle } = $engine,
   Visuals = require('../../src/legacy/combat-visuals');
 let count = 0;
 function runner() {
@@ -112,9 +115,7 @@ test('multi-tick Worker pump preserves early C07 events at4x without extra simul
     clearInterval() {},
     postMessage: (m) => output.push(structuredClone(m)),
   });
-  ctx.importScripts = (...files) =>
-    files.forEach((f) => vm.runInContext(fs.readFileSync('src/legacy/' + f, 'utf8'), ctx));
-  vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), ctx);
+  installCombatWorker(ctx);
   const b = new Battle(
     [{ id: 'C07', pos: 35 }],
     [

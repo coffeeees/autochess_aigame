@@ -1,14 +1,18 @@
 // Migrated from the v0.15.18 suite test-v01515.cjs (tests for: items).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $combatClock from '../../src/core/combat/clock.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  { StepClock } = require('../../src/legacy/combat-clock'),
-  { Battle } = require('../../src/legacy/engine'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation');
+  { StepClock } = $combatClock,
+  { Battle } = $engine,
+  P = $progression,
+  V = $preparation;
 test('duplicateT3 three-slot limit, migration and bonuses survive round-trip; T24 disabled', () => {
   const s = P.initialize({
     units: [{ uid: 1, id: 'C01', star: 1, location: 'board', pos: 31 }],

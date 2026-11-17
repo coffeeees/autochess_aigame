@@ -1,15 +1,21 @@
 // Migrated from the v0.15.18 suite test-v01517.cjs (tests for: save).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $bondEffects from '../../src/core/combat/bond-effects.js';
+import $bonds from '../../src/core/data/bonds.js';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('fs'),
-  D = require('../../src/legacy/data'),
-  B = require('../../src/legacy/bonds'),
-  F = require('../../src/legacy/bond-effects'),
-  { Battle, mitigatedDamage } = require('../../src/legacy/engine'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation');
+  D = $data,
+  B = $bonds,
+  F = $bondEffects,
+  { Battle, mitigatedDamage } = $engine,
+  P = $progression,
+  V = $preparation;
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(name, tier = 2) {

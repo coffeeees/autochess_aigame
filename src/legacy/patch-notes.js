@@ -612,7 +612,7 @@
   }
   function toMarkdown() {
     const I =
-      typeof module !== 'undefined' && module.exports ? require('./items.js') : root.AutoItems;
+      root.AutoItems; // set by src/legacy-globals.js (page and tests)
     return (
       '# AUTOCHESS 프로토타입 패치노트\n\n## 이번 수정사항 · v' +
       current +

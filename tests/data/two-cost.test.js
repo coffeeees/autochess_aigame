@@ -1,13 +1,18 @@
 // Migrated from the v0.15.18 suite test-two-cost.cjs (tests for: data).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
-  D = require('../../src/legacy/data.js'),
-  P = require('../../src/legacy/progression.js'),
-  V = require('../../src/legacy/preparation.js'),
-  W = require('../../src/legacy/encounters.js'),
-  { Battle, mitigatedDamage, distance } = require('../../src/legacy/engine.js');
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters,
+  { Battle, mitigatedDamage, distance } = $engine;
 let n = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
 function battle(id, allies = []) {

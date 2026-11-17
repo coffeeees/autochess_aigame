@@ -6,14 +6,14 @@
 //   node tools/combat-baseline.cjs            -> print JSON to stdout
 //   node tools/combat-baseline.cjs --write    -> write docs/archive/combat-baseline.json
 //   node tools/combat-baseline.cjs --check    -> compare with the stored file, exit 1 on diff
-// The engine path can be overridden with AUTOCHESS_LOGIC_DIR (default: ./src/legacy).
+// Game logic is loaded from src/core (ES modules).
 
-const fs = require('node:fs');
-const path = require('node:path');
-const crypto = require('node:crypto');
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(__dirname, '..');
-const LOGIC = path.resolve(ROOT, process.env.AUTOCHESS_LOGIC_DIR || 'src/legacy');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'docs/archive/combat-baseline.json');
 
 function mulberry32(seed) {
@@ -32,10 +32,13 @@ function mulberry32(seed) {
 let globalRng = mulberry32(1);
 Math.random = () => globalRng();
 
-const D = require(path.join(LOGIC, 'data.js'));
-const I = require(path.join(LOGIC, 'items.js'));
-const W = require(path.join(LOGIC, 'encounters.js'));
-const { Battle } = require(path.join(LOGIC, 'engine.js'));
+// imported after Math.random is replaced above
+const load = async (p) => (await import(new URL('../src/core/' + p, import.meta.url))).default;
+const D = await load('data/units.js');
+const I = await load('items.js');
+const W = await load('encounters.js');
+const A = await load('augments.js');
+const { Battle } = await load('combat/battle.js');
 
 const hash = (value) =>
   crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
@@ -135,7 +138,6 @@ function scenarios() {
   }
 
   // 4) Augments: each augment applied alone on a fixed squad.
-  const A = require(path.join(LOGIC, 'augments.js'));
   A.augments.forEach((aug, k) => {
     out.push(
       run(
@@ -195,7 +197,7 @@ function scenarios() {
 
 const result = {
   version: '0.15.18',
-  generatedBy: 'tools/combat-baseline.cjs',
+  generatedBy: 'tools/combat-baseline.mjs',
   battles: scenarios(),
 };
 const json = JSON.stringify(result, null, 2) + '\n';

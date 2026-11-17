@@ -1,6 +1,7 @@
 // Migrated from the v0.15.18 suite test-v01512.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $progression from '../../src/core/progression.js';
 
 const assert = require('node:assert/strict'),
   fs = require('node:fs'),
@@ -8,7 +9,7 @@ const assert = require('node:assert/strict'),
   crypto = require('node:crypto'),
   Art = require('../../src/legacy/battle-art'),
   Screens = require('../../src/legacy/screen-effects'),
-  P = require('../../src/legacy/progression');
+  P = $progression;
 let count = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 0.000001, `${a} vs ${b}`);
 test('unaltered new PNG and measured tracks preserve exactly7x8 rectangular cells', () => {

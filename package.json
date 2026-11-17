@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
     "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
-    "baseline:check": "node tools/combat-baseline.cjs --check"
+    "baseline:check": "node tools/combat-baseline.mjs --check"
   },
   "engines": {
     "node": ">=18"

@@ -1,11 +1,13 @@
 // Migrated from the v0.15.18 suite test-higher-drafts.cjs (tests for: data).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
 
 const assert = require('node:assert/strict'),
   fs = require('node:fs'),
-  D = require('../../src/legacy/data.js'),
-  { Battle } = require('../../src/legacy/engine.js');
+  D = $data,
+  { Battle } = $engine;
 const baseline = JSON.parse(fs.readFileSync('docs/specs/onecost-baseline.json', 'utf8')),
   source = fs.readFileSync('docs/specs/AUTOCHESS_02.md', 'utf8');
 let passed = 0;

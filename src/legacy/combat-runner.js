@@ -5,7 +5,11 @@ function makeCombatWorker() {
     url = embedded
       ? URL.createObjectURL(new Blob([AutoCombatWorkerSource], { type: 'text/javascript' }))
       : 'combat-worker.js';
-  const worker = new Worker(url);
+  // main.js provides a module worker (src/worker/combat.worker.js)
+  const worker =
+    !embedded && typeof AutoCreateCombatWorker === 'function'
+      ? AutoCreateCombatWorker()
+      : new Worker(url);
   if (embedded) URL.revokeObjectURL(url);
   return worker;
 }

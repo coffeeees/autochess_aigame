@@ -1,11 +1,14 @@
 // Migrated from the v0.15.18 suite test-prototype.cjs (tests for: bonds).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $bondEffects from '../../src/core/combat/bond-effects.js';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
 
 const assert = require('node:assert/strict'),
-  D = require('../../src/legacy/data.js'),
-  { Battle, mitigatedDamage, distance } = require('../../src/legacy/engine.js');
-require('../../src/legacy/bond-effects').init = (b) => {
+  D = $data,
+  { Battle, mitigatedDamage, distance } = $engine;
+$bondEffects.init = (b) => {
   b.bondPulses = { ally: Infinity, enemy: Infinity };
 };
 let passed = 0;

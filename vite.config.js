@@ -11,6 +11,7 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.{js,ts}'],
     environment: 'node',
+    setupFiles: ['tests/setup/legacy-globals.js'],
     // Each test file gets its own process: several suites patch shared legacy
     // modules (e.g. bond-effects.init, Battle.prototype) through require().
     pool: 'forks',

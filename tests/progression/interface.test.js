@@ -1,14 +1,19 @@
 // Migrated from the v0.15.18 suite test-interface.cjs (tests for: progression).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  W = require('../../src/legacy/encounters'),
-  V = require('../../src/legacy/preparation'),
+  D = $data,
+  P = $progression,
+  W = $encounters,
+  V = $preparation,
   A = require('../../src/legacy/combat-visuals');
 let count = 0;
 const elements = new Map();
@@ -51,7 +56,7 @@ const document = {
   },
 };
 const context = vm.createContext({
-  AutoItems: require('../../src/legacy/items'),
+  AutoItems: $items,
   AutoData: D,
   AutoNoticePolicy: require('../../src/legacy/notice-policy'),
   AutoEngine: {},

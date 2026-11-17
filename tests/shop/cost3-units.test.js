@@ -1,17 +1,24 @@
 // Migrated from the v0.15.18 suite test-v0159.cjs (tests for: shop).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $bondEffects from '../../src/core/combat/bond-effects.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  W = require('../../src/legacy/encounters'),
-  { Battle, mitigatedDamage } = require('../../src/legacy/engine'),
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters,
+  { Battle, mitigatedDamage } = $engine,
   H = require('../../src/legacy/health-effects');
-require('../../src/legacy/bond-effects').init = (b) => {
+$bondEffects.init = (b) => {
   b.bondPulses = { ally: Infinity, enemy: Infinity };
 };
 let count = 0;
@@ -92,7 +99,7 @@ const elements = new Map(),
   };
 const ctx = vm.createContext({
   AutoData: D,
-  AutoItems: require('../../src/legacy/items'),
+  AutoItems: $items,
   AutoEngine: {},
   AutoProgression: P,
   AutoWorld: W,

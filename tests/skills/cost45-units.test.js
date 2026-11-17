@@ -1,15 +1,20 @@
 // Migrated from the v0.15.18 suite test-v01518.cjs (tests for: skills).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $bondEffects from '../../src/core/combat/bond-effects.js';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  E = require('../../src/legacy/engine'),
-  F = require('../../src/legacy/bond-effects');
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  E = $engine,
+  F = $bondEffects;
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {

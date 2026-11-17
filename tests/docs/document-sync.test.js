@@ -1,17 +1,24 @@
 // Migrated from the v0.15.18 suite test-v01511.cjs (tests for: docs).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $augments from '../../src/core/augments.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
   crypto = require('node:crypto'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  W = require('../../src/legacy/encounters'),
-  I = require('../../src/legacy/items'),
-  A = require('../../src/legacy/augments'),
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters,
+  I = $items,
+  A = $augments,
   N = require('../../src/legacy/patch-notes'),
   S = require('../../src/legacy/screen-effects');
 const tests = [];
@@ -97,7 +104,7 @@ function integration() {
   };
   const ctx = vm.createContext({
     AutoData: D,
-    AutoEngine: require('../../src/legacy/engine'),
+    AutoEngine: $engine,
     AutoProgression: P,
     AutoPreparation: V,
     AutoWorld: W,
@@ -142,8 +149,8 @@ test('nine unchanged core modules match baseline; items and preparation intentio
     fs.readFileSync('docs/specs/CORE_RULES_BASELINE_v0.15.10.json', 'utf8'),
   );
   a.equal(Object.keys(baseline.hashes).length, 11);
-  // Files were reformatted with Prettier after v0.15.18; formattedHashes are the
-  // hashes of that formatted output (see formattedFrom in the baseline file).
+  // Files were reformatted with Prettier after v0.15.18 (formattedHashes) and moved
+  // to src/core/ as ES modules in stage 3; coreHashes are the current hashes.
   for (const [file] of Object.entries(baseline.hashes).filter(
     ([file]) =>
       ![
@@ -158,9 +165,9 @@ test('nine unchanged core modules match baseline; items and preparation intentio
     a.equal(
       crypto
         .createHash('sha256')
-        .update(fs.readFileSync(file.replace(/^dist\//, 'src/legacy/'), 'utf8').replace(/\r\n/g, '\n'))
+        .update(fs.readFileSync(baseline.coreFiles[file], 'utf8').replace(/\r\n/g, '\n'))
         .digest('hex'),
-      baseline.formattedHashes[file],
+      baseline.coreHashes[file],
       file,
     );
 });

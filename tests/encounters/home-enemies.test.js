@@ -1,12 +1,16 @@
 // Migrated from the v0.15.18 suite test-home-enemies.cjs (tests for: encounters).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
-  D = require('../../src/legacy/data.js'),
-  P = require('../../src/legacy/progression.js'),
-  W = require('../../src/legacy/encounters.js'),
-  { Battle } = require('../../src/legacy/engine.js');
+  D = $data,
+  P = $progression,
+  W = $encounters,
+  { Battle } = $engine;
 let n = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function state(round = 3) {

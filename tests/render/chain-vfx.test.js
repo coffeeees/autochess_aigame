@@ -1,17 +1,20 @@
 // Migrated from the v0.15.18 suite test-vfx18.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $vfxEvents from '../../src/core/combat/vfx-events.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
   Pixels = require('../../src/legacy/pixel-vfx'),
-  D = require('../../src/legacy/data'),
-  { Battle } = require('../../src/legacy/engine'),
+  D = $data,
+  { Battle } = $engine,
   Visuals = require('../../src/legacy/combat-visuals');
 let count = 0;
 test('only real C07 skill compound events select chains; basic gray/C01 yellow mappings unchanged', () => {
-  require('../../src/legacy/vfx-events').install(Battle);
+  $vfxEvents.install(Battle);
   const b = new Battle(
     [{ id: 'C07', pos: 35 }],
     [

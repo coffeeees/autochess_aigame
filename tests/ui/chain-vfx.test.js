@@ -1,13 +1,15 @@
 // Migrated from the v0.15.18 suite test-vfx18.cjs (tests for: ui).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
 
 const a = require('assert/strict'),
   fs = require('fs'),
   vm = require('vm'),
   Pixels = require('../../src/legacy/pixel-vfx'),
-  D = require('../../src/legacy/data'),
-  { Battle } = require('../../src/legacy/engine'),
+  D = $data,
+  { Battle } = $engine,
   Visuals = require('../../src/legacy/combat-visuals');
 let count = 0;
 function runner() {

@@ -1,14 +1,19 @@
 // Migrated from the v0.15.18 suite test-v01515.cjs (tests for: combat).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $combatClock from '../../src/core/combat/clock.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
+import { installCombatWorker } from '../support/combat-worker.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  { StepClock } = require('../../src/legacy/combat-clock'),
-  { Battle } = require('../../src/legacy/engine'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation');
+  { StepClock } = $combatClock,
+  { Battle } = $engine,
+  P = $progression,
+  V = $preparation;
 test('wall-clock catch-up at1/2/4x, pause excludes hidden time, repeated time has zero steps', () => {
   for (const speed of [1, 2, 4]) {
     const c = new StepClock(0, 100, speed);
@@ -35,11 +40,7 @@ test('worker normal/boss,1/2/4x, hidden catch-up and manual pause match determin
         clearInterval: () => {},
         postMessage: (data) => messages.push(structuredClone(data)),
       });
-      context.importScripts = (...files) =>
-        files.forEach((file) =>
-          vm.runInContext(fs.readFileSync('src/legacy/' + file, 'utf8'), context),
-        );
-      vm.runInContext(fs.readFileSync('src/legacy/combat-worker.js', 'utf8'), context);
+      installCombatWorker(context);
       const initial = new Battle(
         [{ id: 'C01', uid: 1, pos: 31, itemIds: ['I28', 'I28'], bonuses: { HP: 800 } }],
         [{ id: 'E01', pos: 3, star: boss ? 3 : 1, boss }],

@@ -1,16 +1,22 @@
 // Migrated from the v0.15.18 suite test-v01510.cjs (tests for: economy).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $augments from '../../src/core/augments.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation'),
-  W = require('../../src/legacy/encounters'),
-  A = require('../../src/legacy/augments'),
-  I = require('../../src/legacy/items'),
+  D = $data,
+  P = $progression,
+  V = $preparation,
+  W = $encounters,
+  A = $augments,
+  I = $items,
   N = require('../../src/legacy/patch-notes');
 let count = 0;
 const copy = (x) => JSON.parse(JSON.stringify(x)),

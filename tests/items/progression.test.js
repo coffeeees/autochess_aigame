@@ -1,11 +1,14 @@
 // Migrated from the v0.15.18 suite test-progression.cjs (tests for: items).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $progression from '../../src/core/progression.js';
 
 const assert = require('node:assert/strict'),
-  D = require('../../src/legacy/data.js'),
-  P = require('../../src/legacy/progression.js'),
-  { Battle } = require('../../src/legacy/engine.js');
+  D = $data,
+  P = $progression,
+  { Battle } = $engine;
 const clone = (x) => JSON.parse(JSON.stringify(x)),
   near = (a, b) => assert(Math.abs(a - b) < 1e-6);
 let count = 0;

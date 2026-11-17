@@ -1,6 +1,6 @@
 {
   "version": "0.15.18",
-  "generatedBy": "tools/combat-baseline.cjs",
+  "generatedBy": "tools/combat-baseline.mjs",
   "battles": [
     {
       "name": "roster-C01-C02-C03-C04-C05",

@@ -1,15 +1,21 @@
 // Migrated from the v0.15.18 suite test-board.cjs (tests for: board).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $board from '../../src/core/board.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
-  B = require('../../src/legacy/board'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  W = require('../../src/legacy/encounters'),
-  V = require('../../src/legacy/preparation'),
+  B = $board,
+  D = $data,
+  P = $progression,
+  W = $encounters,
+  V = $preparation,
   A = require('../../src/legacy/combat-visuals'),
-  { Battle, distance } = require('../../src/legacy/engine');
+  { Battle, distance } = $engine;
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
 test('7columns8rows56cells, player lower28 cells and no wraparound neighbors', () => {

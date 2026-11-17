@@ -1,13 +1,17 @@
 // Migrated from the v0.15.18 suite test-drag-sales.cjs (tests for: economy).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
-  D = require('../../src/legacy/data'),
-  P = require('../../src/legacy/progression'),
-  V = require('../../src/legacy/preparation');
+  D = $data,
+  P = $progression,
+  V = $preparation;
 let count = 0;
 class Node {
   constructor(id = '', dataset = {}) {
@@ -107,7 +111,7 @@ const context = vm.createContext({
   AutoNoticePolicy: require('../../src/legacy/notice-policy'),
   AutoEngine: {},
   AutoProgression: P,
-  AutoWorld: require('../../src/legacy/encounters'),
+  AutoWorld: $encounters,
   AutoPreparation: V,
   document,
   window,

@@ -1,15 +1,23 @@
 // Migrated from the v0.15.18 suite test-augments.cjs (tests for: augments).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $augmentEffects from '../../src/core/combat/augment-effects.js';
+import $augments from '../../src/core/augments.js';
+import $data from '../../src/core/data/units.js';
+import $encounters from '../../src/core/encounters.js';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
-  A = require('../../src/legacy/augments'),
-  P = require('../../src/legacy/progression'),
-  D = require('../../src/legacy/data'),
-  I = require('../../src/legacy/items'),
-  V = require('../../src/legacy/preparation'),
-  F = require('../../src/legacy/augment-effects'),
-  { Battle } = require('../../src/legacy/engine');
+  A = $augments,
+  P = $progression,
+  D = $data,
+  I = $items,
+  V = $preparation,
+  F = $augmentEffects,
+  { Battle } = $engine;
 const clone = (x) => JSON.parse(JSON.stringify(x)),
   near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 let count = 0;
@@ -229,7 +237,7 @@ test('all passive stat augments affect actual units, preview equals battle and b
     s.augments = [def.id];
     s.units = [{ id: 'C03', uid: 1, star: 1 }];
     a.deepEqual(P.previewStats(s, s.units[0]), u.stats);
-    a.deepEqual(b.units[2].stats, require('../../src/legacy/encounters').byId('E06').stats);
+    a.deepEqual(b.units[2].stats, $encounters.byId('E06').stats);
   }
   a.deepEqual(D.roster, before);
 });

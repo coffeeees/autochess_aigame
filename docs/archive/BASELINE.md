@@ -6,7 +6,7 @@
 - `baseline-tests.txt`: `node test-all.cjs` 전체 출력. 23 스위트 / 337 검사 통과, 약 6.8초.
 
 ## 전투 결과 기준선
-- `combat-baseline.json`: 시드 고정 전투 81건 (`node tools/combat-baseline.cjs --write`로 생성).
+- `combat-baseline.json`: 시드 고정 전투 81건 (`node tools/combat-baseline.mjs --write`로 생성).
   - roster 9건: 45명 전원을 5명씩 2성으로 고정 적 편성과 대결
   - mirror 5건: 플레이어 유닛끼리 대결 (quickMana)
   - items 7건: 아이템 40종을 모두 한 번 이상 장착
@@ -15,7 +15,7 @@
 - 45명 스킬이 모두 한 번 이상 발동한다.
 - 각 전투마다 승자, 시간, 피해·회복·보호막 합계, 남은 HP, 스킬 사용 횟수, 이벤트·로그 수, 유닛/이벤트/로그 해시를 기록한다.
 - 전투 RNG는 mulberry32 시드로 주입하고, 모듈 안의 `Math.random`도 같은 방식으로 고정한다.
-- 확인: `node tools/combat-baseline.cjs --check` (모두 같으면 종료 코드 0).
+- 확인: `node tools/combat-baseline.mjs --check` (모두 같으면 종료 코드 0).
 
 ## 화면
 `screenshots-v0.15.18/` (1600×900, 난이도 1, `tools/capture-screens.cjs`로 촬영)

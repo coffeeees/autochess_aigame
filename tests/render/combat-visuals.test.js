@@ -1,11 +1,13 @@
 // Migrated from the v0.15.18 suite test-combat-visuals.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $engine from '../../src/core/combat/battle.js';
+import $items from '../../src/core/items.js';
 
 const a = require('node:assert/strict'),
   A = require('../../src/legacy/combat-visuals.js'),
-  I = require('../../src/legacy/items.js'),
-  { Battle } = require('../../src/legacy/engine.js');
+  I = $items,
+  { Battle } = $engine;
 let n = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const units = [

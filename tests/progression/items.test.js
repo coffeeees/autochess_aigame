@@ -1,15 +1,21 @@
 // Migrated from the v0.15.18 suite test-items.cjs (tests for: progression).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $data from '../../src/core/data/units.js';
+import $engine from '../../src/core/combat/battle.js';
+import $itemEffects from '../../src/core/combat/item-effects.js';
+import $items from '../../src/core/items.js';
+import $preparation from '../../src/core/preparation.js';
+import $progression from '../../src/core/progression.js';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
-  I = require('../../src/legacy/items.js'),
-  P = require('../../src/legacy/progression.js'),
-  D = require('../../src/legacy/data.js'),
-  V = require('../../src/legacy/preparation.js'),
-  F = require('../../src/legacy/item-effects.js'),
-  { Battle, mitigatedDamage } = require('../../src/legacy/engine.js');
+  I = $items,
+  P = $progression,
+  D = $data,
+  V = $preparation,
+  F = $itemEffects,
+  { Battle, mitigatedDamage } = $engine;
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`),
   clone = (x) => JSON.parse(JSON.stringify(x));
