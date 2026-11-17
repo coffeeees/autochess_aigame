@@ -14,7 +14,6 @@ const a = require('node:assert/strict'),
   P = $progression,
   W = $encounters,
   V = $preparation,
-  A = require('../../src/legacy/combat-visuals'),
   { Battle, distance } = $engine;
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));

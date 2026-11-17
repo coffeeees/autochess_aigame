@@ -3,12 +3,11 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0~5단계 완료. 기본 화면은 새 UI(`index.html` → `src/ui/`). 기존 화면은 `legacy.html`에 비교용으로 남아 있다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 0~6단계 완료. 화면은 `index.html` → `src/ui/`. 기존 화면(legacy.html)은 6단계에서 지웠다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
-- 다음 작업: 6단계(전장·전투 연출을 캔버스(PixiJS)로: 도트 스프라이트, 피해 숫자, 투사체, 스킬 VFX, 합성 900/680ms, 레벨업,
-  하트 HP, 액체 XP, ROUND 전환). 기존 연출 코드는 `src/legacy/`에 있으니 사양을 보고 옮긴 뒤 legacy.html과 함께 지운다.
+- 다음 작업: 7단계(REBUILD_PLAN.md 5장: B1 퍼센트 표기, 글꼴 woff2 부분 집합, 빌드 크기 점검).
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
@@ -16,7 +15,7 @@
   `npm run format:check` Prettier 형식 확인. Node 22.18 이상(도구가 `.ts`를 Node로 직접 불러온다).
 - 전투 엔진·스킬·효과를 고친 뒤에는 반드시 `npm run baseline:check`.
 
-## 코드 구조 (5단계 이후)
+## 코드 구조 (6단계 이후)
 - `src/core/`: 게임 로직 ES 모듈. 각 모듈의 기본 내보내기는 예전 `AutoXxx` 객체와 같은 API다.
   `data/units.js`(명단·스킬 설명·`prototypeConfig`), `data/bonds.js`, `data/higher-cost-drafts.js`, `items.js`, `augments.js`,
   `progression.js`, `encounters.js`, `preparation.js`, `rng.ts`, `types.ts`, `save.ts`(저장 키·버전·이관표·검증·백업·D4),
@@ -27,24 +26,24 @@
   순서표는 `combat/hooks.ts` 머리 주석. 유대 규칙 호출(`Bonds.beforeDamage` 등)은 전투 루프 안의 정해진 지점에서 직접 호출한다.
 - 스킬: `combat/skills/costN.js`의 `Cxx(u, target, s)`를 `this`=전투로 호출한다. 새 스킬은 해당 코스트 파일에 추가한다.
 - `src/worker/`: 전투 Worker. `combat-worker-host.js`가 본체(환경 주입), `combat.worker.js`가 브라우저 진입점.
-- `src/ui/`: 새 UI. `store.ts`(상태 저장소 하나, 동작은 core 호출만), `components/`(컴포넌트 + CSS Module), `combat/runner.ts`(Worker 전투 실행기),
+- `src/ui/`: 화면. `store.ts`(상태 저장소 하나, 동작은 core 호출만), `components/`(컴포넌트 + CSS Module), `combat/runner.ts`(Worker 전투 실행기),
   `art/`(캐릭터 그림 등록표 D6: 일러스트 portrait·도트 sprite, 없으면 SVG 아바타), `notices.ts`(알림 정책), `styles/tokens.css`. `!important` 금지(테스트가 검사).
+- `src/ui/render/`: 전투 연출. `plan.ts`(이벤트 → 연출 명령, 순수), `timeline.ts`(시간축 모델, 순수), `screen.ts`(화면 연출 시간·수치, 순수),
+  `battlefield.ts`(PixiJS 그리기, 전투 중에만 동적 import). 연출은 전투 상태를 읽기만 한다. 화면 연출 신호는 저장소의 `cues`
+  (`ScreenCues.tsx`가 재생 후 `doneCue`), 전투 끝 장면은 `finishing`. 연출 시간은 `presentation` 환경을 줄 때만 켜진다(테스트는 끔).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
-- `src/main.js` + `src/legacy-globals.js` + `src/legacy/` + `src/styles/`: 기존 화면(legacy.html) 전용. 6단계 뒤 함께 지운다.
-- `src/legacy/*.js`: 기존 화면 스크립트. 로드 순서는 `legacy.html`의 `<script defer vite-ignore>` 순서이고,
-  `tools/vite-legacy-scripts.js`가 개발 서버에서 `/<이름>.js`로 제공하고 빌드 때 `dist/`에 같은 이름으로 복사한다.
 
 ## 테스트·문서에서 주의할 점
-- 새 UI 테스트는 `tests/ui-next/`(저장소 동작, 드래그, 흐름, 스타일 규칙). 화면을 바꾸면 브라우저에서 직접 확인한다.
+- 화면 테스트는 `tests/ui-next/`(저장소 동작, 드래그, 흐름, 연출, 스타일 규칙). 화면을 바꾸면 브라우저에서 직접 확인한다.
 - 코드 주석·테스트 이름·커밋 메시지는 한국어로 쓴다.
 - 테스트는 `tests/<기능>/<출처>.test.js`. 예전 스위트에서 옮긴 파일은 그 스위트의 준비 코드가 복사돼 있다.
-  Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돌고, `tests/setup/legacy-globals.js`가 전역 이름을 채운다.
+  Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돈다. 예전 스위트에서 옮긴 일부 테스트는 core 모듈을 `AutoXxx` 이름으로 vm 컨텍스트에 넣는다.
 - Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.
 - 문서의 소스 링크(`../src/core/x.js#L<n>`)는 줄 번호 기준이다. 코드를 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
 - `docs/specs/CORE_RULES_BASELINE_v0.15.10.json`의 `coreHashes`는 일부 core 모듈의 해시다. 그 모듈을 의도적으로 고쳤을 때만 갱신한다.
 - 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`)다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
   `tests/fixtures/v0.15.18-*.json`은 원본 게임에서 받은 실제 저장이므로 고치지 않는다.
-- 새 알림은 `notice-policy.js`의 `added`(T42~)에 넣고 `notice-audit.js`에 행을 추가한다. T01~T41 목록은 v0.15.7 조사 기록이라 바꾸지 않는다.
+- 새 알림은 `src/ui/notices.ts`의 `ADDED`(T42~)에 넣고 `src/content/notice-audit.js`에 행을 추가한다. T01~T41 목록은 v0.15.7 조사 기록이라 바꾸지 않는다.
 - `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.
 
 ## 기준 문서

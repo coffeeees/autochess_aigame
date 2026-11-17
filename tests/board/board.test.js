@@ -14,7 +14,6 @@ const a = require('node:assert/strict'),
   P = $progression,
   W = $encounters,
   V = $preparation,
-  A = require('../../src/legacy/combat-visuals'),
   { Battle, distance } = $engine;
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -23,8 +22,8 @@ test('7columns8rows56cells, player lower28 cells and no wraparound neighbors', (
   a.equal(B.playerStart(), 28);
   a.equal(D.prototypeConfig.board.columns, 7);
   a.equal(distance(6, 7), 7);
-  a.equal(A.distance(34, 35), 7);
-  a.deepEqual(A.point(55), { x: 6.5, y: 7.5 });
+  a.equal(distance(34, 35), 7);
+  a.deepEqual(B.point(55), { x: 6.5, y: 7.5 });
   const b = new Battle([{ id: 'C03', pos: 55 }], [{ id: 'E01', pos: 0 }]);
   a.deepEqual(b.neighbors(6), [13, 5]);
   a.deepEqual(b.neighbors(55), [48, 54]);

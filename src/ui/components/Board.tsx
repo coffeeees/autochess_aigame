@@ -4,8 +4,10 @@
 import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
 import type { ComponentChildren } from 'preact';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { boardArt, tracks, playArea } from '../art/board.ts';
 import { Pawn } from './Pawn.tsx';
+import type { Battlefield, FieldBattle } from '../render/battlefield.ts';
 import type { GameProps } from './Game.tsx';
 import styles from './Board.module.css';
 
@@ -30,16 +32,64 @@ interface CombatUnit {
 }
 
 export function Board(props: GameProps) {
-  return props.ui.battle ? <CombatBoard {...props} /> : <PrepareBoard {...props} />;
+  // 전투가 끝난 뒤에도 마지막 장면을 잠시 보여 준다(ui.finishing)
+  return props.ui.battle || props.ui.finishing ? (
+    <CombatBoard {...props} />
+  ) : (
+    <PrepareBoard {...props} />
+  );
 }
 
-/** 전투 중: Worker 스냅샷의 유닛을 그대로 그린다(연출은 6단계 캔버스에서). */
-function CombatBoard({ ui }: GameProps) {
-  const battle = ui.battle as unknown as { units: CombatUnit[]; time: number };
+/** 움직임 줄이기 설정 */
+const reducedMotion = () =>
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * 전투 중: 캐릭터와 연출은 PixiJS 캔버스가 그린다(render/battlefield.ts).
+ * 캔버스를 만들 수 없는 환경이면 Worker 스냅샷의 유닛을 DOM 말로 그린다.
+ */
+function CombatBoard({ ui, actions }: GameProps) {
+  const battle = (ui.battle ?? ui.finishing) as unknown as {
+    units: CombatUnit[];
+    time: number;
+    events: unknown[];
+  };
+  const host = useRef<HTMLDivElement>(null);
+  const field = useRef<Battlefield | null>(null);
+  const [mode, setMode] = useState<'loading' | 'canvas' | 'dom'>('loading');
+
+  useEffect(() => {
+    let alive = true;
+    let made: Battlefield | null = null;
+    import('../render/battlefield.ts')
+      .then((m) => m.createBattlefield(host.current!, { reduced: reducedMotion }))
+      .then((f) => {
+        made = f;
+        if (!alive) return f.destroy();
+        field.current = f;
+        setMode('canvas');
+      })
+      .catch(() => alive && setMode('dom'));
+    return () => {
+      alive = false;
+      made?.destroy();
+      field.current = null;
+    };
+  }, []);
+
+  // 스냅샷이 바뀔 때마다 캔버스에 넘긴다(캔버스는 읽기만 한다)
+  useEffect(() => {
+    field.current?.update(battle as unknown as FieldBattle, ui.speed);
+  });
+
   const units = new Map(battle.units.filter((u) => !u.dead && u.hp > 0).map((u) => [u.pos, u]));
   return (
     <Grid
+      // 전투가 끝난 뒤 마지막 장면은 누르면 건너뛴다
+      onClick={ui.finishing ? actions.skipFinish : undefined}
+      layer={<div ref={host} class={styles.canvas} data-mode={mode} />}
       cell={(pos) => {
+        if (mode !== 'dom') return null;
         const u = units.get(pos);
         return u ? (
           <Pawn
@@ -87,6 +137,7 @@ function PrepareBoard({ ui, actions }: GameProps) {
           <>
             {ally && (
               <Pawn
+                uid={ally.uid}
                 id={ally.id}
                 star={ally.star}
                 selected={ui.selected === ally.uid}
@@ -108,15 +159,21 @@ function Grid({
   cell,
   cellProps,
   caption,
+  layer,
+  onClick,
 }: {
   cell: (pos: number) => ComponentChildren;
   cellProps?: (pos: number) => Record<string, unknown>;
   caption?: string;
+  /** 칸 위에 겹쳐 그리는 층(전투 캔버스) */
+  layer?: ComponentChildren;
+  onClick?: () => void;
 }) {
   const area = playArea();
   return (
     <div
       class={styles.art}
+      onClick={onClick}
       style={{ aspectRatio: `${boardArt.source.width} / ${boardArt.source.height}` }}
     >
       <img class={styles.boardImage} src={boardArt.board} alt="" draggable={false} />
@@ -144,6 +201,7 @@ function Grid({
           </div>
         ))}
       </div>
+      {layer}
     </div>
   );
 }

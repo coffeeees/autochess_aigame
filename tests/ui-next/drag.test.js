@@ -6,8 +6,6 @@ import { createStore, parseDrop } from '../../src/ui/store.ts';
 import { dragId } from '../../src/ui/notices.ts';
 import { salePrice } from '../../src/core/shop.ts';
 
-const Policy = require('../../src/legacy/notice-policy');
-
 function setup() {
   let now = 1_000_000;
   const data = new Map();
@@ -48,9 +46,15 @@ test('놓을 곳 해석, 드래그 알림 ID가 기존 정책과 같다', () => 
     { ok: false, message: '아군 진영 아래 4줄에만 배치할 수 있습니다.' },
     { ok: false, message: '캐릭터당 아이템은 최대 3개입니다.' },
   ];
+  // v0.15.18 notice-policy.js dragId의 결과(기존 화면을 지우며 값으로 고정)
+  const expected = {
+    unit: ['T10', 'T12', 'T16', 'T15', 'T14', 'T23'],
+    item: ['T11', 'T25', 'T25', 'T15', 'T14', 'T23'],
+  };
   for (const kind of ['unit', 'item'])
-    for (const r of results)
-      a.equal(dragId(kind, r), Policy.dragId(kind, r), JSON.stringify([kind, r]));
+    results.forEach((r, i) =>
+      a.equal(dragId(kind, r), expected[kind][i], JSON.stringify([kind, r])),
+    );
 });
 
 test('7px 미만은 클릭: 드래그·판매 영역 없음, 선택은 됨', () => {

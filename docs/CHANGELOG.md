@@ -21,12 +21,12 @@
 | D05 | 원본 초안/실행 데이터 차이 | docs/AUTOCHESS_02.md 및 dist/higher-cost-drafts.js | C13~45 원래 이름/활성화 전,다수 TODO | data.js가45명 이름을 덮어쓰고 C13~33 implemented=true/todo=[]로 재정의. 원본 초안의 TODO를 현재 미구현으로 오인하면 안 됨. | [src/core/data/units.js:206](../src/core/data/units.js#L206) · `for(const u of roster.filter` |
 | D06 | 메타데이터와 실행의 차이 | dist/data.js skills C01~C12 | 개별 implemented 필드 없음 | Battle.cast에 C01~C12 실행 분기 존재. implemented 플래그 부재를 미구현으로 분류하지 않음. | [src/core/combat/skills/cost1.js:6](../src/core/combat/skills/cost1.js#L6) · `C01(u, target, s)` |
 | D07 | 데이터 콘셉트/실제 효과 차이 | 유대 concept/thresholds | 부활·정화·추가타·은신 등 복합 콘셉트 | v0.15.17에서 새16종 임시 밸런스 v1을 기본 적용. confirmedEffect=false는 최종 밸런스 미확정이며 효과 미구현을 뜻하지 않음. | [src/core/combat/battle.js:542](../src/core/combat/battle.js#L542) · `applyExperimental(){` |
-| D08 | 누적 패치 설명/현재 UI 차이 | dist/patch-notes.js history와 currentRules의 누적 UI 설명 | history의옛합성450/340·작은ROUND1100/400,누적currentRules의슬롯크기유지와최신축소구절이공존 | 현재 합성900/680ms,패널240px,일반/특수슬롯36×36px,라운드전환2200/600ms·스테이지텍스트1600/350ms. 역사 문단은 보존하고 최신UI 및 이 문서로 구분. | [src/legacy/screen-effects.js:56](../src/legacy/screen-effects.js#L56) · `const duration=` |
+| D08 | 누적 패치 설명/현재 UI 차이 | dist/patch-notes.js history와 currentRules의 누적 UI 설명 | history의옛합성450/340·작은ROUND1100/400,누적currentRules의슬롯크기유지와최신축소구절이공존 | 현재 합성900/680ms,패널240px,일반/특수슬롯36×36px,라운드전환2200/600ms·스테이지텍스트1600/350ms. 역사 문단은 보존하고 최신UI 및 이 문서로 구분. | [src/ui/render/screen.ts:6](../src/ui/render/screen.ts#L6) · `const cueDurations` |
 | D09 | 효과 문구/코드 세부 예외 | I28불멸자의갑옷의치명피해생존설명 | 전투당1회치명피해를HP1로방지 | 현재I28은ITEM_PROC/아이템파생출처에서는발동하지않는가드가있음.P04는독립죽음방지.포괄적인문구의세부범위가의도와맞는지확인필요하며이번에수정하지않음. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
-| D10 | 이름 승인/구버전 안내 문구 | 캐릭터 도감·상세의 테스트용 이름 안내 | 이름·능력치·스킬 모두 테스트용 제안으로 표시 | 45명 표시 이름은0.15.9 사용자 지정 목록으로 변경됨. provisional 및 안내 문구는 남아 있어 이름 승인과 수치 임시 여부를 문서에서 분리. | [src/legacy/prototype.js:471](../src/legacy/prototype.js#L471) · `function showRoster` |
+| D10 | 이름 승인/구버전 안내 문구 | 캐릭터 도감·상세의 테스트용 이름 안내 | 이름·능력치·스킬 모두 테스트용 제안으로 표시 | 45명 표시 이름은0.15.9 사용자 지정 목록으로 변경됨. provisional 및 안내 문구는 남아 있어 이름 승인과 수치 임시 여부를 문서에서 분리. | [src/ui/components/Overlays.tsx:90](../src/ui/components/Overlays.tsx#L90) · `function CharacterCodex` |
 | D11 | 기획과 연출 용어 구분 | C32 띄우기 | 공중에 띄우는 것으로 해석 가능 | 승인한 구현은 stun 키의1초 행동/이동 불가. 공중 좌표/무적/전용 도트 애니메이션은 없음. | [src/core/combat/skills/cost3.js:70](../src/core/combat/skills/cost3.js#L70) · `C32(u, target, s)` |
 | D12 | 기록용 안내/실제 기능 범위 | 7구간 이후 메타XP미지급 문구 | 1~6구간에서는 메타XP를 주는 것으로 오해 가능 | 현재는 모든 구간에서 메타 성장 지급 자체가 비활성.7구간 안내만 구현됨. 인게임 라운드XP2와는 별개. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
-| D13 | 이전 패치/현재 표시 정책 | dist/notice-audit.js의 원래41개 조사 문구 | 과거 발생 문구가 모두 현재도 표시되는 것으로 오해 가능 | 실제 notice-policy는13유지/27삭제/T28승인수정1. 이력과 현행 허용 목록을 구분. | [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=` |
+| D13 | 이전 패치/현재 표시 정책 | dist/notice-audit.js의 원래41개 조사 문구 | 과거 발생 문구가 모두 현재도 표시되는 것으로 오해 가능 | 실제 notice-policy는13유지/27삭제/T28승인수정1. 이력과 현행 허용 목록을 구분. | [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED` |
 | D14 | 코드 수준 동작/기획 미확정 | 물 실험 재생 및 치유감소 | 모든 회복이 치유감소를 거치는 것으로 오해 가능 | regen은 tick에서 HP를 직접 올리며 heal()을 경유하지 않음. healingReduction과의 의도된 상호작용은 확인 필요. | [src/core/combat/battle.js:598](../src/core/combat/battle.js#L598) · `if(u.regen&&u.hp>0)` |
 
 
@@ -781,3 +781,10 @@ v0.15.18 이후 재구축 작업. 단계별 계획은 [REBUILD_PLAN.md](REBUILD_
   글꼴은 Pretendard 하나(D5). 구매·판매·합성·원정 생성 규칙을 화면 코드에서 core(`shop.ts`, `merge.ts`, `run.ts`)로 옮김. 캐릭터 그림 등록표(D6: 일러스트 + 전장 도트, 없으면 SVG 아바타).
   패치노트·알림 조사표는 `src/content/`로 옮기고 필요할 때만 불러옴. 도감 메뉴의 개수는 데이터에서 계산(캐릭터 45명·해금 45명, 유대 16종).
   옮기지 않은 개발용 기능: 전투 시작 진단 로그, 전투 기록·디버그 표, 전투 중 캐릭터 상세. 연출(합성 섬광, 하트 HP, 액체 XP, ROUND 전환, VFX)은 6단계.
+- 6단계: 전투 중 전장을 PixiJS 캔버스로 그림(D1, `src/ui/render/`). 캐릭터는 도트 스프라이트 → 일러스트 → SVG 아바타 순.
+  연출은 Worker가 보낸 전투 이벤트로만 만들고 전투 상태를 읽기만 한다(시드 전투 결과가 연출 유무와 같음을 테스트로 확인).
+  v0.15.18 연출 수치를 그대로 옮김: 피해 숫자(900ms, 배속에 따라 최소 500ms), 원거리 비행 65~210ms, 회색·노란 픽셀 탄, C07 연쇄 번개(비행 160ms·대상 간격 50ms·650ms),
+  전투 끝 장면(1100/√배속, 최소 700ms) → 하트 체력(3000ms) → 결과 창, ROUND 2200ms·STAGE 1600ms, 합성 900 → 680ms, 레벨업 520ms, 액체 XP 600ms, HUD 체력 한 칸씩 80ms.
+  움직임 줄이기 설정의 짧은 버전도 같다. 전투 끝 장면과 하트 체력 연출은 누르면 건너뛸 수 있게 했다(기존 화면은 하트 연출 중 입력을 막음).
+  기존 화면(`legacy.html`, `src/legacy/`, `src/styles/`)을 지움. 기존 화면을 vm으로 불러 검사하던 테스트는 같은 규칙을 core·새 화면 기준으로 검사하도록 옮기거나(판매가·합성·3성 상점 제외·유대 정렬·저장 알림·연출 수치),
+  새 화면 테스트가 이미 다루는 것은 지웠다(드래그 판매, 배치 확인, 결과 흐름 등).

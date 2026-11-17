@@ -11,7 +11,6 @@ import $encounters from '../../src/core/encounters.js';
 import $items from '../../src/core/items.js';
 import $preparation from '../../src/core/preparation.js';
 import $progression from '../../src/core/progression.js';
-
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
   vm = require('node:vm'),
@@ -167,68 +166,3 @@ test('6-5 loss withHP left still offers completion, lethal loss uses gameover, o
   a.equal(fresh.completionChoice, null);
   a.equal(fresh.shopLocked, false);
 });
-const els = new Map(),
-  get = (id) => {
-    if (!els.has(id))
-      els.set(id, {
-        id,
-        innerHTML: '',
-        textContent: '',
-        hidden: false,
-        style: {},
-        attrs: {},
-        handlers: {},
-        setAttribute(k, v) {
-          this.attrs[k] = v;
-        },
-        classList: { add() {}, remove() {}, toggle() {} },
-        addEventListener(t, fn) {
-          (this.handlers[t] ??= []).push(fn);
-        },
-        showModal() {
-          this.open = true;
-        },
-        close() {
-          this.open = false;
-        },
-        getBoundingClientRect() {
-          return { left: 10, top: 10, width: 50, height: 50 };
-        },
-      });
-    return els.get(id);
-  },
-  doc = {
-    getElementById: get,
-    querySelector: () => null,
-    querySelectorAll: () => [],
-    addEventListener() {},
-    body: { appendChild() {}, classList: { remove() {} } },
-  };
-const ctx = vm.createContext({
-  AutoData: D,
-  AutoEngine: {},
-  AutoProgression: P,
-  AutoWorld: W,
-  AutoPreparation: V,
-  AutoShop: $shopCore,
-  AutoMerge: $mergeCore,
-  AutoRun: $runCore,
-  AutoItems: I,
-  AutoAugments: A,
-  AutoNoticePolicy: require('../../src/legacy/notice-policy'),
-  AutoPatchNotes: N,
-  document: doc,
-  console,
-  setTimeout,
-  clearTimeout,
-  clearInterval,
-  localStorage: { setItem() {} },
-});
-const src = fs.readFileSync('src/legacy/prototype.js', 'utf8');
-vm.runInContext(src.slice(0, src.lastIndexOf('\nload();')), ctx);
-for (const p of ['interaction-ui', 'content-ui', 'catalog-ui', 'run-flow-ui'])
-  vm.runInContext(fs.readFileSync('src/legacy/' + p + '.js', 'utf8'), ctx);
-vm.runInContext(
-  "function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){} state=P.initialize({gold:25,health:75,units:[],shop:['C24']});setupRunFlowUI();setupCatalogUI();",
-  ctx,
-);

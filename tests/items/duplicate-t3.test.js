@@ -5,6 +5,7 @@ import $combatClock from '../../src/core/combat/clock.js';
 import $engine from '../../src/core/combat/battle.js';
 import $preparation from '../../src/core/preparation.js';
 import $progression from '../../src/core/progression.js';
+import { allows } from '../../src/ui/notices.ts';
 
 const a = require('node:assert/strict'),
   fs = require('node:fs'),
@@ -25,5 +26,5 @@ test('duplicateT3 three-slot limit, migration and bonuses survive round-trip; T2
   const copy = V.normalize(P.migrate(JSON.parse(JSON.stringify(s))));
   a.equal(copy.inventory.filter((i) => i.equippedTo === 1).length, 3);
   a.deepEqual(P.unitBonuses(copy, 1), P.unitBonuses(s, 1));
-  a.equal(require('../../src/legacy/notice-policy').allows('T24'), false);
+  a.equal(allows('T24'), false);
 });

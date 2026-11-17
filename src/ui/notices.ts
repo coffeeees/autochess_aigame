@@ -1,6 +1,5 @@
-// 새 UI의 알림 정책: src/legacy/notice-policy.js와 같은 목록
-// (옛 UI를 없앨 때까지 tests/ui-next/store.test.js가 같은지 확인한다).
-// 이 목록의 알림만 보이고, 나머지 알림 ID는 표시하지 않는다.
+// 알림 정책(v0.15.18 notice-policy.js를 옮김). 새 알림은 ADDED(T42~)에 넣고
+// src/content/notice-audit.js에 행을 추가한다. 이 목록의 알림만 보이고, 나머지 알림 ID는 표시하지 않는다.
 
 /** v0.15.7 조사: 표시하는 알림(T01~T41 중). */
 export const RETAINED = [
@@ -31,7 +30,7 @@ export function allows(id: string): boolean {
 /** 알림 표시 시간(v0.15.18: 3초, 새 알림이 오면 다시 시작). */
 export const NOTICE_MS = 3000;
 
-/** 드래그 결과 → 알림 ID(notice-policy.js의 dragMessages / dragId와 같은 표). */
+/** 드래그 결과 → 알림 ID(v0.15.18 notice-policy.js의 dragMessages / dragId). */
 const DRAG_MESSAGES: Record<string, string> = {
   '준비 단계에서만 이동할 수 있습니다.': 'T17',
   '캐릭터를 찾을 수 없습니다.': 'T18',

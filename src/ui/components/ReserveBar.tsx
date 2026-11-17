@@ -3,6 +3,7 @@ import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
 import V from '../../core/preparation.js';
 import { Pawn } from './Pawn.tsx';
+import { LiquidXp, useLevelShake } from './VitalEffects.tsx';
 import type { GameProps } from './Game.tsx';
 import styles from './ReserveBar.module.css';
 
@@ -20,14 +21,22 @@ export function ReserveBar({ ui, actions }: GameProps) {
   const type = P.roundType(run.stage, run.round);
   const selected = run.units.find((u) => u.uid === ui.selected);
   const main = primaryButton(ui, type);
+  const shake = useLevelShake<HTMLButtonElement>();
   return (
     <footer class={styles.bar}>
       <button
+        ref={shake.ref}
         class={styles.level}
         onClick={actions.buyXp}
         disabled={!editable || maxLevel || run.gold < LEVEL.xpPurchaseGold}
         title={`${LEVEL.xpPurchaseGold}G로 ${LEVEL.xpPurchaseAmount}XP 구매`}
       >
+        <LiquidXp
+          level={run.level}
+          xp={run.xp}
+          ratio={maxLevel ? 1 : Math.min(1, run.xp / needed)}
+          onLevelUp={shake.trigger}
+        />
         <b>Lv. {run.level}</b>
         <span>{maxLevel ? '최고 레벨' : `${run.xp} / ${needed} XP`}</span>
         <small>
@@ -52,6 +61,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
             >
               {unit && (
                 <Pawn
+                  uid={unit.uid}
                   id={unit.id}
                   star={unit.star}
                   context="bench"

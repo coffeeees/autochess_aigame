@@ -152,6 +152,24 @@ test('판매하면 코스트 × 3^(성급-1)을 돌려주고 장비를 회수한
   a.deepEqual(sellUnit(s, unit.uid), { ok: false }, 'a repeated sale is inert');
 });
 
+test('판매가는 모든 캐릭터에서 코스트 × 3^(성급-1)', () => {
+  for (const id of D.playableIds)
+    for (let star = 1; star <= 3; star++)
+      a.equal(salePrice({ id, star }), D.byId(id).cost * 3 ** (star - 1), `${id} ${star}성`);
+});
+
+test('3성을 가진 캐릭터는 상점에서 빠지고, 팔면 다시 나온다(T04)', () => {
+  const s = run();
+  const id = s.units[0].id;
+  s.units[0].star = 3;
+  a(!V.shopPool(s).includes(id));
+  s.shop = [id, null, null, null, null];
+  s.gold = 50;
+  a.deepEqual(buyUnit(s, id, { uid: 99, slot: 0 }), { ok: false, notice: 'T04' });
+  a(sellUnit(s, s.units[0].uid).ok);
+  a(V.shopPool(s).includes(id), '판매 뒤 다시 후보');
+});
+
 test('전투 준비: 장비를 반영한 배치 캐릭터, 캐시된 적 편성, 편성 다음에 뽑는 시드', () => {
   const s = run();
   s.stage = 1;

@@ -1,4 +1,4 @@
-// Web Worker 안에서 도는 전투 계산(src/legacy/combat-worker.js에서 옮김).
+// Web Worker 안에서 도는 전투 계산(v0.15.18 combat-worker.js에서 옮김).
 // 환경(메시지, 시계, 타이머, 난수)을 주입받아서, 실제 Worker(combat.worker.js)와
 // 테스트에서 같은 코드가 돈다.
 import Engine from '../core/combat/battle.js';

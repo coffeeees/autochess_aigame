@@ -2,20 +2,9 @@
 // 누르면 상세(단계별 효과, 소속 동료, 추천 켜기/끄기).
 import { useState } from 'preact/hooks';
 import D from '../../core/data/units.js';
-import { roster } from '../data.ts';
+import { roster, shownBonds, type BondView } from '../data.ts';
 import type { GameProps } from './Game.tsx';
 import styles from './BondsPanel.module.css';
-
-interface BondView {
-  id: string;
-  name: string;
-  concept: string;
-  thresholds: number[];
-  effects: string[];
-  count: number;
-  tier: number;
-  members: string[];
-}
 
 export function BondsPanel({ ui, actions }: GameProps) {
   const run = ui.run!;
@@ -23,9 +12,7 @@ export function BondsPanel({ ui, actions }: GameProps) {
   const [peek, setPeek] = useState<string | null>(null);
   const deployed = run.units.filter((u) => u.location === 'board');
   const all = D.evaluateSynergies(deployed) as BondView[];
-  const shown = all
-    .filter((b) => b.count > 0)
-    .sort((a, b) => Number(b.tier > 0) - Number(a.tier > 0) || b.count - a.count);
+  const shown = shownBonds(all);
   const recommended: string[] = run.recommendedBonds || [];
   const detail = all.find((b) => b.id === peek);
   return (

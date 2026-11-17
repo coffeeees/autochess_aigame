@@ -19,8 +19,7 @@ const a = require('node:assert/strict'),
   P = $progression,
   V = $preparation,
   W = $encounters,
-  { Battle, mitigatedDamage } = $engine,
-  H = require('../../src/legacy/health-effects');
+  { Battle, mitigatedDamage } = $engine;
 $bondEffects.init = (b) => {
   b.bondPulses = { ally: Infinity, enemy: Infinity };
 };
@@ -35,51 +34,6 @@ const battle = (
     { id: 'E01', pos: 3 },
   ],
 ) => new Battle([{ id, pos: 31 }, ...allies], enemies, { rng: () => 0.99 });
-function clock(reduced = false) {
-  let now = 0,
-    seq = 0,
-    jobs = new Map(),
-    values = [],
-    bursts = 0,
-    cleaned = 0;
-  const h = H.create({
-    paint: (n) => values.push(n),
-    burst: () => {
-      bursts++;
-      return () => cleaned++;
-    },
-    reduced: () => reduced,
-    later: (fn, ms) => {
-      jobs.set(++seq, { fn, due: now + ms });
-      return seq;
-    },
-    clear: (id) => jobs.delete(id),
-  });
-  return {
-    h,
-    values,
-    get now() {
-      return now;
-    },
-    get pending() {
-      return jobs.size;
-    },
-    get bursts() {
-      return bursts;
-    },
-    get cleaned() {
-      return cleaned;
-    },
-    run() {
-      while (jobs.size) {
-        const [id, j] = [...jobs].sort((a, b) => a[1].due - b[1].due)[0];
-        jobs.delete(id);
-        now = j.due;
-        j.fn();
-      }
-    },
-  };
-}
 const elements = new Map(),
   el = (id) => {
     if (!elements.has(id))
@@ -100,39 +54,6 @@ const elements = new Map(),
       });
     return elements.get(id);
   };
-const ctx = vm.createContext({
-  AutoData: D,
-  AutoItems: $items,
-  AutoEngine: {},
-  AutoProgression: P,
-  AutoWorld: W,
-  AutoPreparation: V,
-  AutoShop: $shopCore,
-  AutoMerge: $mergeCore,
-  AutoRun: $runCore,
-  AutoNoticePolicy: require('../../src/legacy/notice-policy'),
-  document: {
-    getElementById: el,
-    querySelector: () => null,
-    querySelectorAll: () => [],
-    addEventListener() {},
-    body: { classList: { remove() {} } },
-  },
-  console,
-  setTimeout,
-  clearTimeout,
-  clearInterval,
-  localStorage: { setItem() {} },
-});
-const code = fs.readFileSync('src/legacy/prototype.js', 'utf8');
-vm.runInContext(code.slice(0, code.lastIndexOf('\nload();')), ctx);
-vm.runInContext(fs.readFileSync('src/legacy/interaction-ui.js', 'utf8'), ctx);
-vm.runInContext(fs.readFileSync('src/legacy/content-ui.js', 'utf8'), ctx);
-vm.runInContext(fs.readFileSync('src/legacy/drag-sales.js', 'utf8'), ctx);
-vm.runInContext(
-  "function renderHealth(){}function renderBoard(){}function renderDetail(){}function renderDebug(){}function renderProgression(){}function setRecruitOpen(){}function hideItemDetail(){}function renderOdds(){} state=V.normalize(P.initialize({gold:100,health:100,shop:['C24','C01','C25',null,null],units:[{id:'C24',uid:1,location:'board',pos:31,star:1},{id:'C01',uid:2,location:'bench',benchSlot:0,star:1}]}));state.recommendedBonds=['흑월'];nextUid=2;",
-  ctx,
-);
 test('all cost3 IDs and legacy result names survive unchanged save fields and migrate byID', () => {
   const s = P.initialize({
     health: 74,
@@ -150,9 +71,9 @@ test('all cost3 IDs and legacy result names survive unchanged save fields and mi
   a.equal(restored.health, 74);
   a.equal(restored.gold, 18);
   a.deepEqual(restored.inventory, s.inventory);
-  ctx.oldRow = { id: 'C01', name: '잿불 사수 모르칸', damage: 10, star: 1 };
-  a(vm.runInContext('damageChart([oldRow])', ctx).includes('녹스'));
-  a(!vm.runInContext('damageChart([oldRow])', ctx).includes('모르칸'));
+  // 예전 이름이 남은 딜 기록도 화면은 ID로 현재 이름을 찾는다(DamageChart: unitDef(id).name)
+  a(D.byId('C01').name.includes('녹스'));
+  a(!D.byId('C01').name.includes('모르칸'));
 });
 const nodes = new Set(),
   durations = [],
@@ -192,7 +113,6 @@ const fx = vm.createContext({
   matchMedia: () => ({ matches: reduced }),
   pawn: () => '<i></i>',
 });
-vm.runInContext(fs.readFileSync('src/legacy/presentation-effects.js', 'utf8'), fx);
 const seed = () =>
   vm.runInContext(
     'queueMergeEffect({uid:1},[{uid:2},{uid:3}],{left:0,top:0,width:40,height:40});flushMergeEffects();',

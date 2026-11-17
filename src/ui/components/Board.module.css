@@ -42,3 +42,9 @@
   border: 1px solid var(--panel-edge);
   border-radius: 999px;
 }
+.canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}

@@ -10,6 +10,7 @@ import { newRun, battleSetup } from '../core/run.ts';
 import Engine from '../core/combat/battle.js';
 import type { CombatRunner, LiveBattle } from './combat/runner.ts';
 import W from '../core/encounters.js';
+import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
 export type View = 'home' | 'difficulty' | 'game';
@@ -76,6 +77,10 @@ export interface UiState {
   /** 설정의 임시 규칙(v0.15.18 설정 창 체크박스) */
   quickMana: boolean;
   experimental: boolean;
+  /** 재생할 화면 연출 */
+  cues: Cue[];
+  /** 전투가 끝난 뒤 마지막 장면을 보여 주는 동안의 전투(결과 창 전) */
+  finishing: LiveBattle | null;
   /** 변경마다 증가. core 함수는 `run`을 그 자리에서 바꾼다 */
   version: number;
 }
@@ -89,6 +94,23 @@ export type Overlay =
   | { kind: 'rules' }
   | { kind: 'reset' };
 
+/**
+ * 화면 연출 신호(6단계). 게임 상태와 무관하고, 연출 컴포넌트가 재생한 뒤 doneCue로 지운다.
+ *   round:  라운드 1 시작 안내(ROUND n)    stage: 그 밖의 라운드 안내(STAGE s-r)
+ *   health: 전투 뒤 하트 체력 변화           merge: 같은 캐릭터 3명이 합쳐짐
+ */
+export type Cue =
+  | { key: number; kind: 'round' | 'stage'; stage: number; round: number }
+  | { key: number; kind: 'health'; before: number; after: number; win: boolean }
+  | {
+      key: number;
+      kind: 'merge';
+      keep: number;
+      star: number;
+      parts: { id: string; star: number; drop: string }[];
+    };
+type CueInput = Cue extends infer C ? (C extends Cue ? Omit<C, 'key'> : never) : never;
+
 /** 화면 가운데 창 */
 export type Modal = 'supply' | 'augment' | 'result' | 'deploy' | 'summary' | null;
 
@@ -100,6 +122,11 @@ export interface StoreEnv {
   now?: () => Date;
   setTimer?: (fn: () => void, ms: number) => unknown;
   clearTimer?: (id: unknown) => void;
+  /**
+   * 화면 연출을 켠다(브라우저). 없으면(테스트) 전투가 끝나자마자 결과 창을 열고 연출 신호를 만들지 않는다.
+   * reduced: 움직임 줄이기 설정
+   */
+  presentation?: { reduced: () => boolean };
 }
 
 export function createStore(env: StoreEnv) {
@@ -124,6 +151,8 @@ export function createStore(env: StoreEnv) {
     popover: null,
     quickMana: false,
     experimental: true,
+    cues: [],
+    finishing: null,
     version: 0,
   };
   let clickGuardUntil = 0;
@@ -132,6 +161,8 @@ export function createStore(env: StoreEnv) {
   let noticeKey = 0;
   let noticeTimer: unknown = null;
   let saveFailed = false;
+  let cueKey = 0;
+  let finishTimer: unknown = null;
   const listeners = new Set<() => void>();
 
   const publish = (patch: Partial<UiState> = {}) => {
@@ -202,6 +233,18 @@ export function createStore(env: StoreEnv) {
     publish();
   }
 
+  /** 화면 연출 신호를 추가한다(연출이 꺼져 있으면 아무것도 하지 않음). */
+  function cue(input: CueInput): Partial<UiState> {
+    if (!env.presentation) return {};
+    return { cues: [...state.cues, { ...input, key: ++cueKey } as Cue] };
+  }
+  /** 다음 라운드 준비 화면에 들어갈 때의 안내(v0.15.18 showRoundTransition) */
+  function roundCue(): Partial<UiState> {
+    const r = state.run;
+    if (!r || r.done || r.roundPhase !== 'prepare') return {};
+    return cue({ kind: r.round === 1 ? 'round' : 'stage', stage: r.stage, round: r.round });
+  }
+
   const run = () => state.run as RunState;
   /** 다가올 전투의 적 편성을 원정에 캐시한다(기존 UI가 그릴 때 하던 일). */
   function prepareFormation() {
@@ -264,7 +307,10 @@ export function createStore(env: StoreEnv) {
     );
   }
 
-  /** 전투 종료 정산(v0.15.18 endBattle). 연출 없이 바로 결과 창을 연다(연출은 6단계). */
+  /**
+   * 전투 종료 정산(v0.15.18 endBattle). 정산·저장은 바로 하고, 화면은
+   * 마지막 장면 잠시 유지 → (전투·보스) 하트 체력 연출 → 결과 창 순서로 보여 준다.
+   */
   function endBattle(battle: LiveBattle, result: NonNullable<LiveBattle['result']>) {
     if (state.battle !== battle) return;
     const r = run();
@@ -280,7 +326,30 @@ export function createStore(env: StoreEnv) {
     });
     (r as RunState & { lastDamageRows?: unknown }).lastDamageRows = receipt.damageRows;
     env.combat?.warm();
-    changed({ battle: null, lastBattle: battle, modal: 'result' });
+    if (!env.presentation) changed({ battle: null, lastBattle: battle, modal: 'result' });
+    else {
+      changed({ battle: null, lastBattle: battle, finishing: battle, modal: null });
+      const reduced = env.presentation.reduced();
+      clearTimer(finishTimer);
+      finishTimer = setTimer(
+        () => {
+          if (state.finishing !== battle) return;
+          const fight = receipt.type === 'BATTLE' || receipt.type === 'BOSS';
+          publish({
+            finishing: null,
+            ...(fight
+              ? cue({
+                  kind: 'health',
+                  before: receipt.healthBefore ?? receipt.health,
+                  after: receipt.health,
+                  win: !!receipt.win,
+                })
+              : { modal: 'result' }),
+          });
+        },
+        durations.finish(state.speed, reduced),
+      );
+    }
     notify(
       'T40',
       (receipt.win ? '승리' : '후퇴') +
@@ -303,7 +372,7 @@ export function createStore(env: StoreEnv) {
     if (r.roundPhase === 'augment') return changed({ modal: 'augment', lastBattle: null });
     V.enterShop(r);
     prepareFormation();
-    changed({ modal: null, selected: null, lastBattle: null });
+    changed({ modal: null, selected: null, lastBattle: null, ...roundCue() });
     notify('T36', P.label(r) + ' 준비 · ' + P.roundType(r.stage, r.round));
   }
 
@@ -520,7 +589,7 @@ export function createStore(env: StoreEnv) {
       if (!state.run || !P.chooseAugment(run(), id)) return;
       V.enterShop(run());
       prepareFormation();
-      changed({ modal: null });
+      changed({ modal: null, ...roundCue() });
       notify('T35', '증강 선택 완료 · ' + (P.augmentById(id)?.name ?? id));
     },
     continueRound,
@@ -552,7 +621,22 @@ export function createStore(env: StoreEnv) {
         return;
       }
       nextUid++;
-      changed(result.merges.length ? { selected: null } : {});
+      let cues: Partial<UiState> = {};
+      for (const m of result.merges) {
+        const drop = (u: RunState['units'][number]) =>
+          u.location === 'board' ? `board:${u.pos}` : `bench:${u.benchSlot}`;
+        cues = {
+          ...cues,
+          ...cue({
+            kind: 'merge',
+            keep: m.keep.uid,
+            star: m.star,
+            parts: m.removed.map((u) => ({ id: u.id, star: m.star - 1, drop: drop(u) })),
+          }),
+        };
+        state = { ...state, ...cues };
+      }
+      changed(result.merges.length ? { selected: null, ...cues } : {});
     },
     sell(uid: number) {
       if (!state.run || !sellUnit(run(), uid).ok) return;
@@ -565,6 +649,22 @@ export function createStore(env: StoreEnv) {
     buyXp() {
       if (!state.run || !P.buyXp(run())) return;
       changed();
+    },
+    /** 연출 하나가 끝났다(또는 건너뛰었다). 하트 연출이 끝나면 결과 창을 연다. */
+    doneCue(key: number) {
+      const done = state.cues.find((c) => c.key === key);
+      if (!done) return;
+      const cues = state.cues.filter((c) => c.key !== key);
+      publish({
+        cues,
+        ...(done.kind === 'health' && phaseModal() === 'result' ? { modal: 'result' } : {}),
+      });
+    },
+    /** 전투 끝 장면을 건너뛰고 바로 다음으로 */
+    skipFinish() {
+      if (!state.finishing) return;
+      clearTimer(finishTimer);
+      publish({ finishing: null, modal: phaseModal() });
     },
     toggleShopLock() {
       if (!state.run || !V.editable(run())) return;
