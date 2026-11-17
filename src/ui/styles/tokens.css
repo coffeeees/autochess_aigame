@@ -3,7 +3,7 @@
    (강제 우선순위 지정 금지, tests/ui-next 참고). */
 @font-face {
   font-family: GamePretendard;
-  src: url('/assets/fonts/pretendard.woff2') format('woff2');
+  src: url('/assets/fonts/pretendard-subset.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
