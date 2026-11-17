@@ -1,0 +1,2449 @@
+{
+  "version": "0.15.18",
+  "generatedBy": "tools/combat-baseline.cjs",
+  "battles": [
+    {
+      "name": "roster-C01-C02-C03-C04-C05",
+      "seed": 1000,
+      "ticks": 326,
+      "winner": "ally",
+      "time": 32.6,
+      "stats": {
+        "physical": 13652.107,
+        "magic": 307.555,
+        "healing": 360,
+        "shielding": 190,
+        "summons": 5
+      },
+      "allyHpLeft": 820.339,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C05": 2,
+        "C04": 4,
+        "C12": 2,
+        "C02": 5,
+        "C03": 3,
+        "C01": 7,
+        "C10": 3
+      },
+      "eventCount": 3,
+      "logCount": 310,
+      "unitsHash": "4d429c225ec7a244",
+      "eventsHash": "b09f046c6f2016f8",
+      "logsHash": "f5d9b231474ac26c"
+    },
+    {
+      "name": "roster-C06-C07-C08-C09-C10",
+      "seed": 1005,
+      "ticks": 193,
+      "winner": "ally",
+      "time": 19.3,
+      "stats": {
+        "physical": 10254.216,
+        "magic": 810.15,
+        "healing": 0,
+        "shielding": 199,
+        "summons": 0
+      },
+      "allyHpLeft": 2115.634,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C08": 3,
+        "C12": 1,
+        "C09": 2,
+        "C10": 3,
+        "C06": 3,
+        "C03": 1,
+        "C07": 2,
+        "C04": 2,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 207,
+      "unitsHash": "6b71fea6032584e1",
+      "eventsHash": "945315933fd6fa97",
+      "logsHash": "bbee215a48f1ce59"
+    },
+    {
+      "name": "roster-C11-C12-C13-C14-C15",
+      "seed": 1010,
+      "ticks": 196,
+      "winner": "ally",
+      "time": 19.6,
+      "stats": {
+        "physical": 10230.03,
+        "magic": 1236.36,
+        "healing": 1566.5,
+        "shielding": 190,
+        "summons": 2
+      },
+      "allyHpLeft": 5225.11,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C14": 3,
+        "C15": 5,
+        "C12": 2,
+        "C13": 3,
+        "C04": 1,
+        "C11": 2,
+        "C10": 2,
+        "C01": 2,
+        "C03": 2
+      },
+      "eventCount": 3,
+      "logCount": 224,
+      "unitsHash": "173d687085815175",
+      "eventsHash": "401c12b390b9bf84",
+      "logsHash": "99e63f323b765fba"
+    },
+    {
+      "name": "roster-C16-C17-C18-C19-C20",
+      "seed": 1015,
+      "ticks": 181,
+      "winner": "ally",
+      "time": 18.1,
+      "stats": {
+        "physical": 9594.229,
+        "magic": 1246.296,
+        "healing": 1033.911,
+        "shielding": 749.12,
+        "summons": 2
+      },
+      "allyHpLeft": 5629.502,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C19": 4,
+        "C18": 3,
+        "C20": 2,
+        "C12": 1,
+        "C04": 1,
+        "C16": 2,
+        "C03": 1,
+        "C01": 2,
+        "C10": 2,
+        "C17": 1
+      },
+      "eventCount": 4,
+      "logCount": 200,
+      "unitsHash": "13e1a6755565b8c4",
+      "eventsHash": "ecf069cf2b9de305",
+      "logsHash": "b26ea7d869c9eac7"
+    },
+    {
+      "name": "roster-C21-C22-C23-C24-C25",
+      "seed": 1020,
+      "ticks": 114,
+      "winner": "ally",
+      "time": 11.4,
+      "stats": {
+        "physical": 6378.596,
+        "magic": 2695.706,
+        "healing": 1970.189,
+        "shielding": 464.6,
+        "summons": 0
+      },
+      "allyHpLeft": 8025.887,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C24": 3,
+        "C25": 3,
+        "C03": 1,
+        "C21": 2,
+        "C12": 1,
+        "C22": 1,
+        "C01": 1,
+        "C10": 1
+      },
+      "eventCount": 3,
+      "logCount": 150,
+      "unitsHash": "a9aaa246700ee2ce",
+      "eventsHash": "848c8c3b89328916",
+      "logsHash": "72f60e3f3ce8838c"
+    },
+    {
+      "name": "roster-C26-C27-C28-C29-C30",
+      "seed": 1025,
+      "ticks": 100,
+      "winner": "ally",
+      "time": 10,
+      "stats": {
+        "physical": 8295.748,
+        "magic": 36.94,
+        "healing": 0,
+        "shielding": 435,
+        "summons": 0
+      },
+      "allyHpLeft": 7727.312,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C28": 2,
+        "C12": 1,
+        "C30": 1,
+        "C01": 1,
+        "C04": 1,
+        "C27": 1,
+        "C29": 1,
+        "C10": 1
+      },
+      "eventCount": 3,
+      "logCount": 114,
+      "unitsHash": "e70122763f3dc7f5",
+      "eventsHash": "c6f51ae3e75e5fed",
+      "logsHash": "a3eb516c97f1b742"
+    },
+    {
+      "name": "roster-C31-C32-C33-C34-C35",
+      "seed": 1030,
+      "ticks": 72,
+      "winner": "ally",
+      "time": 7.2,
+      "stats": {
+        "physical": 5179.519,
+        "magic": 3198.661,
+        "healing": 1388.02,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 8789.839,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C34": 2,
+        "C35": 2,
+        "C32": 1,
+        "C33": 1,
+        "C31": 1,
+        "C01": 1
+      },
+      "eventCount": 5,
+      "logCount": 119,
+      "unitsHash": "5b2d3bf7c72242bc",
+      "eventsHash": "c2ae33cb29b2372e",
+      "logsHash": "4fb0633302e307bd"
+    },
+    {
+      "name": "roster-C36-C37-C38-C39-C40",
+      "seed": 1035,
+      "ticks": 72,
+      "winner": "ally",
+      "time": 7.2,
+      "stats": {
+        "physical": 7826.645,
+        "magic": 518.176,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 2
+      },
+      "allyHpLeft": 10589.179,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C38": 1,
+        "C40": 1,
+        "C03": 1,
+        "C36": 1,
+        "C01": 1,
+        "C37": 1
+      },
+      "eventCount": 3,
+      "logCount": 115,
+      "unitsHash": "b70e17cbca68b02b",
+      "eventsHash": "4f53fae4c5b19ee7",
+      "logsHash": "cb94b9b5becefc50"
+    },
+    {
+      "name": "roster-C41-C42-C43-C44-C45",
+      "seed": 1040,
+      "ticks": 55,
+      "winner": "ally",
+      "time": 5.5,
+      "stats": {
+        "physical": 6979.327,
+        "magic": 945.246,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 10625.426,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C44": 1,
+        "C42": 1,
+        "C45": 1
+      },
+      "eventCount": 5,
+      "logCount": 73,
+      "unitsHash": "3459d5e552db4128",
+      "eventsHash": "861d8fcdd6c5f048",
+      "logsHash": "c8dc2f36e0db0d83"
+    },
+    {
+      "name": "mirror-0",
+      "seed": 2000,
+      "ticks": 208,
+      "winner": "enemy",
+      "time": 20.8,
+      "stats": {
+        "physical": 4161.468,
+        "magic": 687.183,
+        "healing": 464.662,
+        "shielding": 0,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 656.01,
+      "skillUses": {
+        "C01": 4,
+        "C02": 3,
+        "C05": 5,
+        "C07": 2,
+        "C08": 4,
+        "C03": 2,
+        "C04": 1,
+        "C06": 4
+      },
+      "eventCount": 3,
+      "logCount": 205,
+      "unitsHash": "ecb2670ec5ec4517",
+      "eventsHash": "785a4ad2c9bf979a",
+      "logsHash": "3ed647acb84f3449"
+    },
+    {
+      "name": "mirror-9",
+      "seed": 2009,
+      "ticks": 154,
+      "winner": "enemy",
+      "time": 15.4,
+      "stats": {
+        "physical": 3569.115,
+        "magic": 1595.607,
+        "healing": 514.098,
+        "shielding": 294,
+        "summons": 5
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 2158.208,
+      "skillUses": {
+        "C10": 3,
+        "C11": 3,
+        "C12": 2,
+        "C13": 3,
+        "C15": 3,
+        "C16": 3,
+        "C14": 3,
+        "C17": 2
+      },
+      "eventCount": 3,
+      "logCount": 203,
+      "unitsHash": "ccffb39007734abd",
+      "eventsHash": "5d20d8cbad9985ba",
+      "logsHash": "582ed76b4d29d2a1"
+    },
+    {
+      "name": "mirror-18",
+      "seed": 2018,
+      "ticks": 116,
+      "winner": "enemy",
+      "time": 11.6,
+      "stats": {
+        "physical": 3047.775,
+        "magic": 2067.674,
+        "healing": 766.015,
+        "shielding": 595,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 2346.972,
+      "skillUses": {
+        "C20": 2,
+        "C21": 3,
+        "C23": 2,
+        "C24": 3,
+        "C25": 4,
+        "C19": 3,
+        "C22": 2,
+        "C26": 2
+      },
+      "eventCount": 3,
+      "logCount": 158,
+      "unitsHash": "15abaaa636f3d513",
+      "eventsHash": "fa4dd69bdba3afc6",
+      "logsHash": "9c189e0c7fe70910"
+    },
+    {
+      "name": "mirror-27",
+      "seed": 2027,
+      "ticks": 74,
+      "winner": "enemy",
+      "time": 7.4,
+      "stats": {
+        "physical": 3252.151,
+        "magic": 2632.318,
+        "healing": 1959.551,
+        "shielding": 340,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 3325.081,
+      "skillUses": {
+        "C28": 2,
+        "C29": 2,
+        "C30": 2,
+        "C32": 3,
+        "C33": 2,
+        "C34": 4,
+        "C35": 2,
+        "C31": 1
+      },
+      "eventCount": 5,
+      "logCount": 157,
+      "unitsHash": "2ff9ecfc42e9d12a",
+      "eventsHash": "deee17feed2669e6",
+      "logsHash": "bd2f085edc588136"
+    },
+    {
+      "name": "mirror-36",
+      "seed": 2036,
+      "ticks": 110,
+      "winner": "enemy",
+      "time": 11,
+      "stats": {
+        "physical": 6606.16,
+        "magic": 2122.373,
+        "healing": 0,
+        "shielding": 957,
+        "summons": 6
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 2698.467,
+      "skillUses": {
+        "C37": 1,
+        "C38": 3,
+        "C39": 2,
+        "C41": 2,
+        "C42": 2,
+        "C43": 2,
+        "C44": 3,
+        "C40": 1
+      },
+      "eventCount": 4,
+      "logCount": 161,
+      "unitsHash": "03ab7dbc756829e2",
+      "eventsHash": "1fb030be99e31252",
+      "logsHash": "2f75f752d6ad0a13"
+    },
+    {
+      "name": "items-I01-I02-I03-I04-I05-I06",
+      "seed": 3000,
+      "ticks": 104,
+      "winner": "enemy",
+      "time": 10.4,
+      "stats": {
+        "physical": 1774.373,
+        "magic": 235.483,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 2090.145,
+      "skillUses": {
+        "C08": 2,
+        "C03": 1,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 64,
+      "unitsHash": "8390cfeaca60f417",
+      "eventsHash": "18577be96db7511a",
+      "logsHash": "6834cda0132af4de"
+    },
+    {
+      "name": "items-I07-I08-I09-I10-I11-I12",
+      "seed": 3006,
+      "ticks": 158,
+      "winner": "enemy",
+      "time": 15.8,
+      "stats": {
+        "physical": 2843.999,
+        "magic": 79.725,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 1341.276,
+      "skillUses": {
+        "C14": 1,
+        "C03": 1,
+        "C01": 2,
+        "C07": 2,
+        "C10": 1
+      },
+      "eventCount": 4,
+      "logCount": 85,
+      "unitsHash": "8e20e6f8252755ca",
+      "eventsHash": "16912dd8e1d6e838",
+      "logsHash": "e6d3b27485c7c9b0"
+    },
+    {
+      "name": "items-I13-I14-I15-I16-I17-I18",
+      "seed": 3012,
+      "ticks": 245,
+      "winner": "ally",
+      "time": 24.5,
+      "stats": {
+        "physical": 3911.607,
+        "magic": 747.556,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 311.241,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C20": 3,
+        "C13": 6,
+        "C03": 1,
+        "C01": 3,
+        "C10": 2
+      },
+      "eventCount": 4,
+      "logCount": 136,
+      "unitsHash": "0b5b19f3b3f24fb9",
+      "eventsHash": "34912b03a675c5b8",
+      "logsHash": "647e7235339135bd"
+    },
+    {
+      "name": "items-I19-I20-I21-I22-I23-I24",
+      "seed": 3018,
+      "ticks": 184,
+      "winner": "ally",
+      "time": 18.4,
+      "stats": {
+        "physical": 3739.13,
+        "magic": 282.693,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 843.177,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C26": 3,
+        "C19": 2,
+        "C10": 2,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 98,
+      "unitsHash": "0e38abd4b7230b5f",
+      "eventsHash": "cec6b29e4ffbb0c0",
+      "logsHash": "6641df589b99b785"
+    },
+    {
+      "name": "items-I25-I26-I27-I28-I29-I30",
+      "seed": 3024,
+      "ticks": 120,
+      "winner": "ally",
+      "time": 12,
+      "stats": {
+        "physical": 2212.609,
+        "magic": 1613.842,
+        "healing": 113.057,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 1356.605,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C32": 3,
+        "C25": 2,
+        "C10": 1,
+        "C01": 1
+      },
+      "eventCount": 5,
+      "logCount": 84,
+      "unitsHash": "3738a29e08d6429e",
+      "eventsHash": "9ae16253e3d670a9",
+      "logsHash": "355262f6d4c866ff"
+    },
+    {
+      "name": "items-I31-I32-I33-I34-I35-I36",
+      "seed": 3030,
+      "ticks": 95,
+      "winner": "ally",
+      "time": 9.5,
+      "stats": {
+        "physical": 2863.567,
+        "magic": 680.102,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 2
+      },
+      "allyHpLeft": 2431.331,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C31": 2,
+        "C38": 1,
+        "C10": 1,
+        "C01": 1
+      },
+      "eventCount": 3,
+      "logCount": 98,
+      "unitsHash": "3a8ff71f1cf98f8d",
+      "eventsHash": "74788706266c6718",
+      "logsHash": "6f862c2678f050d7"
+    },
+    {
+      "name": "items-I37-I38-I39-I40",
+      "seed": 3036,
+      "ticks": 90,
+      "winner": "ally",
+      "time": 9,
+      "stats": {
+        "physical": 3045.181,
+        "magic": 0,
+        "healing": 0,
+        "shielding": 412.5,
+        "summons": 0
+      },
+      "allyHpLeft": 2559.818,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C44": 1,
+        "C37": 1,
+        "C10": 1
+      },
+      "eventCount": 3,
+      "logCount": 58,
+      "unitsHash": "ca0dbc633ae3c59b",
+      "eventsHash": "bee4149fa612a5f5",
+      "logsHash": "e2dc36cb0b141f65"
+    },
+    {
+      "name": "augment-S01",
+      "seed": 4000,
+      "ticks": 340,
+      "winner": "ally",
+      "time": 34,
+      "stats": {
+        "physical": 5677.263,
+        "magic": 66.391,
+        "healing": 450,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 856.346,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 204,
+      "unitsHash": "1983712c6e4f95ba",
+      "eventsHash": "1855af222752d117",
+      "logsHash": "7593e6114ce1901e"
+    },
+    {
+      "name": "augment-S02",
+      "seed": 4001,
+      "ticks": 221,
+      "winner": "ally",
+      "time": 22.1,
+      "stats": {
+        "physical": 4644.369,
+        "magic": 108.403,
+        "healing": 270,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 1067.227,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 3,
+        "C10": 3,
+        "C09": 2
+      },
+      "eventCount": 4,
+      "logCount": 166,
+      "unitsHash": "95494b19642d0d6f",
+      "eventsHash": "5c051cf35175feec",
+      "logsHash": "98d37769acd2b29d"
+    },
+    {
+      "name": "augment-S03",
+      "seed": 4002,
+      "ticks": 341,
+      "winner": "ally",
+      "time": 34.1,
+      "stats": {
+        "physical": 5432.613,
+        "magic": 66.118,
+        "healing": 585,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 636.269,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C03": 5,
+        "C05": 5,
+        "C01": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 4,
+      "logCount": 207,
+      "unitsHash": "1237c6683ca6c76e",
+      "eventsHash": "e6d304ec7b4fc597",
+      "logsHash": "fcc21d4b3655f87d"
+    },
+    {
+      "name": "augment-S04",
+      "seed": 4003,
+      "ticks": 427,
+      "winner": "ally",
+      "time": 42.7,
+      "stats": {
+        "physical": 5691.95,
+        "magic": 86.896,
+        "healing": 540,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 311.154,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 6,
+        "C03": 4,
+        "C05": 7,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 226,
+      "unitsHash": "f5e0b458a145967f",
+      "eventsHash": "925932bb1accd643",
+      "logsHash": "7924c1fcaa79cd39"
+    },
+    {
+      "name": "augment-S05",
+      "seed": 4004,
+      "ticks": 304,
+      "winner": "ally",
+      "time": 30.4,
+      "stats": {
+        "physical": 5167.974,
+        "magic": 78.035,
+        "healing": 450,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 753.99,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 203,
+      "unitsHash": "5087f310028c4338",
+      "eventsHash": "aac0a042e8090edb",
+      "logsHash": "ba3d9e9191f24e61"
+    },
+    {
+      "name": "augment-S06",
+      "seed": 4005,
+      "ticks": 498,
+      "winner": "enemy",
+      "time": 49.8,
+      "stats": {
+        "physical": 6149.634,
+        "magic": 76.637,
+        "healing": 900,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 223.729,
+      "skillUses": {
+        "C01": 7,
+        "C03": 3,
+        "C05": 10,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 4,
+      "logCount": 234,
+      "unitsHash": "67d2fe416ce0dc05",
+      "eventsHash": "9ec06a5692bfa799",
+      "logsHash": "a28e063c07c2a215"
+    },
+    {
+      "name": "augment-S07",
+      "seed": 4006,
+      "ticks": 378,
+      "winner": "enemy",
+      "time": 37.8,
+      "stats": {
+        "physical": 5568.105,
+        "magic": 48.671,
+        "healing": 720,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 653.224,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 8,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 205,
+      "unitsHash": "fba820dc93ece4db",
+      "eventsHash": "1dd11388d7ac666c",
+      "logsHash": "f3c4c545c7a6da47"
+    },
+    {
+      "name": "augment-S08",
+      "seed": 4007,
+      "ticks": 526,
+      "winner": "ally",
+      "time": 52.6,
+      "stats": {
+        "physical": 6324.888,
+        "magic": 114.137,
+        "healing": 990,
+        "shielding": 212,
+        "summons": 0
+      },
+      "allyHpLeft": 100.975,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 8,
+        "C03": 4,
+        "C05": 11,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 257,
+      "unitsHash": "cec71ec663b89e3a",
+      "eventsHash": "7bd1fadd667dcaf3",
+      "logsHash": "af71c336bcbb3fdd"
+    },
+    {
+      "name": "augment-S09",
+      "seed": 4008,
+      "ticks": 373,
+      "winner": "enemy",
+      "time": 37.3,
+      "stats": {
+        "physical": 5575.548,
+        "magic": 41.679,
+        "healing": 630,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 562.773,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 7,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 201,
+      "unitsHash": "ca4e66edfda166cc",
+      "eventsHash": "5be8dca9cdb623bd",
+      "logsHash": "6b04f70da4a90399"
+    },
+    {
+      "name": "augment-S10",
+      "seed": 4009,
+      "ticks": 404,
+      "winner": "enemy",
+      "time": 40.4,
+      "stats": {
+        "physical": 5738.49,
+        "magic": 55.662,
+        "healing": 720,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 475.847,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 8,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 211,
+      "unitsHash": "3c048c68a3131a37",
+      "eventsHash": "00df3170a983ecf9",
+      "logsHash": "b665c4a5e15e2e62"
+    },
+    {
+      "name": "augment-S11",
+      "seed": 4010,
+      "ticks": 378,
+      "winner": "enemy",
+      "time": 37.8,
+      "stats": {
+        "physical": 5588.321,
+        "magic": 41.679,
+        "healing": 630,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 550,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 7,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 205,
+      "unitsHash": "c2151b953afd2869",
+      "eventsHash": "9ff62cc8040f58af",
+      "logsHash": "ae9a37303d838b0c"
+    },
+    {
+      "name": "augment-S12",
+      "seed": 4011,
+      "ticks": 373,
+      "winner": "enemy",
+      "time": 37.3,
+      "stats": {
+        "physical": 5550.948,
+        "magic": 79.052,
+        "healing": 630,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 550,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 7,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 207,
+      "unitsHash": "c2151b953afd2869",
+      "eventsHash": "7e9583013003a80e",
+      "logsHash": "cd1c3c1b28a631c9"
+    },
+    {
+      "name": "augment-G01",
+      "seed": 4012,
+      "ticks": 284,
+      "winner": "ally",
+      "time": 28.4,
+      "stats": {
+        "physical": 5193.071,
+        "magic": 90.326,
+        "healing": 360,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 1826.602,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 4,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 199,
+      "unitsHash": "8c8ea921f1648a05",
+      "eventsHash": "7900c1e0d4b3d504",
+      "logsHash": "b46b593a85f8d8b3"
+    },
+    {
+      "name": "augment-G02",
+      "seed": 4013,
+      "ticks": 163,
+      "winner": "ally",
+      "time": 16.3,
+      "stats": {
+        "physical": 4338.682,
+        "magic": 70.677,
+        "healing": 270,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 1410.641,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 4,
+        "C03": 2,
+        "C05": 3,
+        "C10": 2,
+        "C09": 2
+      },
+      "eventCount": 3,
+      "logCount": 139,
+      "unitsHash": "e8f8519f27907845",
+      "eventsHash": "1a9b46d00dd2a4fa",
+      "logsHash": "d26be0d15276e9bb"
+    },
+    {
+      "name": "augment-G03",
+      "seed": 4014,
+      "ticks": 332,
+      "winner": "ally",
+      "time": 33.2,
+      "stats": {
+        "physical": 5459.09,
+        "magic": 73.026,
+        "healing": 720,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 737.885,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 5,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 203,
+      "unitsHash": "d8cec71d1da2c381",
+      "eventsHash": "8827d514e8dd79ee",
+      "logsHash": "faa037708d93f8c8"
+    },
+    {
+      "name": "augment-G04",
+      "seed": 4015,
+      "ticks": 335,
+      "winner": "ally",
+      "time": 33.5,
+      "stats": {
+        "physical": 5000.199,
+        "magic": 60.634,
+        "healing": 450,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 939.167,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 203,
+      "unitsHash": "6e76dac02cd3bfbf",
+      "eventsHash": "bcb56fac7c2a9400",
+      "logsHash": "45dbd5e0c3c59479"
+    },
+    {
+      "name": "augment-G05",
+      "seed": 4016,
+      "ticks": 310,
+      "winner": "ally",
+      "time": 31,
+      "stats": {
+        "physical": 5270.308,
+        "magic": 79.276,
+        "healing": 450,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 650.417,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 198,
+      "unitsHash": "a44926c3a378af3b",
+      "eventsHash": "1df48b5510d079bd",
+      "logsHash": "2f3574348686eead"
+    },
+    {
+      "name": "augment-G06",
+      "seed": 4017,
+      "ticks": 337,
+      "winner": "ally",
+      "time": 33.7,
+      "stats": {
+        "physical": 5446.12,
+        "magic": 73.11,
+        "healing": 630.715,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 661.486,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C03": 5,
+        "C05": 5,
+        "C01": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 4,
+      "logCount": 279,
+      "unitsHash": "fc3541a9bf8eb9b5",
+      "eventsHash": "b7971ccd35da4960",
+      "logsHash": "047bdbb87bf38768"
+    },
+    {
+      "name": "augment-G07",
+      "seed": 4018,
+      "ticks": 295,
+      "winner": "ally",
+      "time": 29.5,
+      "stats": {
+        "physical": 5206.974,
+        "magic": 73.026,
+        "healing": 405,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 675,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 4,
+        "C03": 4,
+        "C05": 4,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 201,
+      "unitsHash": "0775396cfa9c0500",
+      "eventsHash": "89f5769ee350b4f8",
+      "logsHash": "d56c5b7ac2373337"
+    },
+    {
+      "name": "augment-G08",
+      "seed": 4019,
+      "ticks": 353,
+      "winner": "enemy",
+      "time": 35.3,
+      "stats": {
+        "physical": 5546.14,
+        "magic": 41.679,
+        "healing": 630,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 592.18,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 7,
+        "C10": 5,
+        "C09": 3
+      },
+      "eventCount": 6,
+      "logCount": 205,
+      "unitsHash": "e93b537e42b5f22b",
+      "eventsHash": "be1f159d69786407",
+      "logsHash": "aeed11a6c7f20d59"
+    },
+    {
+      "name": "augment-G09",
+      "seed": 4020,
+      "ticks": 336,
+      "winner": "ally",
+      "time": 33.6,
+      "stats": {
+        "physical": 5353.769,
+        "magic": 64.308,
+        "healing": 450,
+        "shielding": 397.5,
+        "summons": 0
+      },
+      "allyHpLeft": 581.923,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 5,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 4,
+      "logCount": 210,
+      "unitsHash": "61ed0c4cf9931aba",
+      "eventsHash": "b0eeefaa0352d9d3",
+      "logsHash": "acdd6aa25f677f04"
+    },
+    {
+      "name": "augment-G10",
+      "seed": 4021,
+      "ticks": 497,
+      "winner": "ally",
+      "time": 49.7,
+      "stats": {
+        "physical": 6169.88,
+        "magic": 108.34,
+        "healing": 810,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 81.78,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 7,
+        "C03": 3,
+        "C05": 10,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 240,
+      "unitsHash": "5d0c78268396878f",
+      "eventsHash": "317e5f4ce093aa3a",
+      "logsHash": "dae1f9bcebf69b32"
+    },
+    {
+      "name": "augment-G11",
+      "seed": 4022,
+      "ticks": 280,
+      "winner": "ally",
+      "time": 28,
+      "stats": {
+        "physical": 4910.187,
+        "magic": 90.326,
+        "healing": 360,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 909.487,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C03": 3,
+        "C05": 4,
+        "C01": 6,
+        "C10": 3,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 196,
+      "unitsHash": "0cecc8c82065fade",
+      "eventsHash": "6574d51b830fe470",
+      "logsHash": "ef6f06156e86621d"
+    },
+    {
+      "name": "augment-G12",
+      "seed": 4023,
+      "ticks": 418,
+      "winner": "enemy",
+      "time": 41.8,
+      "stats": {
+        "physical": 5795.376,
+        "magic": 72.929,
+        "healing": 720,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 401.695,
+      "skillUses": {
+        "C01": 6,
+        "C03": 3,
+        "C05": 8,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 4,
+      "logCount": 217,
+      "unitsHash": "3277373e1141a6e4",
+      "eventsHash": "67be908e40130cb3",
+      "logsHash": "6e3d531be6e5c510"
+    },
+    {
+      "name": "augment-P01",
+      "seed": 4024,
+      "ticks": 170,
+      "winner": "ally",
+      "time": 17,
+      "stats": {
+        "physical": 4360.722,
+        "magic": 86.222,
+        "healing": 288,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 2991.056,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 4,
+        "C03": 2,
+        "C05": 2,
+        "C10": 2,
+        "C09": 2
+      },
+      "eventCount": 3,
+      "logCount": 136,
+      "unitsHash": "140491eb6cf540cb",
+      "eventsHash": "a0a388a5b1e02ce7",
+      "logsHash": "a73d4fcd86db169a"
+    },
+    {
+      "name": "augment-P02",
+      "seed": 4025,
+      "ticks": 202,
+      "winner": "ally",
+      "time": 20.2,
+      "stats": {
+        "physical": 4668.306,
+        "magic": 81.852,
+        "healing": 360,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 1159.842,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 3,
+        "C05": 4,
+        "C10": 3,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 177,
+      "unitsHash": "85b17a67d0820aee",
+      "eventsHash": "e3bc4988ecc08e1c",
+      "logsHash": "02ab3a053a216fe0"
+    },
+    {
+      "name": "augment-P03",
+      "seed": 4026,
+      "ticks": 305,
+      "winner": "ally",
+      "time": 30.5,
+      "stats": {
+        "physical": 5280.842,
+        "magic": 89.389,
+        "healing": 792,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 971.769,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 6,
+        "C03": 4,
+        "C05": 4,
+        "C10": 4,
+        "C09": 4
+      },
+      "eventCount": 3,
+      "logCount": 201,
+      "unitsHash": "0a084219008fa5d1",
+      "eventsHash": "bc4df1ffdf4908dd",
+      "logsHash": "51d47b9f5da46846"
+    },
+    {
+      "name": "augment-P04",
+      "seed": 4027,
+      "ticks": 320,
+      "winner": "ally",
+      "time": 32,
+      "stats": {
+        "physical": 5273.321,
+        "magic": 48.641,
+        "healing": 450,
+        "shielding": 270,
+        "summons": 0
+      },
+      "allyHpLeft": 678.038,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 209,
+      "unitsHash": "74923e3144bdb6c6",
+      "eventsHash": "81382a287680a6bf",
+      "logsHash": "b24ea3f7d3b7fad9"
+    },
+    {
+      "name": "augment-P05",
+      "seed": 4028,
+      "ticks": 327,
+      "winner": "ally",
+      "time": 32.7,
+      "stats": {
+        "physical": 5591.342,
+        "magic": 91.679,
+        "healing": 753.502,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 620.481,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C03": 4,
+        "C05": 5,
+        "C10": 4,
+        "C09": 4
+      },
+      "eventCount": 5,
+      "logCount": 288,
+      "unitsHash": "8b89671415c5b87f",
+      "eventsHash": "6bd19651fbdf791d",
+      "logsHash": "ff44a5052db6177b"
+    },
+    {
+      "name": "augment-P06",
+      "seed": 4029,
+      "ticks": 230,
+      "winner": "ally",
+      "time": 23,
+      "stats": {
+        "physical": 4987.013,
+        "magic": 66.679,
+        "healing": 468,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 964.308,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 4,
+        "C03": 4,
+        "C05": 4,
+        "C10": 3,
+        "C09": 2
+      },
+      "eventCount": 3,
+      "logCount": 174,
+      "unitsHash": "c7e3cc4e83f2e712",
+      "eventsHash": "0b29fc1834b92caa",
+      "logsHash": "02ae2d91ae7ab2cc"
+    },
+    {
+      "name": "augment-P07",
+      "seed": 4030,
+      "ticks": 296,
+      "winner": "ally",
+      "time": 29.6,
+      "stats": {
+        "physical": 5053.44,
+        "magic": 82.317,
+        "healing": 450,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 864.244,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 5,
+        "C05": 5,
+        "C03": 4,
+        "C10": 4,
+        "C09": 4
+      },
+      "eventCount": 3,
+      "logCount": 199,
+      "unitsHash": "fa96ee2072da2eda",
+      "eventsHash": "829d9578f8c92920",
+      "logsHash": "7d82b1861f29deff"
+    },
+    {
+      "name": "augment-P08",
+      "seed": 4031,
+      "ticks": 250,
+      "winner": "ally",
+      "time": 25,
+      "stats": {
+        "physical": 4415.478,
+        "magic": 125.862,
+        "healing": 360,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 2368.659,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 7,
+        "C03": 3,
+        "C05": 4,
+        "C10": 4,
+        "C09": 2
+      },
+      "eventCount": 3,
+      "logCount": 202,
+      "unitsHash": "62a3ef1bbc2d4c5c",
+      "eventsHash": "28869c843f97a468",
+      "logsHash": "617b995d1bc57c11"
+    },
+    {
+      "name": "augment-P09",
+      "seed": 4032,
+      "ticks": 477,
+      "winner": "enemy",
+      "time": 47.7,
+      "stats": {
+        "physical": 6050.839,
+        "magic": 97.127,
+        "healing": 720,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 122.034,
+      "skillUses": {
+        "C01": 7,
+        "C03": 3,
+        "C05": 9,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 232,
+      "unitsHash": "3430c4131d6db62a",
+      "eventsHash": "9ac6d1a0a5c7e518",
+      "logsHash": "ac30b942c2fd0f86"
+    },
+    {
+      "name": "augment-P10",
+      "seed": 4033,
+      "ticks": 420,
+      "winner": "ally",
+      "time": 42,
+      "stats": {
+        "physical": 5847.252,
+        "magic": 60.417,
+        "healing": 540,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 182.331,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C03": 4,
+        "C05": 7,
+        "C01": 6,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 220,
+      "unitsHash": "af8e5a12c9fc922c",
+      "eventsHash": "7dd6d2b4a61dbaf4",
+      "logsHash": "7c2d1d5dbdb567a5"
+    },
+    {
+      "name": "augment-P11",
+      "seed": 4034,
+      "ticks": 473,
+      "winner": "ally",
+      "time": 47.3,
+      "stats": {
+        "physical": 6159.075,
+        "magic": 67.874,
+        "healing": 794.576,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 117.627,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C01": 7,
+        "C03": 4,
+        "C05": 9,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 237,
+      "unitsHash": "e3780cfdf55e6085",
+      "eventsHash": "a4d4a99e591947b6",
+      "logsHash": "b9dc0d6b1fe65e00"
+    },
+    {
+      "name": "augment-P12",
+      "seed": 4035,
+      "ticks": 534,
+      "winner": "enemy",
+      "time": 53.4,
+      "stats": {
+        "physical": 6249.901,
+        "magic": 87.642,
+        "healing": 879.915,
+        "shielding": 0,
+        "summons": 0
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 92.373,
+      "skillUses": {
+        "C03": 3,
+        "C05": 10,
+        "C01": 7,
+        "C10": 4,
+        "C09": 3
+      },
+      "eventCount": 3,
+      "logCount": 243,
+      "unitsHash": "a4412575a6d4b433",
+      "eventsHash": "7d8ee5368c3e4762",
+      "logsHash": "18a501857552958c"
+    },
+    {
+      "name": "encounter-1-3-d1",
+      "seed": 5001,
+      "ticks": 197,
+      "winner": "ally",
+      "time": 19.7,
+      "stats": {
+        "physical": 3650.48,
+        "magic": 103.194,
+        "healing": 0,
+        "shielding": 285,
+        "summons": 7
+      },
+      "allyHpLeft": 1860.674,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C04": 4,
+        "C02": 7,
+        "C12": 3,
+        "C01": 2,
+        "C03": 2
+      },
+      "eventCount": 3,
+      "logCount": 249,
+      "unitsHash": "7caa5c5be3ef817e",
+      "eventsHash": "d2b6ed5991ed7277",
+      "logsHash": "acb19130b00e92bd"
+    },
+    {
+      "name": "encounter-1-3-d5",
+      "seed": 5005,
+      "ticks": 327,
+      "winner": "ally",
+      "time": 32.7,
+      "stats": {
+        "physical": 4966.018,
+        "magic": 308.007,
+        "healing": 0,
+        "shielding": 570,
+        "summons": 12
+      },
+      "allyHpLeft": 1529.275,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C04": 2,
+        "C02": 12,
+        "C12": 6,
+        "C01": 3,
+        "C03": 3
+      },
+      "eventCount": 4,
+      "logCount": 419,
+      "unitsHash": "2e3b564d87100f16",
+      "eventsHash": "e4db663346c9856b",
+      "logsHash": "f827d055a29936af"
+    },
+    {
+      "name": "encounter-1-3-d10",
+      "seed": 5010,
+      "ticks": 290,
+      "winner": "enemy",
+      "time": 29,
+      "stats": {
+        "physical": 4817.46,
+        "magic": 225.214,
+        "healing": 0,
+        "shielding": 380,
+        "summons": 7
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 845.626,
+      "skillUses": {
+        "C04": 2,
+        "C02": 7,
+        "C12": 4,
+        "C03": 2,
+        "C01": 4
+      },
+      "eventCount": 3,
+      "logCount": 294,
+      "unitsHash": "6b3f03189036b203",
+      "eventsHash": "182929443a958eb6",
+      "logsHash": "b114968d19675c2a"
+    },
+    {
+      "name": "encounter-2-2-d1",
+      "seed": 5011,
+      "ticks": 239,
+      "winner": "enemy",
+      "time": 23.9,
+      "stats": {
+        "physical": 6319.473,
+        "magic": 443.73,
+        "healing": 486,
+        "shielding": 285,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 3799.647,
+      "skillUses": {
+        "C08": 3,
+        "C03": 1,
+        "C09": 1,
+        "C07": 2,
+        "C02": 3,
+        "C05": 5,
+        "C06": 4,
+        "C04": 3,
+        "C12": 3,
+        "C10": 2
+      },
+      "eventCount": 3,
+      "logCount": 316,
+      "unitsHash": "009a3e8009aa2e48",
+      "eventsHash": "f53779ce7ad27357",
+      "logsHash": "6b49f42fb25f0842"
+    },
+    {
+      "name": "encounter-2-2-d5",
+      "seed": 5015,
+      "ticks": 145,
+      "winner": "enemy",
+      "time": 14.5,
+      "stats": {
+        "physical": 5116.594,
+        "magic": 286.089,
+        "healing": 291.6,
+        "shielding": 190,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 4785.767,
+      "skillUses": {
+        "C08": 2,
+        "C09": 1,
+        "C03": 1,
+        "C07": 1,
+        "C05": 3,
+        "C02": 2,
+        "C06": 2,
+        "C12": 2,
+        "C10": 1,
+        "C04": 2
+      },
+      "eventCount": 4,
+      "logCount": 220,
+      "unitsHash": "26d2dbfedd416836",
+      "eventsHash": "ec03192d70fec331",
+      "logsHash": "3d2212fc36007e7f"
+    },
+    {
+      "name": "encounter-2-2-d10",
+      "seed": 5020,
+      "ticks": 127,
+      "winner": "enemy",
+      "time": 12.7,
+      "stats": {
+        "physical": 4339.655,
+        "magic": 149.765,
+        "healing": 194.4,
+        "shielding": 199,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 5601.83,
+      "skillUses": {
+        "C08": 1,
+        "C03": 1,
+        "C07": 1,
+        "C02": 2,
+        "C05": 2,
+        "C06": 1,
+        "C10": 1,
+        "C12": 1
+      },
+      "eventCount": 3,
+      "logCount": 174,
+      "unitsHash": "af017405c4837ce3",
+      "eventsHash": "89e4c35d060b4487",
+      "logsHash": "72044fb26a2bc4c3"
+    },
+    {
+      "name": "encounter-2-5-d1",
+      "seed": 5021,
+      "ticks": 189,
+      "winner": "enemy",
+      "time": 18.9,
+      "stats": {
+        "physical": 4874.559,
+        "magic": 1196.742,
+        "healing": 0,
+        "shielding": 439,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 8219.898,
+      "skillUses": {
+        "C11": 4,
+        "C13": 4,
+        "C04": 2,
+        "C12": 3,
+        "C08": 5,
+        "C09": 2,
+        "C03": 2,
+        "C01": 2,
+        "C10": 6
+      },
+      "eventCount": 4,
+      "logCount": 303,
+      "unitsHash": "4c457468a343839d",
+      "eventsHash": "c20b6e7ef74345b4",
+      "logsHash": "fafca759f831a622"
+    },
+    {
+      "name": "encounter-2-5-d5",
+      "seed": 5025,
+      "ticks": 104,
+      "winner": "enemy",
+      "time": 10.4,
+      "stats": {
+        "physical": 4482.07,
+        "magic": 921.748,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 9107.382,
+      "skillUses": {
+        "C11": 2,
+        "C13": 2,
+        "C04": 2,
+        "C08": 2,
+        "C09": 1,
+        "C10": 2,
+        "C01": 1
+      },
+      "eventCount": 4,
+      "logCount": 183,
+      "unitsHash": "f4abb5b8e69b9b1b",
+      "eventsHash": "74304760620ec740",
+      "logsHash": "6a069f3e6a3632f5"
+    },
+    {
+      "name": "encounter-2-5-d10",
+      "seed": 5030,
+      "ticks": 80,
+      "winner": "enemy",
+      "time": 8,
+      "stats": {
+        "physical": 4323.341,
+        "magic": 720.448,
+        "healing": 0,
+        "shielding": 0,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 9467.411,
+      "skillUses": {
+        "C13": 1,
+        "C11": 2,
+        "C04": 1,
+        "C10": 1,
+        "C08": 2,
+        "C09": 1,
+        "C01": 1
+      },
+      "eventCount": 5,
+      "logCount": 144,
+      "unitsHash": "786450c4cea009e5",
+      "eventsHash": "fcf46d524abd0d5e",
+      "logsHash": "69eabff3d05ec9fb"
+    },
+    {
+      "name": "encounter-3-4-d1",
+      "seed": 5031,
+      "ticks": 182,
+      "winner": "enemy",
+      "time": 18.2,
+      "stats": {
+        "physical": 9783.498,
+        "magic": 1677.255,
+        "healing": 1541.249,
+        "shielding": 871.8,
+        "summons": 5
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 9278.099,
+      "skillUses": {
+        "C15": 4,
+        "C18": 6,
+        "C16": 4,
+        "C13": 4,
+        "C14": 3,
+        "C04": 4,
+        "C10": 3,
+        "C08": 2,
+        "C03": 4,
+        "C11": 2,
+        "C17": 2,
+        "C01": 4,
+        "C12": 1
+      },
+      "eventCount": 3,
+      "logCount": 411,
+      "unitsHash": "67443b9755b2883d",
+      "eventsHash": "a05ec05fc47ec0fc",
+      "logsHash": "5ec76f7cf58215e7"
+    },
+    {
+      "name": "encounter-3-4-d5",
+      "seed": 5035,
+      "ticks": 105,
+      "winner": "enemy",
+      "time": 10.5,
+      "stats": {
+        "physical": 7499.273,
+        "magic": 1097.343,
+        "healing": 624.221,
+        "shielding": 397.6,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 11546.325,
+      "skillUses": {
+        "C18": 2,
+        "C14": 1,
+        "C16": 2,
+        "C10": 3,
+        "C13": 3,
+        "C15": 2,
+        "C04": 1,
+        "C08": 1,
+        "C03": 1,
+        "C17": 1,
+        "C11": 1,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 246,
+      "unitsHash": "a7eb74e83063cbd9",
+      "eventsHash": "caaebd9a98d1b49f",
+      "logsHash": "352044cbda5e9d4d"
+    },
+    {
+      "name": "encounter-3-4-d10",
+      "seed": 5040,
+      "ticks": 69,
+      "winner": "enemy",
+      "time": 6.9,
+      "stats": {
+        "physical": 5891.219,
+        "magic": 454.668,
+        "healing": 300.2,
+        "shielding": 198.8,
+        "summons": 1
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 12997.812,
+      "skillUses": {
+        "C15": 1,
+        "C16": 1,
+        "C18": 1,
+        "C13": 1,
+        "C10": 1,
+        "C08": 1
+      },
+      "eventCount": 3,
+      "logCount": 142,
+      "unitsHash": "3c978a1970324db9",
+      "eventsHash": "033ac9842549f985",
+      "logsHash": "44abab9950064b7d"
+    },
+    {
+      "name": "encounter-4-5-d1",
+      "seed": 5041,
+      "ticks": 482,
+      "winner": "ally",
+      "time": 48.2,
+      "stats": {
+        "physical": 28057.019,
+        "magic": 5345.363,
+        "healing": 3798.767,
+        "shielding": 4417.24,
+        "summons": 13
+      },
+      "allyHpLeft": 4248.164,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C21": 7,
+        "C18": 11,
+        "C20": 3,
+        "C04": 4,
+        "C03": 2,
+        "C08": 4,
+        "C22": 8,
+        "C19": 7,
+        "C11": 14,
+        "C10": 3,
+        "C01": 4,
+        "C12": 2,
+        "C17": 4,
+        "C23": 4
+      },
+      "eventCount": 7,
+      "logCount": 600,
+      "unitsHash": "11361b079b1a1f83",
+      "eventsHash": "c20dc2dc4582282f",
+      "logsHash": "c586aacd5a90125b"
+    },
+    {
+      "name": "encounter-4-5-d5",
+      "seed": 5045,
+      "ticks": 173,
+      "winner": "enemy",
+      "time": 17.3,
+      "stats": {
+        "physical": 16356.737,
+        "magic": 2522.619,
+        "healing": 394.984,
+        "shielding": 1195.44,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 12369.12,
+      "skillUses": {
+        "C21": 3,
+        "C18": 1,
+        "C20": 1,
+        "C04": 4,
+        "C03": 1,
+        "C08": 2,
+        "C19": 3,
+        "C22": 2,
+        "C11": 3,
+        "C17": 1,
+        "C01": 2,
+        "C12": 1,
+        "C10": 1,
+        "C23": 2
+      },
+      "eventCount": 3,
+      "logCount": 308,
+      "unitsHash": "f3cdf81877ced555",
+      "eventsHash": "735e2002e917e33d",
+      "logsHash": "7751fc91cf97b26b"
+    },
+    {
+      "name": "encounter-4-5-d10",
+      "seed": 5050,
+      "ticks": 112,
+      "winner": "enemy",
+      "time": 11.2,
+      "stats": {
+        "physical": 15352.541,
+        "magic": 1201.772,
+        "healing": 394.984,
+        "shielding": 618.24,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 14966.867,
+      "skillUses": {
+        "C18": 1,
+        "C21": 1,
+        "C04": 2,
+        "C19": 1,
+        "C22": 1,
+        "C08": 1,
+        "C11": 2,
+        "C17": 1,
+        "C01": 1,
+        "C23": 1,
+        "C12": 1
+      },
+      "eventCount": 4,
+      "logCount": 215,
+      "unitsHash": "f1111953ebbcc720",
+      "eventsHash": "c9c3a13c50978734",
+      "logsHash": "eb00aa1696b276e8"
+    },
+    {
+      "name": "encounter-5-5-d1",
+      "seed": 5051,
+      "ticks": 282,
+      "winner": "ally",
+      "time": 28.2,
+      "stats": {
+        "physical": 28881.215,
+        "magic": 5712.901,
+        "healing": 4762.753,
+        "shielding": 2293,
+        "summons": 4
+      },
+      "allyHpLeft": 10762.336,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C24": 6,
+        "C25": 6,
+        "C21": 5,
+        "C04": 3,
+        "C26": 4,
+        "C03": 5,
+        "C02": 4,
+        "C27": 4,
+        "C10": 4,
+        "C22": 3,
+        "C23": 3,
+        "C12": 5,
+        "C28": 2
+      },
+      "eventCount": 4,
+      "logCount": 527,
+      "unitsHash": "10dbe6f54f4ad55c",
+      "eventsHash": "852d1c431fe71be7",
+      "logsHash": "c4e6a88509f013cf"
+    },
+    {
+      "name": "encounter-5-5-d5",
+      "seed": 5055,
+      "ticks": 408,
+      "winner": "enemy",
+      "time": 40.8,
+      "stats": {
+        "physical": 36886.358,
+        "magic": 7098.706,
+        "healing": 4874.141,
+        "shielding": 1696.6,
+        "summons": 5
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 1662.777,
+      "skillUses": {
+        "C24": 6,
+        "C25": 8,
+        "C21": 4,
+        "C04": 4,
+        "C26": 2,
+        "C02": 5,
+        "C03": 5,
+        "C23": 1,
+        "C27": 6,
+        "C10": 4,
+        "C22": 1,
+        "C12": 5,
+        "C28": 3
+      },
+      "eventCount": 4,
+      "logCount": 544,
+      "unitsHash": "49d356e4f502daca",
+      "eventsHash": "86c9c38530bea008",
+      "logsHash": "7824c36fb7aea9d5"
+    },
+    {
+      "name": "encounter-5-5-d10",
+      "seed": 5060,
+      "ticks": 166,
+      "winner": "enemy",
+      "time": 16.6,
+      "stats": {
+        "physical": 23951.385,
+        "magic": 2924.796,
+        "healing": 2469.6,
+        "shielding": 1027.8,
+        "summons": 2
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 15198.618,
+      "skillUses": {
+        "C21": 3,
+        "C04": 2,
+        "C24": 3,
+        "C25": 2,
+        "C03": 4,
+        "C02": 2,
+        "C23": 1,
+        "C27": 3,
+        "C22": 1,
+        "C10": 2,
+        "C12": 1,
+        "C28": 1
+      },
+      "eventCount": 4,
+      "logCount": 289,
+      "unitsHash": "f56abdae7194fc75",
+      "eventsHash": "4060e36a47717d6a",
+      "logsHash": "82210a0f81160871"
+    },
+    {
+      "name": "encounter-6-5-d1",
+      "seed": 5061,
+      "ticks": 367,
+      "winner": "ally",
+      "time": 36.7,
+      "stats": {
+        "physical": 32750.768,
+        "magic": 14474.722,
+        "healing": 0,
+        "shielding": 1210,
+        "summons": 4
+      },
+      "allyHpLeft": 1127.769,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C04": 1,
+        "C28": 1,
+        "C25": 8,
+        "C32": 6,
+        "C08": 4,
+        "C31": 2,
+        "C26": 1,
+        "C12": 2,
+        "C10": 4,
+        "C33": 5,
+        "C27": 3,
+        "C03": 4,
+        "C29": 4,
+        "C11": 5,
+        "C01": 6,
+        "C30": 3
+      },
+      "eventCount": 4,
+      "logCount": 556,
+      "unitsHash": "378ecf30f90ec649",
+      "eventsHash": "7b3c36ddd6f183c0",
+      "logsHash": "aceaaadaed6a777c"
+    },
+    {
+      "name": "encounter-6-5-d5",
+      "seed": 5065,
+      "ticks": 150,
+      "winner": "enemy",
+      "time": 15,
+      "stats": {
+        "physical": 24378.27,
+        "magic": 5749.738,
+        "healing": 0,
+        "shielding": 511,
+        "summons": 1
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 17535.992,
+      "skillUses": {
+        "C04": 1,
+        "C26": 1,
+        "C25": 2,
+        "C32": 3,
+        "C31": 1,
+        "C08": 2,
+        "C27": 1,
+        "C12": 2,
+        "C10": 3,
+        "C29": 2,
+        "C33": 3,
+        "C03": 1,
+        "C11": 1,
+        "C30": 1,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 322,
+      "unitsHash": "e751c64c11843c9d",
+      "eventsHash": "ce9b0f58815629ca",
+      "logsHash": "5b5ec88fef25579a"
+    },
+    {
+      "name": "encounter-6-5-d10",
+      "seed": 5070,
+      "ticks": 103,
+      "winner": "enemy",
+      "time": 10.3,
+      "stats": {
+        "physical": 22205.883,
+        "magic": 2772.921,
+        "healing": 0,
+        "shielding": 435,
+        "summons": 1
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 22685.196,
+      "skillUses": {
+        "C04": 1,
+        "C25": 1,
+        "C31": 1,
+        "C32": 2,
+        "C27": 1,
+        "C08": 1,
+        "C10": 1,
+        "C12": 1,
+        "C29": 1,
+        "C33": 1,
+        "C03": 1,
+        "C30": 1,
+        "C11": 1,
+        "C01": 2
+      },
+      "eventCount": 3,
+      "logCount": 238,
+      "unitsHash": "89bb83e3cbcebfdf",
+      "eventsHash": "51d9fffc37ae389e",
+      "logsHash": "6f5375c32994f4e4"
+    },
+    {
+      "name": "encounter-7-2-d1",
+      "seed": 5071,
+      "ticks": 252,
+      "winner": "ally",
+      "time": 25.2,
+      "stats": {
+        "physical": 44612.898,
+        "magic": 16983.291,
+        "healing": 17287.389,
+        "shielding": 1962,
+        "summons": 7
+      },
+      "allyHpLeft": 16151,
+      "enemyHpLeft": 0,
+      "skillUses": {
+        "C34": 11,
+        "C33": 2,
+        "C31": 2,
+        "C04": 5,
+        "C10": 2,
+        "C32": 2,
+        "C35": 4,
+        "C08": 5,
+        "C12": 2,
+        "C29": 3,
+        "C03": 7,
+        "C38": 3,
+        "C37": 3,
+        "C30": 4,
+        "C01": 4,
+        "C11": 4
+      },
+      "eventCount": 4,
+      "logCount": 600,
+      "unitsHash": "f5ea50dc728b9092",
+      "eventsHash": "8e741d20f612f186",
+      "logsHash": "ea79c237f65dd4f4"
+    },
+    {
+      "name": "encounter-7-2-d5",
+      "seed": 5075,
+      "ticks": 156,
+      "winner": "enemy",
+      "time": 15.6,
+      "stats": {
+        "physical": 37261.465,
+        "magic": 11472.739,
+        "healing": 3875.04,
+        "shielding": 685,
+        "summons": 4
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 15699.769,
+      "skillUses": {
+        "C34": 2,
+        "C33": 1,
+        "C04": 5,
+        "C31": 1,
+        "C32": 1,
+        "C35": 3,
+        "C10": 2,
+        "C08": 3,
+        "C12": 2,
+        "C29": 2,
+        "C03": 3,
+        "C38": 2,
+        "C37": 2,
+        "C30": 1,
+        "C01": 2,
+        "C11": 1
+      },
+      "eventCount": 3,
+      "logCount": 438,
+      "unitsHash": "1061927e7a91bfe0",
+      "eventsHash": "4b9b346311ea1fa6",
+      "logsHash": "a5668422fec630db"
+    },
+    {
+      "name": "encounter-7-2-d10",
+      "seed": 5080,
+      "ticks": 111,
+      "winner": "enemy",
+      "time": 11.1,
+      "stats": {
+        "physical": 31817.695,
+        "magic": 5754.065,
+        "healing": 2973.743,
+        "shielding": 199,
+        "summons": 3
+      },
+      "allyHpLeft": 0,
+      "enemyHpLeft": 25733.784,
+      "skillUses": {
+        "C34": 2,
+        "C33": 1,
+        "C04": 3,
+        "C31": 1,
+        "C32": 1,
+        "C35": 1,
+        "C10": 2,
+        "C12": 1,
+        "C08": 1,
+        "C38": 1,
+        "C29": 1,
+        "C37": 1,
+        "C03": 2,
+        "C11": 1,
+        "C01": 1
+      },
+      "eventCount": 5,
+      "logCount": 302,
+      "unitsHash": "fb51f2d4720eb74c",
+      "eventsHash": "0ceba768be123831",
+      "logsHash": "987b5ce882998edc"
+    }
+  ]
+}
