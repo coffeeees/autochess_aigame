@@ -12,7 +12,7 @@ import { DamageChart } from './DamageChart.tsx';
 import type { GameProps } from './Game.tsx';
 import styles from './Modals.module.css';
 
-function Shell({
+export function Shell({
   children,
   onClose,
   label,

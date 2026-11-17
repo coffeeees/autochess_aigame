@@ -1,6 +1,7 @@
 // Migrated from the v0.15.18 suite test-v01510.cjs (tests for: render).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $patchNotes from '../../src/content/patch-notes.js';
 import $shopCore from '../../src/core/shop.ts';
 import $mergeCore from '../../src/core/merge.ts';
 import $runCore from '../../src/core/run.ts';
@@ -20,7 +21,7 @@ const a = require('node:assert/strict'),
   W = $encounters,
   A = $augments,
   I = $items,
-  N = require('../../src/legacy/patch-notes');
+  N = $patchNotes;
 let count = 0;
 const copy = (x) => JSON.parse(JSON.stringify(x)),
   near = (x, y) => a(Math.abs(x - y) < 1e-7);

@@ -1,6 +1,7 @@
 // Migrated from the v0.15.18 suite test-ui-refinement.cjs (tests for: ui).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $noticeAudit from '../../src/content/notice-audit.js';
 import $shopCore from '../../src/core/shop.ts';
 import $mergeCore from '../../src/core/merge.ts';
 import $runCore from '../../src/core/run.ts';
@@ -116,7 +117,7 @@ test('all41 IDs have exactly12 retained,28 silent and one approved T28 route', (
     const allowed = run("notify(noticeId,'検証')");
     a.equal(allowed, Policy.retained.includes(id) || id === 'T28');
   }
-  const audit = require('../../src/legacy/notice-audit');
+  const audit = $noticeAudit;
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.equal(audit.rows.filter((r) => r.status.startsWith('삭제')).length, 28);
   a(audit.rows.find((r) => r.id === 'T28').status.includes('승인'));

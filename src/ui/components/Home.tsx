@@ -9,6 +9,9 @@ type Props = { ui: UiState; actions: Store['actions'] };
 export function Home({ ui, actions }: Props) {
   return (
     <section class={styles.view}>
+      <button class={styles.patch} onClick={() => actions.openOverlay({ kind: 'patch' })}>
+        패치노트
+      </button>
       <div class={styles.shell}>
         <span class={styles.eyebrow}>SINGLE PLAYER · FANTASY AUTO BATTLER</span>
         <h1 class={styles.title}>AUTOCHESS</h1>

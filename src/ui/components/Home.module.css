@@ -1,5 +1,6 @@
 /* 시작 화면. 값은 v0.15.18 shell.css의 .home-* 규칙에서 가져옴 */
 .view {
+  position: relative;
   min-height: 100vh;
   background: radial-gradient(ellipse at 65% 30%, #262239 0, transparent 60%), var(--color-bg);
   display: flex;
@@ -200,4 +201,9 @@
   color: #a391b0;
   margin-top: 11px;
   line-height: 1.8;
+}
+.patch {
+  position: absolute;
+  top: 20px;
+  right: 24px;
 }

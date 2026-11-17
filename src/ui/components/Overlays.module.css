@@ -1,0 +1,171 @@
+.layer {
+  position: relative;
+  z-index: 50;
+}
+.eyebrow {
+  font-size: var(--text-xs);
+  letter-spacing: 2px;
+  color: var(--color-muted);
+}
+.back {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+.menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+.menu button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  text-align: left;
+}
+.menu b {
+  font-size: var(--text-lg);
+}
+.menu span {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.costGroup {
+  margin-top: var(--space-4);
+}
+.costDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--cost-color);
+  font-size: var(--text-md);
+}
+.costDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cost-color);
+  opacity: 0.5;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+}
+.rosterCard {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: #1b1a26;
+  border: 1px solid var(--cost-color);
+  border-radius: var(--radius-md);
+}
+.rosterCard small {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.portrait {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.cardButtons {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.cardButtons button {
+  font-size: var(--text-xs);
+  padding: 4px 8px;
+}
+.temporary {
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+}
+.bigPortrait {
+  width: 180px;
+  height: 180px;
+  margin: var(--space-3) 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  max-width: 420px;
+}
+.stats span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  font-size: 9px;
+  color: var(--color-muted);
+  background: #ffffff0a;
+  border-radius: var(--radius-sm);
+}
+.stats b {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+.card {
+  padding: var(--space-3);
+  background: #1b1a26;
+  border: 1px solid var(--card-line, #3c4257);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.card[data-active='true'] {
+  border-color: #e8c96f;
+}
+.card[data-tier='2'] {
+  border-color: #59b977;
+}
+.card[data-tier='3'] {
+  border-color: #e6c449;
+}
+.card h3 {
+  margin: 4px 0;
+  font-size: var(--text-md);
+}
+.card small {
+  color: var(--color-muted);
+}
+.card ol {
+  padding-left: var(--space-4);
+}
+.card li[data-achieved='true'] {
+  color: var(--color-gold);
+}
+.itemHead {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: var(--space-2);
+  align-items: center;
+}
+.itemHead :global(svg) {
+  width: 36px;
+  height: 36px;
+}
+.patch details {
+  margin: var(--space-2) 0;
+}
+.patchActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.pre {
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--space-3);
+  background: #0b0e18;
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  white-space: pre-wrap;
+}

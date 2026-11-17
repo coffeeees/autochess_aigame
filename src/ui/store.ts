@@ -70,12 +70,24 @@ export interface UiState {
   /** 직전 전투(결과 창의 딜 그래프용) */
   lastBattle: LiveBattle | null;
   speed: 1 | 2 | 4;
+  overlay: Overlay | null;
+  /** HUD 메뉴의 작은 창 */
+  popover: 'settings' | 'more' | null;
   /** 설정의 임시 규칙(v0.15.18 설정 창 체크박스) */
   quickMana: boolean;
   experimental: boolean;
   /** 변경마다 증가. core 함수는 `run`을 그 자리에서 바꾼다 */
   version: number;
 }
+
+/** 도감·패치노트 같은 덮개 창(라운드 흐름 창보다 위에 열린다) */
+export type Overlay =
+  | { kind: 'codex'; page: 'home' | 'characters' | 'bonds' | 'augments' | 'items' }
+  | { kind: 'character'; id: string; back: Overlay | null }
+  | { kind: 'patch' }
+  | { kind: 'guide' }
+  | { kind: 'rules' }
+  | { kind: 'reset' };
 
 /** 화면 가운데 창 */
 export type Modal = 'supply' | 'augment' | 'result' | 'deploy' | 'summary' | null;
@@ -108,6 +120,8 @@ export function createStore(env: StoreEnv) {
     battle: null,
     lastBattle: null,
     speed: 1,
+    overlay: null,
+    popover: null,
     quickMana: false,
     experimental: true,
     version: 0,
@@ -473,6 +487,28 @@ export function createStore(env: StoreEnv) {
       actions.primary(true);
     },
     closeModal: () => publish({ modal: null }),
+    openOverlay: (overlay: Overlay) => publish({ overlay, popover: null, shopOpen: false }),
+    closeOverlay: () => publish({ overlay: null }),
+    setPopover: (popover: UiState['popover']) =>
+      publish({ popover: state.popover === popover ? null : popover }),
+    /** 캐릭터 도감의 '무료 테스트 영입'(v0.15.18 recruit(id, true)) */
+    freeRecruit(id: string) {
+      if (!state.run || state.battle) return;
+      const result = buyUnit(run(), id, { uid: nextUid + 1, free: true });
+      if (!result.ok) {
+        if (result.notice === 'T04')
+          notify('T04', '이미 3성을 보유한 캐릭터는 판매 후 다시 영입할 수 있습니다.');
+        if (result.notice === 'T05') notify('T05', '대기석이 가득 찼습니다.');
+        return;
+      }
+      nextUid++;
+      changed();
+    },
+    /** 더보기 → 새 원정: 확인 뒤 난이도 선택 화면으로 */
+    confirmNewRun() {
+      if (state.battle) env.combat?.stop();
+      publish({ overlay: null, popover: null, battle: null, modal: null, view: 'difficulty' });
+    },
     toggleSupply(index: number) {
       if (state.run && P.toggleSupply(run(), index)) changed();
     },

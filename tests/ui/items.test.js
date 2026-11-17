@@ -1,6 +1,7 @@
 // Migrated from the v0.15.18 suite test-items.cjs (tests for: ui).
 // Shared setup is copied as-is so each file stays independent.
 import { test } from 'vitest';
+import $patchNotes from '../../src/content/patch-notes.js';
 import $data from '../../src/core/data/units.js';
 import $engine from '../../src/core/combat/battle.js';
 import $itemEffects from '../../src/core/combat/item-effects.js';
@@ -57,7 +58,7 @@ function freeze(b) {
   for (const u of b.units) u.castUntil = 999;
 }
 test('patch notes include v0.1..0.15.11 current rules40items and original history', () => {
-  const N = require('../../src/legacy/patch-notes');
+  const N = $patchNotes;
   a.equal(N.history[0].version, '0.1');
   a.equal(N.history.at(-1).version, '0.15.18');
   a.equal(N.current, '0.15.18');

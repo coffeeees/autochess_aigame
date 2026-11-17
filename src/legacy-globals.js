@@ -20,6 +20,8 @@ import Save from './core/save.ts';
 import Shop from './core/shop.ts';
 import Merge from './core/merge.ts';
 import Run from './core/run.ts';
+import PatchNotes from './content/patch-notes.js';
+import NoticeAudit from './content/notice-audit.js';
 
 export function installLegacyGlobals(root, { vfx = true } = {}) {
   Object.assign(root, {
@@ -42,6 +44,8 @@ export function installLegacyGlobals(root, { vfx = true } = {}) {
     AutoShop: Shop,
     AutoMerge: Merge,
     AutoRun: Run,
+    AutoPatchNotes: PatchNotes,
+    AutoNoticeAudit: NoticeAudit,
   });
   // In the page, battles record VFX events (main-thread fallback and presentation),
   // as vfx-events.js did when it was loaded as a script.

@@ -205,3 +205,35 @@ test('전투 실행기: Worker를 못 만들면 메인 스레드에서 계산', 
   }
   a(ended);
 });
+
+test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새 원정', () => {
+  const { store, s } = setup();
+  store.actions.setPopover('more');
+  a.equal(s().popover, 'more');
+  store.actions.openOverlay({ kind: 'codex', page: 'characters' });
+  a.deepEqual(s().overlay, { kind: 'codex', page: 'characters' });
+  a.equal(s().popover, null, '덮개 창을 열면 작은 창은 닫힌다');
+  const gold = s().run.gold;
+  const count = s().run.units.length;
+  store.actions.freeRecruit('C05');
+  a.equal(s().run.gold, gold, '무료');
+  a.equal(s().run.units.length, count + 1);
+  store.actions.closeOverlay();
+  a.equal(s().overlay, null);
+  store.actions.openOverlay({ kind: 'reset' });
+  store.actions.confirmNewRun();
+  a.equal(s().view, 'difficulty');
+  a.equal(s().overlay, null);
+});
+
+test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
+  const notes = (await import('../../src/content/patch-notes.js')).default;
+  const audit = (await import('../../src/content/notice-audit.js')).default;
+  a.equal(notes.current, '0.15.18');
+  a(notes.toMarkdown().includes('## 버전별 변경 이력'));
+  a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
+  a.deepEqual(
+    audit.rows.filter((r) => r.status.startsWith('추가')).map((r) => r.id),
+    ['T42', 'T43', 'T44'],
+  );
+});
