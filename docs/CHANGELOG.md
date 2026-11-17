@@ -792,3 +792,5 @@ v0.15.18 이후 재구축 작업. 단계별 계획은 [REBUILD_PLAN.md](REBUILD_
   패치노트·알림 조사표는 5단계부터 창을 열 때만 불러온다(빌드에서 별도 파일). 글꼴은 Pretendard 가변 글꼴을 쓰인 글자만 남겨 2MB → 446KB(`tools/subset-font.py`,
   한글 완성형 2,350자 + 소스에 쓰인 글자, 담긴 글자 목록은 `docs/specs/font-subset.json`). 쓰지 않는 전장 그림 2장(3.9MB)을 빌드에서 빼 `assets-src/`로 옮김.
   빌드 결과 13MB → 8.7MB. JS는 처음 화면 207KB(gzip 73KB), 전투 캔버스 306KB(gzip 97KB, 전투 때만 불러옴). 도감의 유대는 16종이 맞음(사용자 확인).
+- 그림을 WebP로: 전장 배경 2.4MB → 230KB, C01 일러스트 1.7MB → 121KB·썸네일 1.3MB → 142KB(손실 압축 품질 85~88),
+  보드 1.9MB → 1.26MB(무손실, 픽셀이 원본과 같음을 변환 도구가 확인). 원본 PNG는 `assets-src/images/`. 빌드 결과 8.7MB → 3.3MB.
