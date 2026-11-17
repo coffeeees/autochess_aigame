@@ -3,15 +3,24 @@
 재구축 전체 계획과 근거는 `docs/REBUILD_PLAN.md`에 있다. 작업 단계(0~7단계)는 그 문서의 5장을 따른다.
 
 ## 현재 진행 상황
-- 0단계(기준선 확보) 완료. 원본은 git 태그 `v0.15.18-original`.
-- 기준선: `docs/archive/baseline-tests.txt`(23 스위트 / 337 검사), `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
-- 엔진을 옮기거나 고친 뒤에는 `node tools/combat-baseline.cjs --check`로 전투 결과가 기준선과 같은지 확인한다.
-  로직 파일 위치가 바뀌면 `AUTOCHESS_LOGIC_DIR=<경로>`로 지정한다.
-- 1단계 파일 정리 완료: 기획 문서 4종은 `docs/`, 테스트가 대조하는 원본 기획 데이터는 `docs/specs/`, 과거 보고서·지시서·일회성 스크립트는 `docs/archive/`.
-- `docs/archive/scripts/`의 스크립트는 실행하지 않는다(과거 문자열 치환 도구, 일부는 없는 파일을 참조).
-- 1단계 포맷 완료: JS/CSS/테스트는 Prettier(`.prettierrc`) 형식이다. 수정 후 `npx prettier --check "dist/*.js" "dist/*.css" "*.cjs" "tools/*.cjs"`가 통과해야 한다.
-- 문서의 소스 링크(`../dist/x.js#L<n>`)는 줄 번호 기준이다. 코드를 크게 옮기면 링크도 갱신하고 `test-v01511`로 확인한다.
-- 다음 작업: 2단계(Vite + Vitest, src/·public/ 구조, 에셋 영문 파일명, 테스트를 기능별로 재구성). 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D7 보관.
+- 0~2단계 완료. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
+- 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
+- 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D7 과거 파일은 docs/archive에 보관.
+- 다음 작업: 3단계(게임 로직을 ES 모듈로 `src/core/`에 옮기기, 시드 RNG, Battle 덮어쓰기를 훅으로, 스킬 레지스트리).
+
+## 명령
+- `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)
+- `npm test` Vitest 337개. `npm run baseline:check` 전투 결과가 기준선과 같은지 확인. `npm run format:check` Prettier 형식 확인.
+- 엔진을 옮기거나 고친 뒤에는 반드시 `npm run baseline:check`. 로직 위치가 바뀌면 `AUTOCHESS_LOGIC_DIR=<경로>`로 지정한다.
+
+## 현재 구조에서 주의할 점 (3단계 전까지)
+- `src/legacy/*.js`는 전역 변수를 공유하는 일반 스크립트다. 로드 순서는 `index.html`의 `<script defer vite-ignore>` 순서이고,
+  `tools/vite-legacy-scripts.js`가 개발 서버에서 `/<이름>.js`로 제공하고 빌드 때 `dist/`에 같은 이름으로 복사한다.
+  전투 Worker(`combat-worker.js`)는 `importScripts`로 로직 파일을 이름으로 불러온다. 파일 이름을 바꾸면 이 세 곳을 함께 고친다.
+- 테스트는 `tests/<기능>/<출처>.test.js`. 한 파일에는 예전 스위트 한 개의 테스트만 들어 있고 준비 코드가 복사돼 있다
+  (몇몇 스위트가 `require`로 공유 모듈을 덮어쓰기 때문). Vitest는 파일마다 별도 프로세스(`pool: 'forks'`)로 돈다.
+- 문서의 소스 링크(`../src/legacy/x.js#L<n>`)는 줄 번호 기준이다. 코드를 크게 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
+- `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.
 
 ## 기준 문서
 - 게임 규칙과 수치의 기준은 docs/GAME_DESIGN.md다. 코드와 문서가 다르면 수정하기 전에 사용자에게 묻는다.

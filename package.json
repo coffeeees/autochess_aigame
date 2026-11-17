@@ -9,9 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:legacy": "node test-all.cjs",
-    "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"*.cjs\" \"tools/*.{cjs,js}\" vite.config.js",
-    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"*.cjs\" \"tools/*.{cjs,js}\" vite.config.js",
+    "format": "prettier --write \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
+    "format:check": "prettier --check \"src/**/*.{js,css}\" \"tests/**/*.js\" \"tools/*.{cjs,js}\" vite.config.js",
     "baseline:check": "node tools/combat-baseline.cjs --check"
   },
   "engines": {

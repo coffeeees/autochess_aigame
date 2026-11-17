@@ -762,3 +762,11 @@
 - 게임검사: `node test-all.cjs`.문서ID/수치/용어/버전교차검사는별도문서테스트에포함합니다.
 - UI·브라우저치수/연출검증결과는 [이번 작업 보고](archive/updates/UI_01511_UPDATE.md) 참조.
 - source of truth는실행된모듈과분기입니다.원본draft파일,기획상태표시,과거패치의설명만으로현재효과를추측하지않습니다.
+
+## 6. 재구축 기록 (게임 동작 변경 없음)
+
+v0.15.18 이후 재구축 작업. 단계별 계획은 [REBUILD_PLAN.md](REBUILD_PLAN.md). 각 단계는 테스트 337개, 시드 전투 기준선 81건, 원본과의 화면 픽셀 비교로 동작이 같음을 확인했다.
+
+- 0단계: 기준선 기록 (`archive/BASELINE.md`).
+- 1단계: 일회성 스크립트·버전 보고서·지시서를 `archive/`로, 원본 기획 데이터를 `specs/`로 옮김. 기획 문서 4종을 `docs/`로 옮기고 이름에서 `AUTOCHESS_` 접두어 제거. JS/CSS를 Prettier로 포맷하고 문서의 소스 줄 링크 204개를 새 줄 번호로 갱신.
+- 2단계: Vite 빌드 도입. 게임 스크립트는 `src/legacy/`, 스타일은 `src/styles/`, 에셋은 `public/assets/`(영문 파일명). 위 문서의 `dist/…` 소스 표기는 이제 `src/legacy/…`를 가리킨다. 테스트는 Vitest로 옮겨 `tests/<기능>/`로 재구성(예전 스위트는 `archive/legacy-tests/`).
