@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/legacy/prototype.js:44](../src/legacy/prototype.js#L44) · `function fresh`, [src/core/preparation.js:265](../src/core/preparation.js#L265) · `function startingRoster`.
+[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:265](../src/core/preparation.js#L265) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/legacy/prototype.js:504](../src/legacy/prototype.js#L504) · `function startBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/ui/store.ts:271](../src/ui/store.ts#L271) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외,판매후복귀.1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/legacy/drag-sales.js:3](../src/legacy/drag-sales.js#L3) · `function unitSalePrice`, [src/legacy/prototype.js:383](../src/legacy/prototype.js#L383) · `function merge`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
+[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -1208,7 +1208,7 @@ legacy training/mana/funds는저장호환효과만유지하고신규선택풀에
 - 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
 - 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
 
-[src/core/save.ts:179](../src/core/save.ts#L179) · `function loadSave`, [src/core/save.ts:142](../src/core/save.ts#L142) · `function revertInterruptedBattle`, [src/legacy/prototype.js:89](../src/legacy/prototype.js#L89) · `function save`.
+[src/core/save.ts:179](../src/core/save.ts#L179) · `function loadSave`, [src/core/save.ts:142](../src/core/save.ts#L142) · `function revertInterruptedBattle`, [src/ui/store.ts:184](../src/ui/store.ts#L184) · `function save`.
 
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
@@ -1219,7 +1219,7 @@ legacy training/mana/funds는저장호환효과만유지하고신규선택풀에
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
 - 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/legacy/prototype.js:56](../src/legacy/prototype.js#L56) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/legacy/screen-effects.js:12](../src/legacy/screen-effects.js#L12) · `function create`, [src/legacy/notice-policy.js:3](../src/legacy/notice-policy.js#L3) · `const retained=`.
+[src/ui/store.ts:202](../src/ui/store.ts#L202) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 ## 14. 남은 결정과 불일치
 

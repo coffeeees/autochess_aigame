@@ -53,16 +53,13 @@ npm run format:check
 | 경로 | 내용 |
 | --- | --- |
 | `index.html` | 게임 페이지(새 UI) |
-| `legacy.html` | 기존 화면(6단계에서 연출을 옮긴 뒤 제거 예정, 비교용) |
 | `src/core/` | 게임 규칙·데이터·전투 엔진 (ES 모듈, DOM 사용 없음). 스킬은 `combat/skills/`, 무작위는 `rng.ts` |
 | `src/worker/` | 전투 Web Worker |
-| `src/ui/` | 새 UI (Preact, 상태 저장소 `store.ts` 하나, 디자인 토큰 `styles/tokens.css`, 컴포넌트별 CSS Module) |
+| `src/ui/` | 화면 (Preact, 상태 저장소 `store.ts` 하나, 디자인 토큰 `styles/tokens.css`, 컴포넌트별 CSS Module). 전투 전장·연출은 `render/`(PixiJS 캔버스) |
 | `src/content/` | 패치노트·알림 조사표(필요할 때만 불러옴) |
-| `src/main.js`, `src/legacy/` | 기존 화면용 진입점과 스크립트(legacy.html) |
-| `src/styles/` | 기존 화면 스타일시트(legacy.html) |
 | `public/assets/` | 이미지와 폰트 (영문 소문자·하이픈 파일명) |
-| `tests/<기능>/` | 기능별 테스트: data, skills, bonds, combat, board, shop, merge, economy, progression, items, augments, encounters, save, rng, render, ui, ui-next(새 UI), docs |
-| `tools/` | Vite 플러그인, 전투 기준선·화면 촬영 도구 |
+| `tests/<기능>/` | 기능별 테스트: data, skills, bonds, combat, board, shop, merge, economy, progression, items, augments, encounters, save, rng, render, ui, ui-next(화면 저장소·연출), docs |
+| `tools/` | 전투 기준선 도구 |
 | `docs/GAME_DESIGN.md` | 게임 규칙과 수치의 기준 문서 |
 | `docs/GLOSSARY.md`, `docs/UNIMPLEMENTED.md`, `docs/CHANGELOG.md` | 용어집, 미구현·확인 필요 목록, 변경 이력 |
 | `docs/REBUILD_PLAN.md` | 재구축 분석 보고서와 단계별 계획 |

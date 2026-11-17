@@ -7,7 +7,6 @@ import { allows, RETAINED, APPROVED, ADDED } from '../../src/ui/notices.ts';
 import D from '../../src/core/data/units.js';
 import P from '../../src/core/progression.js';
 
-const Policy = require('../../src/legacy/notice-policy');
 const KEY = 'starlight-onecost-v1';
 
 function setup(initial = {}) {
@@ -33,13 +32,32 @@ function setup(initial = {}) {
   return { store, storage, data, timers, s: () => store.getState() };
 }
 
-test('알림 정책이 기존 UI 정책과 같다', () => {
+test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 T42~T44만 보인다', () => {
+  // v0.15.18 notice-policy.js의 목록(기존 화면을 지우며 값으로 고정)
+  const retained = [
+    'T02',
+    'T03',
+    'T04',
+    'T05',
+    'T06',
+    'T15',
+    'T16',
+    'T19',
+    'T23',
+    'T25',
+    'T34',
+    'T39',
+  ];
   for (let i = 1; i <= 50; i++) {
     const id = 'T' + String(i).padStart(2, '0');
-    a.equal(allows(id), Policy.allows(id), id);
+    a.equal(
+      allows(id),
+      retained.includes(id) || id === 'T28' || ['T42', 'T43', 'T44'].includes(id),
+      id,
+    );
   }
-  a.deepEqual([...RETAINED], Policy.retained);
-  a.deepEqual([...ADDED], Policy.added);
+  a.deepEqual([...RETAINED], retained);
+  a.deepEqual([...ADDED], ['T42', 'T43', 'T44']);
   a.deepEqual([...APPROVED], ['T28']);
 });
 
@@ -125,4 +143,33 @@ test('저장소가 실패하면 T42를 한 번만 알린다', () => {
   const key = s().notice.key;
   store.actions.toggleShopLock();
   a.equal(s().notice.key, key, 'not repeated while failing');
+});
+
+test('T44: 전투 중 다시 열면 준비 단계로 돌아가 보너스를 회수하고, 고친 상태를 한 번 저장한다', () => {
+  const save = JSON.parse(fs.readFileSync('tests/fixtures/v0.15.18-mid-battle.json', 'utf8'));
+  const key = P.label(save);
+  save.gold += 5;
+  save.bonusLootLedger = { [key]: { kind: 'gold', amount: 5, key } };
+  const { s, data, store } = setup({ [KEY]: JSON.stringify(save) });
+  a.equal(s().run.roundPhase, 'prepare');
+  a.equal(s().run.gold, save.gold - 5);
+  a.equal(s().loadNotice.id, 'T44');
+  a(s().loadNotice.text.includes('보너스 골드 5G'));
+  const stored = JSON.parse(data.get(KEY));
+  a.equal(stored.roundPhase, 'prepare');
+  a.equal(stored.gold, save.gold - 5);
+  a.deepEqual(stored.bonusLootLedger, {});
+  // 게임 화면에 들어가면 한 번 보이고 사라진다
+  store.actions.continueRun();
+  a.equal(s().notice.id, 'T44');
+  a.equal(s().loadNotice, null);
+});
+
+test('정상 저장은 알림이나 저장 쓰기 없이 불러온다', () => {
+  const raw = fs.readFileSync('tests/fixtures/v0.15.18-prepare-with-augment.json', 'utf8');
+  const { s, data } = setup({ [KEY]: raw });
+  a.equal(s().loadNotice, null);
+  a.equal(data.get(KEY), raw, '저장을 다시 쓰지 않음');
+  a.equal(data.size, 1, '백업 없음');
+  a.equal(s().run.augments.join(), JSON.parse(raw).augments.join());
 });

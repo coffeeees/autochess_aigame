@@ -1,5 +1,5 @@
 // 전장 그림과 board-7x8.png에서 잰 격자선 위치
-// (src/legacy/battle-art.js에서 가져옴, PNG 자체는 바꾸지 않음).
+// (v0.15.18 battle-art.js에서 가져옴, PNG 자체는 바꾸지 않음).
 export const boardArt = {
   background: 'assets/battlefield-bg.png',
   board: 'assets/board-7x8.png',

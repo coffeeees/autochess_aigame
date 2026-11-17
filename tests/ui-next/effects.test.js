@@ -18,6 +18,7 @@ import {
   durations,
   flightMs,
   effectStyle,
+  traitPalette,
 } from '../../src/ui/render/plan.ts';
 import { createTimeline } from '../../src/ui/render/timeline.ts';
 import {
@@ -620,4 +621,67 @@ test('합성: 상점에서 세 번째를 사면 남는 캐릭터와 재료 위�
   a.equal(merge.keep, 101, '전장에 있는 쪽이 남는다');
   a.equal(merge.star, 2);
   a.deepEqual(merge.parts.map((p) => p.drop).sort(), ['bench:0', 'bench:4']);
+});
+
+test('특성 10개는 모두 다른 색, 소환수 공격은 원래 속성을 유지한다', () => {
+  a.equal(Object.keys(traitPalette).length, 10);
+  a.equal(new Set(Object.values(traitPalette)).size, 10);
+  a.equal(effectStyle('물').color, '#55baff');
+  a.equal(effectStyle('몬스터').color, '#d5cbe3');
+  const out = plan(
+    [{ kind: 'damage', source: 1, target: 2, amount: 5 }],
+    [
+      { uid: 1, id: 'C11', pos: 8, summonKind: 'fire', stats: { RNG: 2 } },
+      { uid: 2, pos: 9, team: 'enemy', stats: { RNG: 1 } },
+    ],
+  );
+  a.equal(out[0].sourceTrait, '화염');
+});
+
+test('이벤트 당시 위치와 원거리 회피는 나중에 유닛이 움직여도 유지되고, 적중을 지어내지 않는다', () => {
+  const battle = new VfxBattle([{ id: 'C01', pos: 31 }], [{ id: 'E01', pos: 3 }], { rng: () => 0 });
+  const [source, target] = battle.units;
+  target.stats.DOD = 100;
+  battle.deal(source, target, 100, 'physical', { kind: 'basic' });
+  const event = battle.events.find((row) => row.kind === 'evade');
+  a.equal(event.visual.source, source.uid);
+  source.pos = 32;
+  target.pos = 4;
+  const command = plan([event], battle.units)[0];
+  a.equal(command.sourcePos, 31);
+  a.equal(command.targetPos, 3);
+  a.deepEqual(pixelMapping(command), { theme: 'gray', flight: true, hit: false });
+  // 회피 탄은 날아가지만 도착해도 숫자 외의 적중 연출(번쩍임)은 없다
+  const tl = createTimeline({ random: () => 0.5 });
+  tl.consume([command], context());
+  a.equal(tl.frame(1000).numbers[0].text, '회피');
+  a.equal(tl.frame(1300).units.get(target.uid), undefined);
+});
+
+test('보드 그림(board-7x8.png)은 그대로이고, 잰 선으로 만든 56칸 중심이 칸 안에 있다', async () => {
+  const fs = await import('node:fs');
+  const crypto = await import('node:crypto');
+  const { boardArt } = await import('../../src/ui/art/board.ts');
+  const { cellCenters } = await import('../../src/ui/render/battlefield.ts');
+  const png = fs.readFileSync('public/' + boardArt.board);
+  a.equal(png.readUInt32BE(16), boardArt.source.width);
+  a.equal(png.readUInt32BE(20), boardArt.source.height);
+  a.equal(
+    crypto.createHash('sha256').update(png).digest('hex'),
+    JSON.parse(fs.readFileSync('docs/specs/BOARD_01512_CALIBRATION.json', 'utf8')).sha256,
+  );
+  const { columns, rows } = boardArt;
+  a.equal(columns.length, 8);
+  a.equal(rows.length, 9);
+  a(columns.every((v, i) => !i || v > columns[i - 1]));
+  a(rows.every((v, i) => !i || v > rows[i - 1]));
+  const centers = cellCenters();
+  a.equal(centers.length, 56);
+  centers.forEach((c, pos) => {
+    const col = pos % 7;
+    const row = Math.floor(pos / 7);
+    a(c.x > columns[col] && c.x < columns[col + 1], `${pos} x`);
+    a(c.y > rows[row] && c.y < rows[row + 1], `${pos} y`);
+    a(c.w / c.h > 1.6, '가로로 긴 직사각형 칸');
+  });
 });

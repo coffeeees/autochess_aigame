@@ -15,3 +15,22 @@ export function combatant(id: string): { name: string; cost: number } {
   const spec = W.combatSpec(id) as { name?: unknown; cost?: unknown } | undefined;
   return { name: String(spec?.name ?? id), cost: Number(spec?.cost) || 1 };
 }
+
+/** 유대 판정 결과(D.evaluateSynergies) 한 줄 */
+export interface BondView {
+  id: string;
+  name: string;
+  concept: string;
+  thresholds: number[];
+  effects: string[];
+  count: number;
+  tier: number;
+  members: string[];
+}
+
+/** 유대 패널에 보일 줄: 한 명 이상 배치된 유대만, 발동 중인 것 먼저, 그다음 인원 많은 순 */
+export function shownBonds(all: BondView[]): BondView[] {
+  return all
+    .filter((b) => b.count > 0)
+    .sort((a, b) => Number(b.tier > 0) - Number(a.tier > 0) || b.count - a.count);
+}
