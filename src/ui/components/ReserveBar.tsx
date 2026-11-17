@@ -1,4 +1,4 @@
-// Bottom bar: level and XP purchase, the 10 bench slots, recruit and main action.
+// 아래 바: 레벨·XP 구매, 대기석 10칸, 동료 영입, 주 버튼.
 import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
 import V from '../../core/preparation.js';
@@ -42,7 +42,12 @@ export function ReserveBar({ ui, actions }: GameProps) {
               class={styles.slot}
               data-slot={slot}
               data-drop={`bench:${slot}`}
-              data-over={ui.drag?.active && ui.drag.over === `bench:${slot}`}
+              data-item-drop={unit ? `unit:${unit.uid}` : undefined}
+              data-over={
+                ui.drag?.active &&
+                (ui.drag.over === `bench:${slot}` ||
+                  (!!unit && ui.drag.over === `unit:${unit.uid}`))
+              }
             >
               {unit && (
                 <Pawn
@@ -51,7 +56,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
                   context="bench"
                   selected={ui.selected === unit.uid}
                   onClick={() => actions.select(unit.uid)}
-                  onDragStart={(id, x, y) => actions.dragStart(unit.uid, id, x, y)}
+                  onDragStart={(id, x, y) => actions.dragStart('unit', unit.uid, id, x, y)}
                 />
               )}
             </li>

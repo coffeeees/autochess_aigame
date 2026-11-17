@@ -1,8 +1,8 @@
-// Notice policy for the rebuilt UI: the same lists as src/legacy/notice-policy.js
-// (kept equal by tests/ui-next/store.test.js until the legacy UI is removed).
-// Only these notices are shown; every other notice id stays silent.
+// 새 UI의 알림 정책: src/legacy/notice-policy.js와 같은 목록
+// (옛 UI를 없앨 때까지 tests/ui-next/store.test.js가 같은지 확인한다).
+// 이 목록의 알림만 보이고, 나머지 알림 ID는 표시하지 않는다.
 
-/** v0.15.7 audit: notices that are shown (T01-T41). */
+/** v0.15.7 조사: 표시하는 알림(T01~T41 중). */
 export const RETAINED = [
   'T02',
   'T03',
@@ -17,9 +17,9 @@ export const RETAINED = [
   'T34',
   'T39',
 ] as const;
-/** T28: item discard refusals with cause-specific wording (approved). */
+/** T28: 아이템 버리기 거절, 원인별 문구(승인됨). */
 export const APPROVED = ['T28'] as const;
-/** Added in the rebuild: save failed, damaged save backed up, battle cancelled by reload. */
+/** 재구축에서 추가: 저장 실패, 손상 저장 백업, 새로고침으로 전투 취소. */
 export const ADDED = ['T42', 'T43', 'T44'] as const;
 
 const shown = new Set<string>([...RETAINED, ...APPROVED, ...ADDED]);
@@ -28,10 +28,10 @@ export function allows(id: string): boolean {
   return shown.has(id);
 }
 
-/** How long a shown notice stays (v0.15.18: 3 seconds, restarted by a new notice). */
+/** 알림 표시 시간(v0.15.18: 3초, 새 알림이 오면 다시 시작). */
 export const NOTICE_MS = 3000;
 
-/** Drag results -> notice id (same table as notice-policy.js dragMessages / dragId). */
+/** 드래그 결과 → 알림 ID(notice-policy.js의 dragMessages / dragId와 같은 표). */
 const DRAG_MESSAGES: Record<string, string> = {
   '준비 단계에서만 이동할 수 있습니다.': 'T17',
   '캐릭터를 찾을 수 없습니다.': 'T18',
@@ -55,7 +55,7 @@ export function dragId(kind: 'unit' | 'item', result: { ok: boolean; message?: s
   return 'T25';
 }
 
-/** Pointer travel before a press becomes a drag (v0.15.18: 7px). */
+/** 누른 뒤 드래그로 바뀌는 이동 거리(v0.15.18: 7px). */
 export const DRAG_THRESHOLD = 7;
-/** Clicks right after a drag are ignored (v0.15.18: 400ms). */
+/** 드래그 직후 클릭을 무시하는 시간(v0.15.18: 400ms). */
 export const DRAG_CLICK_GUARD_MS = 400;

@@ -1,4 +1,4 @@
-/* Start screen; values from v0.15.18 shell.css .home-* rules */
+/* 시작 화면. 값은 v0.15.18 shell.css의 .home-* 규칙에서 가져옴 */
 .view {
   min-height: 100vh;
   background: radial-gradient(ellipse at 65% 30%, #262239 0, transparent 60%), var(--color-bg);
@@ -130,7 +130,7 @@
     align-items: flex-start;
   }
 }
-/* difficulty picker (v0.15.18 shell.css .difficulty-*) */
+/* 난이도 선택(v0.15.18 shell.css .difficulty-*) */
 .difficultyTop {
   display: flex;
   align-items: center;

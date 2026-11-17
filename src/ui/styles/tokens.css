@@ -1,6 +1,6 @@
-/* Design tokens for the rebuilt UI, taken from the v0.15.18 styles
-   (prototype.css, polish-ui.css, battle-ui.css) and data/units.js costColors.
-   Components use these variables only (no important-overrides; see tests/ui-next). */
+/* 새 UI의 디자인 토큰. v0.15.18 스타일(prototype.css, polish-ui.css, battle-ui.css)과
+   data/units.js의 costColors에서 가져옴. 컴포넌트는 이 변수만 쓴다
+   (강제 우선순위 지정 금지, tests/ui-next 참고). */
 @font-face {
   font-family: GamePretendard;
   src: url('/assets/fonts/pretendard.woff2') format('woff2');
@@ -11,7 +11,7 @@
 :root {
   color-scheme: dark;
 
-  /* surfaces and text */
+  /* 바탕과 글자 */
   --color-bg: #0c0c0f;
   --color-panel: #17171d;
   --color-panel-raised: #1b1921;
@@ -29,19 +29,19 @@
   --color-notice-bg: #241f17;
   --color-notice-line: #6b5a35;
 
-  /* glass panels on the battlefield */
+  /* 전장 위 반투명 패널 */
   --panel-bg: linear-gradient(145deg, #0b1326ed, #1c2033ee);
   --panel-edge: #9badd299;
   --panel-light: #b8d8ff;
 
-  /* character cost (data/units.js costColors) */
+  /* 캐릭터 코스트 색(data/units.js costColors) */
   --cost-1: #9699a2;
   --cost-2: #59b977;
   --cost-3: #578ce5;
   --cost-4: #af73de;
   --cost-5: #e6c449;
 
-  /* character traits (prototype.js traitColors) */
+  /* 캐릭터 속성 색(prototype.js traitColors) */
   --trait-fire: #d87e59;
   --trait-ice: #8fc7de;
   --trait-lightning: #d6bb60;
@@ -53,7 +53,7 @@
   --trait-poison: #9ab66c;
   --trait-blood: #c57a87;
 
-  /* type */
+  /* 글자 */
   --font-ui: GamePretendard, 'Malgun Gothic', sans-serif;
   --text-xs: 10px;
   --text-sm: 11px;
@@ -62,7 +62,7 @@
   --text-xl: 22px;
   --text-hero: 64px;
 
-  /* spacing and shape */
+  /* 간격과 모서리 */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -73,7 +73,7 @@
   --radius-md: 8px;
   --radius-lg: 12px;
 
-  /* layout (v0.15.18 sizes) */
+  /* 배치 크기(v0.15.18 값) */
   --hud-h: 70px;
   --reserve-h: 132px;
   --side-width: 190px;

@@ -1,5 +1,5 @@
-// Stage 5d: dragging units in the rebuilt UI store (same rules as v0.15.18
-// interaction-ui.js / drag-sales.js, covered there by tests/ui/drag-sales.test.js).
+// 5d단계: 새 UI 저장소의 캐릭터 드래그(v0.15.18 interaction-ui.js / drag-sales.js와
+// 같은 규칙, 옛 UI 쪽은 tests/ui/drag-sales.test.js가 검사).
 import { test } from 'vitest';
 import a from 'node:assert/strict';
 import { createStore, parseDrop } from '../../src/ui/store.ts';
@@ -27,14 +27,14 @@ function setup() {
   const s = () => store.getState();
   const unit = () => s().run.units[0];
   const drag = (uid, to, path = [[20, 0]]) => {
-    store.actions.dragStart(uid, 1, 100, 100);
+    store.actions.dragStart('unit', uid, 1, 100, 100);
     for (const [dx, dy] of path) store.actions.dragMove(1, 100 + dx, 100 + dy, to);
     store.actions.dragEnd(1, to);
   };
   return { store, s, unit, drag, tick: (ms) => (now += ms) };
 }
 
-test('drop targets parse; drag notice ids match the current policy', () => {
+test('놓을 곳 해석, 드래그 알림 ID가 기존 정책과 같다', () => {
   a.deepEqual(parseDrop('board:38'), { kind: 'board', pos: 38 });
   a.deepEqual(parseDrop('bench:2'), { kind: 'bench', slot: 2 });
   a.deepEqual(parseDrop('sell:left'), { kind: 'sell', side: 'left' });
@@ -53,11 +53,11 @@ test('drop targets parse; drag notice ids match the current policy', () => {
       a.equal(dragId(kind, r), Policy.dragId(kind, r), JSON.stringify([kind, r]));
 });
 
-test('below 7px a press is a click: no drag, no sale zones, selection works', () => {
+test('7px 미만은 클릭: 드래그·판매 영역 없음, 선택은 됨', () => {
   const { store, s, unit, tick } = setup();
   const uid = unit().uid;
-  store.actions.dragStart(uid, 1, 100, 100);
-  store.actions.dragMove(1, 104, 104, 'sell:left'); // 5.7px
+  store.actions.dragStart('unit', uid, 1, 100, 100);
+  store.actions.dragMove(1, 104, 104, 'sell:left'); // 5.7px 이동
   a.equal(s().drag.active, false);
   store.actions.dragEnd(1, 'sell:left');
   a.equal(s().drag, null);
@@ -70,7 +70,7 @@ test('below 7px a press is a click: no drag, no sale zones, selection works', ()
   a.equal(s().selected, uid);
 });
 
-test('dragging to a board cell places the unit and saves; enemy rows are refused', () => {
+test('전장 칸에 놓으면 배치·저장, 적 진영 칸은 거절', () => {
   const { s, unit, drag } = setup();
   const uid = unit().uid;
   drag(uid, 'board:38');
@@ -79,17 +79,17 @@ test('dragging to a board cell places the unit and saves; enemy rows are refused
   drag(uid, 'board:3');
   a.equal(s().run.units.find((u) => u.uid === uid).pos, 38, 'stays');
   a.equal(s().notice, null, 'T14 is silent in the policy');
-  // back to the bench
+  // 다시 대기석으로
   drag(uid, 'bench:5');
   const back = s().run.units.find((u) => u.uid === uid);
   a.equal(back.location, 'bench');
 });
 
-test('the drag starts by clearing the selection and blocks the click right after', () => {
+test('드래그가 시작되면 선택이 풀리고 직후 클릭은 무시된다', () => {
   const { store, s, unit, tick } = setup();
   const [first, second] = s().run.units;
   store.actions.select(first.uid);
-  store.actions.dragStart(second.uid, 1, 100, 100);
+  store.actions.dragStart('unit', second.uid, 1, 100, 100);
   store.actions.dragMove(1, 140, 100, null);
   a.equal(s().selected, null);
   a.equal(s().drag.active, true);
@@ -102,7 +102,7 @@ test('the drag starts by clearing the selection and blocks the click right after
   void unit;
 });
 
-test('either sell zone sells once at the sale price; outside keeps the unit', () => {
+test('양쪽 판매 영역 모두 판매가로 한 번 판매, 바깥은 그대로', () => {
   const { s, unit, drag } = setup();
   for (const side of ['left', 'right']) {
     const target = unit();
@@ -118,18 +118,18 @@ test('either sell zone sells once at the sale price; outside keeps the unit', ()
   a(s().run.units.some((u) => u.uid === kept.uid));
 });
 
-test('Escape / blur / pointer cancel never sell or move', () => {
+test('Esc·포커스 잃음·포인터 취소는 판매·이동하지 않는다', () => {
   const { store, s, unit } = setup();
   const target = unit();
   const before = JSON.stringify(s().run);
-  store.actions.dragStart(target.uid, 1, 100, 100);
+  store.actions.dragStart('unit', target.uid, 1, 100, 100);
   store.actions.dragMove(1, 160, 100, 'sell:left');
   store.actions.dragCancel();
   a.equal(s().drag, null);
-  store.actions.dragEnd(1, 'sell:left'); // a late pointerup after cancel is inert
+  store.actions.dragEnd(1, 'sell:left'); // 취소 뒤 늦게 온 pointerup은 무시
   a.equal(JSON.stringify(s().run), before);
-  // another pointer cannot finish someone else's drag
-  store.actions.dragStart(target.uid, 7, 100, 100);
+  // 다른 포인터는 남의 드래그를 끝낼 수 없다
+  store.actions.dragStart('unit', target.uid, 7, 100, 100);
   store.actions.dragMove(8, 160, 100, 'sell:left');
   store.actions.dragEnd(8, 'sell:left');
   a.equal(JSON.stringify(s().run), before);

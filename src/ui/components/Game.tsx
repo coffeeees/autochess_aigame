@@ -1,5 +1,5 @@
-// In-game screen layout: HUD on top, side panels, battlefield, reserve bar.
-// Units are placed by dragging between board cells and bench slots.
+// 게임 화면 배치: 위 HUD, 양쪽 패널, 가운데 전장, 아래 대기석 바.
+// 캐릭터는 전장 칸과 대기석 칸 사이를 끌어서 배치한다.
 import type { Store, UiState } from '../store.ts';
 import { Hud } from './Hud.tsx';
 import { Board } from './Board.tsx';
@@ -7,6 +7,9 @@ import { ReserveBar } from './ReserveBar.tsx';
 import { ShopPopover } from './ShopPopover.tsx';
 import { NoticeToast } from './NoticeToast.tsx';
 import { DragLayer } from './DragLayer.tsx';
+import { BondsPanel } from './BondsPanel.tsx';
+import { InventoryPanel, ItemDetail } from './Items.tsx';
+import { UnitDetail } from './UnitDetail.tsx';
 import W from '../../core/encounters.js';
 import { boardArt } from '../art/board.ts';
 import styles from './Game.module.css';
@@ -25,15 +28,20 @@ export function Game({ ui, actions }: GameProps) {
             <span aria-hidden="true">♥</span> {run.health}
           </b>
         </div>
+        <BondsPanel ui={ui} actions={actions} />
       </aside>
       <main class={styles.stage}>
         <Board ui={ui} actions={actions} />
+        <UnitDetail ui={ui} actions={actions} />
         {ui.shopOpen && <ShopPopover ui={ui} actions={actions} />}
         <NoticeToast notice={ui.notice} />
       </main>
-      <aside class={styles.right} />
+      <aside class={styles.right}>
+        <InventoryPanel ui={ui} actions={actions} />
+        <ItemDetail ui={ui} actions={actions} />
+      </aside>
       <ReserveBar ui={ui} actions={actions} />
-      <DragLayer ui={ui} actions={actions} />
+      <DragLayer ui={ui} actions={actions} kind={ui.drag?.kind} />
     </div>
   );
 }

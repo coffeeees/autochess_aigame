@@ -1,5 +1,5 @@
-/* Element defaults (v0.15.18 prototype.css button rules). Variants use
-   data-variant instead of extra classes so components never fight over them. */
+/* 요소 기본값(v0.15.18 prototype.css의 버튼 규칙). 변형은 클래스를 더하지 않고
+   data-variant로 지정해, 컴포넌트끼리 규칙을 덮어쓰지 않게 한다. */
 button {
   background: #26262f;
   border: 1px solid #44444f;

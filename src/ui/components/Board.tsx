@@ -1,6 +1,6 @@
-// Battlefield (preparation view). The 7x8 grid follows the measured lines of the
-// board art. Enemy rows on top, ally rows below. Allies are moved by dragging
-// (DragLayer); every cell is a drop target and core/preparation decides.
+// 전장(준비 화면). 7×8 칸은 보드 그림에서 잰 선 위치를 따른다. 위쪽은 적,
+// 아래쪽은 아군. 아군은 끌어서 옮기고(DragLayer), 모든 칸이 놓을 곳이며
+// 가능 여부는 core/preparation이 정한다.
 import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
 import { boardArt, tracks, playArea } from '../art/board.ts';
@@ -15,7 +15,7 @@ export function Board({ ui, actions }: GameProps) {
   const run = ui.run!;
   const area = playArea();
   const allies = new Map(run.units.filter((u) => u.location === 'board').map((u) => [u.pos, u]));
-  // the coming battle's formation, cached on the run by the store (prepareFormation)
+  // 다가올 전투의 적 편성(저장소가 prepareFormation으로 원정에 캐시해 둠)
   const formation =
     run.roundPhase === 'prepare' && !run.done && run.enemyEncounter?.key === P.label(run)
       ? (run.enemyEncounter.units as { id: string; pos: number; star?: number }[])
@@ -47,7 +47,11 @@ export function Board({ ui, actions }: GameProps) {
               class={styles.cell}
               data-pos={pos}
               data-drop={`board:${pos}`}
-              data-over={ui.drag?.active && ui.drag.over === `board:${pos}`}
+              data-item-drop={ally ? `unit:${ally.uid}` : undefined}
+              data-over={
+                ui.drag?.active &&
+                (ui.drag.over === `board:${pos}` || (!!ally && ui.drag.over === `unit:${ally.uid}`))
+              }
               data-side={pos < COLUMNS * (ROWS / 2) ? 'enemy' : 'ally'}
             >
               {ally && (
@@ -57,7 +61,7 @@ export function Board({ ui, actions }: GameProps) {
                   selected={ui.selected === ally.uid}
                   context="field"
                   onClick={() => actions.select(ally.uid)}
-                  onDragStart={(id, x, y) => actions.dragStart(ally.uid, id, x, y)}
+                  onDragStart={(id, x, y) => actions.dragStart('unit', ally.uid, id, x, y)}
                 />
               )}
               {enemy && <Pawn id={enemy.id} star={enemy.star ?? 1} enemy context="field" />}

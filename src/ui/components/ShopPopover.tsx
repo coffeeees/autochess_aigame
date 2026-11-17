@@ -1,5 +1,5 @@
-// Recruit window: lock, level odds, reroll and the five offers. Each card shows
-// cost, bonds, ownership, recommendation and the merge it would complete.
+// 영입창: 잠금, 레벨별 확률, 새로고침, 후보 5장. 카드마다 코스트, 유대,
+// 보유 여부, 추천, 구매 시 완성되는 합성을 보여 준다.
 import { costColor, unitDef } from '../data.ts';
 import P from '../../core/progression.js';
 import V from '../../core/preparation.js';

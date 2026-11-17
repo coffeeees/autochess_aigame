@@ -21,6 +21,7 @@
 }
 .right {
   grid-area: right;
+  position: relative;
 }
 .stage {
   grid-area: stage;

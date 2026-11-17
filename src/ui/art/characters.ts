@@ -1,31 +1,31 @@
-// Character art registry (decision D6).
-//   portrait: illustration for cards, codex and detail views (45 planned)
-//   sprite:   pixel (dot) sprite sheet for the battlefield (planned)
-// A character without art falls back to the SVG avatar (avatar.js), so art can be
-// added one character at a time by adding an entry here; nothing else changes.
-// Files live in public/assets/characters/ with lowercase-hyphen names.
+// 캐릭터 그림 등록표(결정 D6).
+//   portrait: 카드·도감·상세 창용 일러스트(45명 예정)
+//   sprite:   전장용 도트 스프라이트 시트(예정)
+// 그림이 없는 캐릭터는 SVG 아바타(avatar.js)로 대신하므로, 여기에 항목만
+// 추가하면 캐릭터별로 하나씩 그림을 넣을 수 있다. 다른 곳은 고칠 필요 없다.
+// 파일은 public/assets/characters/에 영문 소문자·하이픈 이름으로 둔다.
 
 export type ArtContext = 'field' | 'bench' | 'shop' | 'detail';
 
 export interface Framing {
-  scale: number; // zoom of the thumbnail inside its frame
-  x: number; // focus point in % of the image
+  scale: number; // 틀 안에서 썸네일 확대 배율
+  x: number; // 초점 위치(그림 기준 %)
   y: number;
 }
 
 export interface Portrait {
-  thumbnail: string; // small, square-ish crop source
-  detail: string; // full illustration
+  thumbnail: string; // 작은 정사각형에 가까운 잘라 쓰기용 그림
+  detail: string; // 전체 일러스트
   framing?: Partial<Record<ArtContext, Framing>>;
 }
 
 export interface SpriteSheet {
-  src: string; // one PNG, frames in rows
+  src: string; // PNG 한 장, 동작별로 줄마다 프레임
   frameWidth: number;
   frameHeight: number;
-  /** animation name -> { row, frames, fps }; 'idle' is required */
+  /** 동작 이름 → { 줄, 프레임 수, 초당 프레임 }; 'idle'은 필수 */
   animations: Record<string, { row: number; frames: number; fps: number }>;
-  /** pixels per sprite pixel when drawn on the board (keeps dots crisp) */
+  /** 전장에 그릴 때 스프라이트 한 픽셀의 화면 픽셀 수(도트를 선명하게 유지) */
   scale?: number;
 }
 

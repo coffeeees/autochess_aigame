@@ -1,4 +1,4 @@
-// Top bar: brand, stage nodes of the current stage, gold and deployment, menu.
+// 위 바: 이름, 현재 스테이지의 라운드 노드, 골드와 배치 인원, 메뉴.
 import P from '../../core/progression.js';
 import type { GameProps } from './Game.tsx';
 import styles from './Hud.module.css';

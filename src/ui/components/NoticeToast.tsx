@@ -1,4 +1,4 @@
-// The shared notice (only ids allowed by notices.ts reach here; 3 seconds).
+// 공통 알림(notices.ts가 허용한 ID만 여기에 온다, 3초 표시).
 import type { Notice } from '../store.ts';
 import styles from './NoticeToast.module.css';
 

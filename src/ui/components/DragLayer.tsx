@@ -1,21 +1,25 @@
-// Dragging units: document-level pointer handling, the ghost under the pointer
-// and the sell zones on both sides (v0.15.18 interaction-ui.js / drag-sales.js).
+// 캐릭터·아이템 드래그: 문서 단위 포인터 처리, 포인터 아래 고스트,
+// 양쪽 판매 영역(v0.15.18 interaction-ui.js / drag-sales.js와 같은 규칙).
 import { useEffect } from 'preact/hooks';
 import { salePrice } from '../../core/shop.ts';
 import { CharacterImage } from './CharacterImage.tsx';
+import { itemIconSvg } from '../art/items.js';
 import type { GameProps } from './Game.tsx';
 import styles from './DragLayer.module.css';
 
-/** data-drop value of the element under a point (the ghost ignores the pointer). */
-const dropAt = (x: number, y: number): string | null =>
-  document.elementFromPoint(x, y)?.closest('[data-drop]')?.getAttribute('data-drop') ?? null;
+/** 포인터 아래 놓을 곳: 캐릭터는 data-drop, 아이템은 data-item-drop(고스트는 포인터를 통과). */
+function dropAt(kind: 'unit' | 'item' | undefined, x: number, y: number): string | null {
+  const attr = kind === 'item' ? 'data-item-drop' : 'data-drop';
+  return document.elementFromPoint(x, y)?.closest(`[${attr}]`)?.getAttribute(attr) ?? null;
+}
 
-export function DragLayer({ ui, actions }: GameProps) {
+export function DragLayer({ ui, actions, kind }: GameProps & { kind?: 'unit' | 'item' }) {
   useEffect(() => {
     const move = (e: PointerEvent) => {
-      actions.dragMove(e.pointerId, e.clientX, e.clientY, dropAt(e.clientX, e.clientY));
+      actions.dragMove(e.pointerId, e.clientX, e.clientY, dropAt(kind, e.clientX, e.clientY));
     };
-    const up = (e: PointerEvent) => actions.dragEnd(e.pointerId, dropAt(e.clientX, e.clientY));
+    const up = (e: PointerEvent) =>
+      actions.dragEnd(e.pointerId, dropAt(kind, e.clientX, e.clientY));
     const key = (e: KeyboardEvent) => e.key === 'Escape' && actions.dragCancel();
     const hidden = () => document.hidden && actions.dragCancel();
     document.addEventListener('pointermove', move);
@@ -32,10 +36,20 @@ export function DragLayer({ ui, actions }: GameProps) {
       document.removeEventListener('visibilitychange', hidden);
       window.removeEventListener('blur', actions.dragCancel);
     };
-  }, [actions]);
+  }, [actions, kind]);
 
   const drag = ui.drag;
   if (!drag?.active) return null;
+  if (drag.kind === 'item') {
+    const item = ui.run?.inventory.find((i) => i.uid === drag.uid);
+    return item ? (
+      <div
+        class={`${styles.ghost} ${styles.itemGhost}`}
+        style={{ left: `${drag.x}px`, top: `${drag.y}px` }}
+        dangerouslySetInnerHTML={{ __html: itemIconSvg(item.id) }}
+      />
+    ) : null;
+  }
   const unit = ui.run?.units.find((u) => u.uid === drag.uid);
   if (!unit) return null;
   const price = salePrice(unit);

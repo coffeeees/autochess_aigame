@@ -1,0 +1,125 @@
+.panel {
+  position: relative;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-lg);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.head h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+.head small {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.head button {
+  padding: 2px 8px;
+  background: none;
+  border: 0;
+}
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-1) 0;
+}
+.tray button {
+  padding: 2px 6px;
+  font-size: var(--text-xs);
+  color: var(--color-gold);
+}
+.list {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-1);
+  border-top: 1px solid #ffffff22;
+  padding-top: var(--space-2);
+}
+.empty {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.bond {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 8px;
+  background: #ffffff08;
+  border: 1px solid transparent;
+  text-align: left;
+}
+.bond[data-active='true'] {
+  border-color: #e8c96f88;
+  background: #e8c96f14;
+}
+.icon {
+  color: var(--color-muted);
+}
+.bond[data-active='true'] .icon {
+  color: #e8c96f;
+}
+.count {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.tiers {
+  font-size: var(--text-xs);
+  color: #e8c96f;
+}
+.peek {
+  position: absolute;
+  top: 0;
+  left: calc(100% + var(--space-2));
+  z-index: 8;
+  width: 280px;
+  padding: var(--space-3);
+  background: #101422f5;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  box-shadow: 0 10px 28px #000b;
+}
+.peekHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.peekHead h3 {
+  margin: 0;
+  font-size: var(--text-md);
+}
+.peekHead button {
+  background: none;
+  border: 0;
+}
+.effects {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-4);
+}
+.effects li {
+  color: var(--color-muted);
+}
+.effects li[data-achieved='true'] {
+  color: var(--color-gold);
+}
+.members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.members span {
+  color: var(--color-faint);
+}
+.members span[data-owned='true'] {
+  color: var(--color-success);
+}

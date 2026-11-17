@@ -1,5 +1,5 @@
-// SVG avatars used until a character has illustrations / sprites (decision D6).
-// Moved unchanged from prototype.js icon() and shell-ui.js enemyIcon(); returns an SVG string.
+// 캐릭터에 일러스트·스프라이트가 없을 때 쓰는 SVG 아바타(결정 D6).
+// prototype.js의 icon()과 shell-ui.js의 enemyIcon()을 그대로 옮김. SVG 문자열을 돌려준다.
 import D from '../../core/data/units.js';
 import W from '../../core/encounters.js';
 
@@ -16,7 +16,7 @@ const traitColors = {
   혈마법: '#c57a87',
 };
 
-// enemies (moved unchanged from shell-ui.js enemyIcon)
+// 적(shell-ui.js enemyIcon을 그대로 옮김)
 function enemyIcon(id, summonKind = null) {
   const t = W.byId(id),
     color =

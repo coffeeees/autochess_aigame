@@ -1,4 +1,4 @@
-// Start screen (v0.15.18 #homeView).
+// 시작 화면(v0.15.18 #homeView).
 import P from '../../core/progression.js';
 import W from '../../core/encounters.js';
 import type { Store, UiState } from '../store.ts';
@@ -68,7 +68,7 @@ function MainMenu({ ui, actions }: Props) {
 
 const sign = (n: number) => (n >= 0 ? '+' : '') + n;
 
-/** Difficulty choice (v0.15.18 #difficultyScreen). */
+/** 난이도 선택(v0.15.18 #difficultyScreen). */
 function DifficultyPicker({ ui, actions }: Props) {
   const active = W.difficulty(ui.difficulty);
   return (

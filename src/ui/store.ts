@@ -1,6 +1,6 @@
-// The single state store of the rebuilt UI. Components read the snapshot and call
-// actions; actions call src/core functions only (no game rules here), save the run
-// and publish a new snapshot.
+// 새 UI의 상태 저장소(하나뿐). 컴포넌트는 스냅샷을 읽고 동작(actions)을 부른다.
+// 동작은 src/core 함수만 호출하고(여기에 게임 규칙 없음), 원정을 저장한 뒤
+// 새 스냅샷을 알린다.
 import type { RunState } from '../core/types.ts';
 import P from '../core/progression.js';
 import V from '../core/preparation.js';
@@ -15,16 +15,16 @@ export type View = 'home' | 'difficulty' | 'game';
 export interface Notice {
   id: string;
   text: string;
-  key: number; // changes for every notice, so the same text restarts its timer
+  key: number; // 알림마다 바뀌어서, 같은 문구라도 타이머가 다시 시작된다
 }
 
-/** Where a dragged unit can land: a board cell, a bench slot or a sell zone. */
+/** 끈 캐릭터를 놓을 수 있는 곳: 전장 칸, 대기석 칸, 판매 영역. */
 export type DropTarget =
   | { kind: 'board'; pos: number }
   | { kind: 'bench'; slot: number }
   | { kind: 'sell'; side: 'left' | 'right' };
 
-/** data-drop attribute value -> target ("board:38", "bench:2", "sell:left"). */
+/** data-drop 값 → 놓을 곳("board:38", "bench:2", "sell:left"). */
 export function parseDrop(value: string | null | undefined): DropTarget | null {
   const [kind, arg] = (value ?? '').split(':');
   if (kind === 'board' && /^\d+$/.test(arg)) return { kind, pos: Number(arg) };
@@ -34,16 +34,17 @@ export function parseDrop(value: string | null | undefined): DropTarget | null {
 }
 
 export interface DragState {
-  kind: 'unit';
-  uid: number;
+  /** 'unit': 캐릭터(uid 숫자), 'item': 아이템(uid 문자열 'I12') */
+  kind: 'unit' | 'item';
+  uid: number | string;
   pointerId: number;
   startX: number;
   startY: number;
   x: number;
   y: number;
-  /** false until the pointer has travelled DRAG_THRESHOLD px */
+  /** 포인터가 DRAG_THRESHOLD px 움직이기 전까지는 false */
   active: boolean;
-  /** data-drop value under the pointer */
+  /** 포인터 아래의 놓을 곳(캐릭터: data-drop, 아이템: data-item-drop 값) */
   over: string | null;
 }
 
@@ -51,15 +52,17 @@ export interface UiState {
   view: View;
   difficulty: number;
   run: RunState | null;
-  /** a saved run exists (the start screen offers "continue") */
+  /** 저장된 원정이 있음(시작 화면에 "이어하기" 표시) */
   hasSave: boolean;
-  selected: number | null; // unit uid
+  selected: number | null; // 선택한 캐릭터 uid
   shopOpen: boolean;
   notice: Notice | null;
-  /** shown on the start screen and once in game (damaged save, cancelled battle) */
+  /** 시작 화면과 게임 진입 때 한 번 보이는 알림(손상 저장, 취소된 전투) */
   loadNotice: Omit<Notice, 'key'> | null;
   drag: DragState | null;
-  /** bumps on every change; core functions mutate `run` in place */
+  /** 상세 창이 열린 아이템 uid */
+  selectedItem: string | null;
+  /** 변경마다 증가. core 함수는 `run`을 그 자리에서 바꾼다 */
   version: number;
 }
 
@@ -84,6 +87,7 @@ export function createStore(env: StoreEnv) {
     notice: null,
     loadNotice: null,
     drag: null,
+    selectedItem: null,
     version: 0,
   };
   let clickGuardUntil = 0;
@@ -127,7 +131,7 @@ export function createStore(env: StoreEnv) {
     publish(patch);
   };
 
-  /** Read the save once at startup (same rules as the current UI, core/save.ts). */
+  /** 시작할 때 저장을 한 번 읽는다(기존 UI와 같은 규칙, core/save.ts). */
   function load() {
     const result = Save.loadSave(env.storage, env.now?.() ?? new Date());
     if (result.status === 'loaded') {
@@ -163,7 +167,7 @@ export function createStore(env: StoreEnv) {
   }
 
   const run = () => state.run as RunState;
-  /** Cache the coming battle's formation on the run (as the current UI does on render). */
+  /** 다가올 전투의 적 편성을 원정에 캐시한다(기존 UI가 그릴 때 하던 일). */
   function prepareFormation() {
     if (!state.run || state.run.done || state.run.roundPhase !== 'prepare') return;
     const before = state.run.enemyEncounter?.key;
@@ -172,11 +176,37 @@ export function createStore(env: StoreEnv) {
   }
   const editable = () => !!state.run && !state.run.done && state.run.roundPhase === 'prepare';
 
+  /** 아이템 놓기: 캐릭터에 장착, 보관함으로 회수, 휴지통에 버리기 */
+  function dropItem(itemUid: string, over: string | null) {
+    const [kind, arg] = (over ?? '').split(':');
+    let result: { ok: boolean; message?: string } = {
+      ok: false,
+      message: '아군 캐릭터 또는 보관함에 놓아주세요.',
+    };
+    if (state.run && kind === 'unit' && /^\d+$/.test(arg))
+      result = V.transferItem(run(), itemUid, Number(arg));
+    else if (state.run && kind === 'trash')
+      result = {
+        ok: P.discardItem(run(), itemUid),
+        message: '아이템을 버렸습니다. 되돌리기로 복원할 수 있습니다.',
+      };
+    else if (state.run && kind === 'inventory') {
+      const item = run().inventory.find((i) => i.uid === itemUid);
+      result = { ok: item?.equippedTo === null || !!P.unequip(run(), itemUid) };
+    }
+    if (result.ok) changed({ drag: null });
+    else publish({ drag: null });
+    notify(
+      dragId('item', result),
+      result.message || (result.ok ? '아이템 이동 완료' : '아이템을 옮길 수 없습니다.'),
+    );
+  }
+
   const actions = {
     showDifficulty: () => publish({ view: 'difficulty' }),
     showHome: () => publish({ view: 'home', shopOpen: false, selected: null }),
     chooseDifficulty: (difficulty: number) => publish({ difficulty }),
-    /** New run with the chosen difficulty (replaces any saved run). */
+    /** 고른 난이도로 새 원정 시작(저장된 원정은 교체). */
     startRun() {
       const created = newRun({
         seed: env.newSeed(),
@@ -200,13 +230,19 @@ export function createStore(env: StoreEnv) {
       publish({ selected: state.selected === uid ? null : uid });
     },
     setShopOpen: (open: boolean) => publish({ shopOpen: open }),
-    /** Press on a unit: becomes a drag after DRAG_THRESHOLD px of travel. */
-    dragStart(uid: number, pointerId: number, x: number, y: number) {
+    /** 누르기: DRAG_THRESHOLD px 움직이면 드래그가 된다. */
+    dragStart(
+      kind: DragState['kind'],
+      uid: number | string,
+      pointerId: number,
+      x: number,
+      y: number,
+    ) {
       clickGuardUntil = 0;
       if (!editable()) return;
       publish({
         drag: {
-          kind: 'unit',
+          kind,
           uid,
           pointerId,
           startX: x,
@@ -222,23 +258,25 @@ export function createStore(env: StoreEnv) {
       const drag = state.drag;
       if (!drag || drag.pointerId !== pointerId) return;
       if (!drag.active && Math.hypot(x - drag.startX, y - drag.startY) < DRAG_THRESHOLD) return;
-      // the first real move starts the drag: the selection clears and the sale zones show
+      // 처음 실제로 움직일 때 드래그 시작: 선택이 풀리고 판매 영역이 나타난다
       const starting = !drag.active;
       publish({
         drag: { ...drag, active: true, x, y, over },
-        ...(starting ? { selected: null } : {}),
+        ...(starting ? { selected: null, selectedItem: null } : {}),
       });
     },
-    /** Release: sell on a sell zone, move on a cell/slot, otherwise keep the unit. */
+    /** 놓기: 판매 영역이면 판매, 칸이면 이동, 그 밖이면 그대로. */
     dragEnd(pointerId: number, over: string | null) {
       const drag = state.drag;
       if (!drag || drag.pointerId !== pointerId) return;
       if (!drag.active) return publish({ drag: null });
       clickGuardUntil = clock() + DRAG_CLICK_GUARD_MS;
+      if (drag.kind === 'item') return dropItem(drag.uid as string, over);
+      const uid = drag.uid as number;
       const target = parseDrop(over);
       if (target?.kind === 'sell') {
         publish({ drag: null });
-        if (state.run && sellUnit(run(), drag.uid).ok) changed({ selected: null });
+        if (state.run && sellUnit(run(), uid).ok) changed({ selected: null });
         return;
       }
       let result: { ok: boolean; message?: string } = {
@@ -248,17 +286,44 @@ export function createStore(env: StoreEnv) {
       if (target && state.run)
         result =
           target.kind === 'board'
-            ? V.moveUnit(run(), drag.uid, { location: 'board', pos: target.pos })
-            : V.moveUnit(run(), drag.uid, { location: 'bench', slot: target.slot });
+            ? V.moveUnit(run(), uid, { location: 'board', pos: target.pos })
+            : V.moveUnit(run(), uid, { location: 'bench', slot: target.slot });
       if (result.ok) changed({ drag: null });
       else publish({ drag: null });
       notify(dragId('unit', result), result.message || '캐릭터 이동 완료');
     },
-    /** Escape, window blur, pointer cancel: nothing is moved or sold. */
+    /** Esc, 창 포커스 잃음, 포인터 취소: 아무것도 옮기거나 팔지 않는다. */
     dragCancel() {
       if (!state.drag) return;
       if (state.drag.active) clickGuardUntil = clock() + DRAG_CLICK_GUARD_MS;
       publish({ drag: null });
+    },
+    /** 아이템 클릭: 상세 창을 열고 닫는다(드래그 직후 클릭은 무시). */
+    selectItem(uid: string | null) {
+      if (clock() < clickGuardUntil) return;
+      publish({ selectedItem: state.selectedItem === uid ? null : uid });
+    },
+    /** 장착 중인 아이템을 보관함으로 회수 */
+    unequipItem(uid: string) {
+      if (!state.run || !P.unequip(run(), uid)) return;
+      changed({ selectedItem: null });
+      notify('T31', '아이템을 보관함으로 회수했습니다.');
+    },
+    undoDiscard() {
+      if (!state.run || !P.undoDiscard(run())) return;
+      changed();
+      notify('T30', '마지막으로 버린 아이템을 복원했습니다.');
+    },
+    /** 유대 추천 켜기/끄기(최대 3개, 상점 추천 표시에 쓰임) */
+    toggleRecommendation(bondId: string) {
+      if (!state.run) return;
+      const result = V.toggleRecommendation(run(), bondId);
+      if (result.ok) changed();
+      else
+        notify(
+          'T34',
+          result.message ?? '추천은 최대 3개까지 선택할 수 있습니다. 먼저 하나를 해제해 주세요.',
+        );
     },
     buy(slot: number) {
       if (!state.run) return;

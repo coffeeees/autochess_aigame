@@ -1,4 +1,4 @@
-// A character token on the board or the bench.
+// 전장이나 대기석에 놓인 캐릭터 말.
 import { combatant, costColor } from '../data.ts';
 import { CharacterImage } from './CharacterImage.tsx';
 import type { ArtContext } from '../art/characters.ts';
@@ -11,7 +11,7 @@ type Props = {
   enemy?: boolean;
   selected?: boolean;
   onClick?: () => void;
-  /** pressing starts a drag of this unit (left button only) */
+  /** 누르면 이 캐릭터의 드래그를 시작(왼쪽 버튼만) */
   onDragStart?: (pointerId: number, x: number, y: number) => void;
 };
 
