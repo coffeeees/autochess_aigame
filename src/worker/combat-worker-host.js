@@ -4,6 +4,12 @@
 import Engine from '../core/combat/battle.js';
 import Clock from '../core/combat/clock.js';
 import VfxEvents from '../core/combat/vfx-events.js';
+import { storedRng } from '../core/rng.js';
+
+// A seeded battle (rngState) continues its own sequence; battles created with an
+// explicit rng function cannot carry it over, so they use the injected random.
+const workerRng = (battle, random) =>
+  Number.isInteger(battle.rngState) ? storedRng(battle, 'rngState', () => 0) : random;
 
 // Worker battles record VFX events. Installing on a subclass keeps the shared
 // Battle class untouched when the host runs in the same realm (tests).
@@ -55,7 +61,7 @@ export function createCombatWorkerHost({ postMessage, now, setInterval, clearInt
       timing = { preparedAt: now() };
       simulation = Object.assign(Object.create(WorkerBattle.prototype), data.battle);
       pendingEvents = [...simulation.events];
-      simulation.rng = random;
+      simulation.rng = workerRng(simulation, random);
       simulation.onUnitKilled = (unit, source) => kills.push({ unit, source });
       hidden = data.hidden;
       postMessage({ type: 'ready', preparedAt: now() });
@@ -77,7 +83,7 @@ export function createCombatWorkerHost({ postMessage, now, setInterval, clearInt
     if (data.type === 'start') {
       clearInterval(timer);
       simulation = Object.assign(Object.create(WorkerBattle.prototype), data.battle);
-      simulation.rng = random;
+      simulation.rng = workerRng(simulation, random);
       simulation.onUnitKilled = (unit, source) => kills.push({ unit, source });
       clock = new Clock.StepClock(
         data.now,

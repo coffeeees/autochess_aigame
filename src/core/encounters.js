@@ -1,5 +1,6 @@
 import D from './data/units.js';
 import P from './progression.js';
+import { runRng } from './rng.js';
 
 const config = {
   bonusEncounterChance: 0.1,
@@ -77,7 +78,7 @@ function stageStars(stage, count) {
     (_, i) => 1 + Math.min(2, Math.floor(upgrades / count) + (i < upgrades % count ? 1 : 0)),
   );
 }
-function encounter(state, rng = Math.random) {
+function encounter(state, rng = runRng(state)) {
   ensureRunDefaults(state);
   const key = P.label(state);
   if (P.roundType(state.stage, state.round) === 'SUPPLY') return [];
@@ -105,7 +106,7 @@ function encounter(state, rng = Math.random) {
   state.enemyEncounter = { key, units, bonusAppeared };
   return units;
 }
-function claimBonusLoot(state, unit, rng = Math.random) {
+function claimBonusLoot(state, unit, rng = runRng(state)) {
   ensureRunDefaults(state);
   const key = P.label(state);
   if (unit.id !== 'E99' || unit.team !== 'enemy' || unit.summon || state.bonusLootLedger[key])

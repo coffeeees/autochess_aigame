@@ -138,7 +138,7 @@ const nodeOrdinal = (node) => {
   const [stage, round] = node.split('-').map(Number);
   return (stage - 1) * 5 + round;
 };
-function draw(ids, rng = Math.random) {
+function draw(ids, rng) {
   const tier = config.tierOrder[Math.min(2, Math.floor(rng() * 3))],
     pool = augments.filter((a) => a.tier === tier && !(ids || []).includes(a.id)),
     optionIds = [];

@@ -1,6 +1,7 @@
 import D from './data/units.js';
 import P from './progression.js';
 import I from './items.js';
+import { runRng } from './rng.js';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
 function normalize(s) {
@@ -166,7 +167,7 @@ function shopOdds(s) {
     sum = base.reduce((n, w, i) => n + (available[i] ? w : 0), 0);
   return base.map((w, i) => (sum && available[i] ? (w / sum) * 100 : 0));
 }
-function drawShop(s, rng = Math.random) {
+function drawShop(s, rng = runRng(s)) {
   const pool = shopPool(s),
     odds = shopOdds(s),
     roll = rng() * 100;
@@ -182,7 +183,7 @@ function drawShop(s, rng = Math.random) {
   }
   return null;
 }
-function enterShop(s, rng = Math.random) {
+function enterShop(s, rng = runRng(s)) {
   if (s.shopCarry?.node === P.label(s)) {
     s.shop = s.shopCarry.offers.map((id) =>
       id && D.playableIds.includes(id) && !s.units.some((u) => u.id === id && u.star === 3)
@@ -194,7 +195,7 @@ function enterShop(s, rng = Math.random) {
   }
   return rollShop(s, rng);
 }
-function manualReroll(s, rng = Math.random) {
+function manualReroll(s, rng = runRng(s)) {
   if (!editable(s) || s.gold < P.rerollCost(s)) return false;
   s.gold -= P.rerollCost(s);
   s.shopLocked = false;
@@ -202,12 +203,12 @@ function manualReroll(s, rng = Math.random) {
   rollShop(s, rng);
   return true;
 }
-function rollShop(s, rng = Math.random) {
+function rollShop(s, rng = runRng(s)) {
   return (s.shop = Array.from({ length: D.prototypeConfig.economy.shopSlots }, () =>
     drawShop(s, rng),
   ));
 }
-function refreshShop(s, rng = Math.random) {
+function refreshShop(s, rng = runRng(s)) {
   const pool = shopPool(s);
   s.shop = s.shop.map((id) => (id && !pool.includes(id) ? drawShop(s, rng) : id));
   return s.shop;
@@ -261,7 +262,7 @@ function deploymentStatus(s) {
     shouldWarn: count < capacity && s.skipDeploymentWarning !== true,
   };
 }
-function startingRoster(rng = Math.random) {
+function startingRoster(rng) {
   const one = D.roster.filter((u) => u.cost === 1).map((u) => u.id),
     two = D.roster.filter((u) => u.cost === 2).map((u) => u.id),
     pick = (pool) => pool.splice(Math.min(pool.length - 1, Math.floor(rng() * pool.length)), 1)[0];

@@ -5,6 +5,7 @@ import AF from './augment-effects.js';
 import I from '../items.js';
 import Bonds from './bond-effects.js';
 import F from './item-effects.js';
+import { storedRng } from '../rng.js';
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 function distance(a, b, columns = D.prototypeConfig.board.columns) {
@@ -19,7 +20,13 @@ function mitigatedDamage(raw, gd, denominator = 100) {
 class Battle {
   constructor(allies, enemies, options = {}) {
     this.config = clone(D.prototypeConfig);
-    this.rng = options.rng || Math.random;
+    if (options.rng) this.rng = options.rng;
+    else {
+      // Seeded battle: the generator state is a plain field, so it travels with
+      // the battle to the worker and continues there (see combat-worker-host.js).
+      this.rngState = (options.seed ?? 0) >>> 0;
+      this.rng = storedRng(this, 'rngState', () => 0);
+    }
     this.time = 0;
     this.units = [];
     this.logs = [];

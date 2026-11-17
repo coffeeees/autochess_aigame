@@ -566,7 +566,7 @@ const tierOdds = {
   5: [0, 30, 70],
   6: [0, 0, 100],
 };
-function draw(stage, rng = Math.random, excluded = []) {
+function draw(stage, rng, excluded = []) {
   const odds = tierOdds[Math.min(6, Math.max(1, stage))],
     roll = rng() * 100;
   let sum = 0,
@@ -581,7 +581,7 @@ function draw(stage, rng = Math.random, excluded = []) {
   const pool = items.filter((i) => i.tier === tier && !excluded.includes(i.id));
   return pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))].id;
 }
-function drawTier(tier, rng = Math.random) {
+function drawTier(tier, rng) {
   const pool = items.filter((i) => i.tier === tier);
   return pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))].id;
 }

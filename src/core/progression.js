@@ -2,6 +2,7 @@ import B from './board.js';
 import D from './data/units.js';
 import A from './augments.js';
 import I from './items.js';
+import { runRng, nextSeed } from './rng.js';
 
 const config = {
   roundsPerStage: 5,
@@ -186,7 +187,7 @@ function normalizeAugments(state) {
   }
   return state.augmentState;
 }
-function requestAugment(state, node, rng = Math.random) {
+function requestAugment(state, node, rng = runRng(state)) {
   const data = normalizeAugments(state);
   if (
     state.done ||
@@ -204,7 +205,7 @@ function requestAugment(state, node, rng = Math.random) {
   state.roundPhase = 'augment';
   return true;
 }
-function ensureAugment(state, rng = Math.random) {
+function ensureAugment(state, rng = runRng(state)) {
   const data = normalizeAugments(state);
   if (state.done) return false;
   if (data.pendingPick) {
@@ -217,7 +218,7 @@ function availableAugments(state) {
   const pending = normalizeAugments(state).pendingPick;
   return pending ? pending.optionIds.map(augmentById).filter(Boolean) : [];
 }
-function chooseAugment(state, id, rng = Math.random) {
+function chooseAugment(state, id, rng = runRng(state)) {
   const data = normalizeAugments(state),
     pending = data.pendingPick;
   if (
@@ -303,7 +304,7 @@ function recommendedMembers(name) {
   const bond = D.synergies.find((s) => s.id === name);
   return bond ? D.roster.filter((u) => u.playable && D.hasBond(u, name)).map((u) => u.id) : [];
 }
-function beginSupply(state, rng = Math.random) {
+function beginSupply(state, rng = runRng(state)) {
   const key = label(state);
   if (
     state.done ||
@@ -337,7 +338,7 @@ function toggleSupply(state, index) {
   else return false;
   return true;
 }
-function confirmSupply(state, rng = Math.random) {
+function confirmSupply(state, rng = runRng(state)) {
   if (state.completedRounds[label(state)]) return state.completedRounds[label(state)];
   if (
     state.roundPhase !== 'supply' ||
@@ -366,7 +367,7 @@ function undoDiscard(state) {
   state.discardedItem = null;
   return true;
 }
-function settleRound(state, outcome = {}, rng = Math.random) {
+function settleRound(state, outcome = {}, rng = runRng(state)) {
   const key = label(state);
   if (state.completedRounds[key]) return state.completedRounds[key];
   if (state.done || !['prepare', 'combat', 'supply'].includes(state.roundPhase)) return null;
@@ -485,7 +486,7 @@ function settleRound(state, outcome = {}, rng = Math.random) {
   state.lastResult = receipt;
   return receipt;
 }
-function advanceRound(state, rng = Math.random) {
+function advanceRound(state, rng = runRng(state)) {
   if (
     state.done ||
     state.completionChoice === 'pending' ||
@@ -524,7 +525,13 @@ function chooseCompletion(state, choice) {
   }
   return true;
 }
+/** Seed for the next battle, drawn from the run generator. */
+function battleSeed(state) {
+  return nextSeed(runRng(state));
+}
 const api = {
+  runRng,
+  battleSeed,
   normalizeRunFeatures,
   chooseCompletion,
   config,

@@ -42,12 +42,17 @@ function make(id, location = 'bench', pos = -1, star = 1) {
   return { uid: ++nextUid, id, location, pos, star };
 }
 function fresh() {
+  // each run has its own seed; all later randomness comes from state.rngState
+  const seed =
+    typeof AutoNewSeed === 'function' ? AutoNewSeed() : Math.floor(Math.random() * 4294967296);
+  const seedHolder = { rngState: seed };
   state = P.initialize({
     health: C.run.startingHealth,
     gold: C.economy.startingGold,
-    units: V.startingRoster().map((id) => make(id)),
+    units: V.startingRoster(P.runRng(seedHolder)).map((id) => make(id)),
     shop: ['C02', 'C04', 'C09', 'C10', 'C11'],
   });
+  state.rngState = seedHolder.rngState;
   W.configureNewRun(state, selectedDifficulty);
   V.normalize(state);
 }
@@ -582,6 +587,7 @@ function startBattle(confirmed = false) {
     {
       quickMana: $('quickMana').checked,
       experimental: $('experimental').checked,
+      seed: P.battleSeed(state),
       allyModifiers: P.allyModifiers(state),
       enemyDamageMultiplier: W.difficulty(state.difficulty).enemyDamageMultiplier,
       onUnitKilled: (unit, source) => {
