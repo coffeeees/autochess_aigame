@@ -658,18 +658,32 @@ test('이벤트 당시 위치와 원거리 회피는 나중에 유닛이 움직�
   a.equal(tl.frame(1300).units.get(target.uid), undefined);
 });
 
-test('보드 그림(board-7x8.png)은 그대로이고, 잰 선으로 만든 56칸 중심이 칸 안에 있다', async () => {
+test('보드 그림은 원본 PNG 그대로를 무손실 WebP로 바꾼 것이고, 잰 선으로 만든 56칸 중심이 칸 안에 있다', async () => {
   const fs = await import('node:fs');
   const crypto = await import('node:crypto');
   const { boardArt } = await import('../../src/ui/art/board.ts');
   const { cellCenters } = await import('../../src/ui/render/battlefield.ts');
-  const png = fs.readFileSync('public/' + boardArt.board);
+  // 원본 PNG: 칸을 잰 그림과 해시가 같다
+  const record = JSON.parse(fs.readFileSync('docs/specs/images.json', 'utf8'))['board-7x8.webp'];
+  a.equal(record.mode, 'lossless', '무손실 변환(tools/convert-images.py가 픽셀 동일을 확인)');
+  const png = fs.readFileSync(record.source);
   a.equal(png.readUInt32BE(16), boardArt.source.width);
   a.equal(png.readUInt32BE(20), boardArt.source.height);
+  const sha = crypto.createHash('sha256').update(png).digest('hex');
   a.equal(
-    crypto.createHash('sha256').update(png).digest('hex'),
+    sha,
     JSON.parse(fs.readFileSync('docs/specs/BOARD_01512_CALIBRATION.json', 'utf8')).sha256,
   );
+  a.equal(sha, record.sourceSha256);
+  // 배포하는 WebP의 크기도 같다
+  const webp = fs.readFileSync('public/' + boardArt.board);
+  a.equal(webp.subarray(8, 12).toString('latin1'), 'WEBP');
+  const chunk = webp.subarray(12, 16).toString('latin1');
+  const size =
+    chunk === 'VP8L'
+      ? [(webp.readUInt32LE(21) & 0x3fff) + 1, ((webp.readUInt32LE(21) >> 14) & 0x3fff) + 1]
+      : [webp.readUIntLE(24, 3) + 1, webp.readUIntLE(27, 3) + 1];
+  a.deepEqual(size, [boardArt.source.width, boardArt.source.height]);
   const { columns, rows } = boardArt;
   a.equal(columns.length, 8);
   a.equal(rows.length, 9);

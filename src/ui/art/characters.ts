@@ -37,8 +37,8 @@ export interface CharacterArt {
 export const characterArt: Readonly<Record<string, CharacterArt>> = {
   C01: {
     portrait: {
-      thumbnail: 'assets/characters/c01-nox-thumbnail.png',
-      detail: 'assets/characters/c01-nox.png',
+      thumbnail: 'assets/characters/c01-nox-thumbnail.webp',
+      detail: 'assets/characters/c01-nox.webp',
       framing: {
         field: { scale: 3.2, x: 50, y: 40 },
         bench: { scale: 1.9, x: 50, y: 40 },

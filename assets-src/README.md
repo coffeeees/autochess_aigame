@@ -6,3 +6,4 @@
 | --- | --- |
 | `fonts/pretendard-variable.woff2` | Pretendard 가변 글꼴 전체(2MB). `tools/subset-font.py`가 여기서 `public/assets/fonts/pretendard-subset.woff2`를 만듭니다. |
 | `images/battlefield.png`, `images/battlefield-bg-alt.png` | 지금 화면에서 쓰지 않는 전장 배경 그림(7단계에서 빌드에서 뺌). |
+| `images/battlefield-bg.png`, `images/board-7x8.png`, `images/characters/*.png` | 화면에 쓰는 그림의 원본 PNG. `tools/convert-images.py`가 `public/assets/`에 WebP를 만듭니다(보드는 무손실). |

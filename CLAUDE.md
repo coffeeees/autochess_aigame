@@ -7,7 +7,8 @@
 - 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
-- 남은 일(제안): 큰 그림(배경 2.4MB, C01 일러스트 3MB)을 WebP 등으로 줄이기. 보드 그림 `board-7x8.png`는 칸 측정 해시를 테스트가 검사하므로 바꾸지 않는다.
+- 그림: 큰 그림은 WebP로 배포한다. 원본 PNG는 `assets-src/images/`, 변환은 `python3 tools/convert-images.py`(결과 목록 `docs/specs/images.json`).
+  보드 그림은 칸을 잰 그림이라 무손실로만 바꾼다(테스트가 원본 해시와 WebP 크기를 검사). 새 일러스트·도트 그림도 원본은 `assets-src/`, 배포본은 `public/assets/`.
 
 ## 명령
 - `npm run dev` 개발 서버(5173), `npm run build` → `dist/`, `npm run preview`(4173)

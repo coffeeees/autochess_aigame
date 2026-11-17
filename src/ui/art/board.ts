@@ -1,8 +1,8 @@
-// 전장 그림과 board-7x8.png에서 잰 격자선 위치
-// (v0.15.18 battle-art.js에서 가져옴, PNG 자체는 바꾸지 않음).
+// 전장 그림과 board-7x8 그림에서 잰 격자선 위치
+// (v0.15.18 battle-art.js에서 가져옴). 그림은 원본 PNG(assets-src/images)를 무손실 WebP로 바꾼 것이라 픽셀이 같다.
 export const boardArt = {
-  background: 'assets/battlefield-bg.png',
-  board: 'assets/board-7x8.png',
+  background: 'assets/battlefield-bg.webp',
+  board: 'assets/board-7x8.webp',
   source: { width: 1659, height: 948 },
   /** 세로선 8개의 x 좌표(7열) */
   columns: [283.5, 443.5, 600, 754.5, 909.5, 1063, 1215, 1375.5],
