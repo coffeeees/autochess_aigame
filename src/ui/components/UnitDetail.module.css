@@ -1,8 +1,9 @@
 .popover {
-  position: absolute;
-  top: var(--space-2);
-  left: var(--space-2);
-  z-index: 7;
+  /* 누른 캐릭터 옆(UnitDetail의 placeNear가 left/top을 정함). 기준점이 없으면 전장 왼쪽 위 */
+  position: fixed;
+  top: 96px;
+  left: 220px;
+  z-index: 20;
   width: 320px;
   max-height: calc(100% - var(--space-4));
   overflow-y: auto;
@@ -95,4 +96,62 @@
 }
 .bonds {
   color: var(--color-muted);
+}
+
+.temporary[data-team='enemy'] {
+  color: #ff9eae;
+}
+.vitals {
+  display: grid;
+  gap: 3px;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.vitals b {
+  color: var(--color-text);
+}
+.vitals em {
+  font-style: normal;
+  color: #a3d5ff;
+}
+.hpBar,
+.mpBar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: #5ad17a;
+}
+.mpBar {
+  height: 3px;
+  background: #6aa8ff;
+}
+.statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.status {
+  padding: 2px 6px;
+  border: 1px solid #b49bdc88;
+  border-radius: 999px;
+  color: #e1d4f7;
+}
+.battleItem {
+  width: var(--item-slot);
+  height: var(--item-slot);
+  padding: 8px;
+  background: #181d2c;
+  border: 2px solid #6b7180;
+  border-radius: var(--radius-md);
+}
+.battleItem :global(svg) {
+  width: 100%;
+  height: 100%;
+}
+.bonds span[data-active='true'] {
+  color: var(--color-gold);
 }

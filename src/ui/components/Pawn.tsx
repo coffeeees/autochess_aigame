@@ -12,7 +12,7 @@ type Props = {
   context: ArtContext;
   enemy?: boolean;
   selected?: boolean;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent) => void;
   /** 전투 중 HP·MP 비율(0~1)과 보호막 여부 */
   hp?: number;
   mp?: number;

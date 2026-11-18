@@ -85,8 +85,14 @@ function CombatBoard({ ui, actions }: GameProps) {
   const units = new Map(battle.units.filter((u) => !u.dead && u.hp > 0).map((u) => [u.pos, u]));
   return (
     <Grid
+      // 전투 중: 캐릭터를 누르면 상세 창(전투는 계속), 빈 곳을 누르면 닫는다.
       // 전투가 끝난 뒤 마지막 장면은 누르면 건너뛴다
-      onClick={ui.finishing ? actions.skipFinish : undefined}
+      popupTrigger="inspect"
+      onClick={(e: MouseEvent) => {
+        if (ui.finishing) return actions.skipFinish();
+        const uid = field.current?.unitAt(e.clientX, e.clientY) ?? null;
+        actions.inspect(uid, e.clientX, e.clientY);
+      }}
       layer={<div ref={host} class={styles.canvas} data-mode={mode} />}
       cell={(pos) => {
         if (mode !== 'dom') return null;
@@ -101,6 +107,10 @@ function CombatBoard({ ui, actions }: GameProps) {
             hp={Math.max(0, u.hp / u.stats.HP)}
             mp={u.stats.MP ? u.mp / u.stats.MP : 0}
             shielded={(u.shields || []).some((s) => s.amount > 0)}
+            onClick={(e) => {
+              e.stopPropagation();
+              actions.inspect(u.uid, e.clientX, e.clientY);
+            }}
           />
         ) : null;
       }}
@@ -142,7 +152,7 @@ function PrepareBoard({ ui, actions }: GameProps) {
                 star={ally.star}
                 selected={ui.selected === ally.uid}
                 context="field"
-                onClick={() => actions.select(ally.uid)}
+                onClick={(e) => actions.select(ally.uid, e.clientX, e.clientY)}
                 onDragStart={(id, x, y) => actions.dragStart('unit', ally.uid, id, x, y)}
               />
             )}
@@ -161,19 +171,23 @@ function Grid({
   caption,
   layer,
   onClick,
+  popupTrigger,
 }: {
   cell: (pos: number) => ComponentChildren;
   cellProps?: (pos: number) => Record<string, unknown>;
   caption?: string;
   /** 칸 위에 겹쳐 그리는 층(전투 캔버스) */
   layer?: ComponentChildren;
-  onClick?: () => void;
+  onClick?: (e: MouseEvent) => void;
+  /** 이 전장을 누르면 여는 팝업 이름(바깥 클릭으로 보지 않음) */
+  popupTrigger?: string;
 }) {
   const area = playArea();
   return (
     <div
       class={styles.art}
       onClick={onClick}
+      data-popup-trigger={popupTrigger}
       style={{ aspectRatio: `${boardArt.source.width} / ${boardArt.source.height}` }}
     >
       <img class={styles.boardImage} src={boardArt.board} alt="" draggable={false} />

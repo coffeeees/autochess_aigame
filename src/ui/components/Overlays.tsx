@@ -36,7 +36,7 @@ export function Overlays(props: Props) {
     );
   return (
     <div class={styles.layer}>
-      <Shell label="정보 창" onClose={close}>
+      <Shell label="정보 창" onClose={close} popup="overlay">
         {body}
       </Shell>
     </div>

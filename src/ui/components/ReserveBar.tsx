@@ -38,10 +38,13 @@ export function ReserveBar({ ui, actions }: GameProps) {
           onLevelUp={shake.trigger}
         />
         <b>Lv. {run.level}</b>
-        <span>{maxLevel ? '최고 레벨' : `${run.xp} / ${needed} XP`}</span>
-        <small>
-          {LEVEL.xpPurchaseGold}G · +{LEVEL.xpPurchaseAmount}XP
-        </small>
+        {/* 현재 XP / 필요 XP, 구매 골드·얻는 XP(요청서 7: 받침을 깔아 물결 위에서도 읽히게) */}
+        <span class={styles.xp}>{maxLevel ? '최고 레벨' : `${run.xp} / ${needed} XP`}</span>
+        {!maxLevel && (
+          <small class={styles.cost}>
+            <em>{LEVEL.xpPurchaseGold}G</em> · +{LEVEL.xpPurchaseAmount} XP
+          </small>
+        )}
       </button>
       <ol class={styles.bench} aria-label="대기석">
         {Array.from({ length: C.board.benchSize }, (_, slot) => {
@@ -66,7 +69,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
                   star={unit.star}
                   context="bench"
                   selected={ui.selected === unit.uid}
-                  onClick={() => actions.select(unit.uid)}
+                  onClick={(e) => actions.select(unit.uid, e.clientX, e.clientY)}
                   onDragStart={(id, x, y) => actions.dragStart('unit', unit.uid, id, x, y)}
                 />
               )}
@@ -88,6 +91,7 @@ export function ReserveBar({ ui, actions }: GameProps) {
           <button
             class={styles.recruit}
             aria-expanded={ui.shopOpen}
+            data-popup-trigger="shop"
             onClick={() => actions.setShopOpen(!ui.shopOpen)}
           >
             <span>♟ 동료 영입</span>

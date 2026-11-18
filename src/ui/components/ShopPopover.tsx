@@ -14,7 +14,7 @@ export function ShopPopover({ ui, actions }: GameProps) {
   const odds: number[] = V.shopOdds(run);
   const reroll = P.rerollCost(run);
   return (
-    <section class={styles.popover} role="dialog" aria-label="동료 영입">
+    <section class={styles.popover} role="dialog" aria-label="동료 영입" data-popup="shop">
       <div class={styles.heading}>
         <h2>동료 영입</h2>
         <button aria-pressed={run.shopLocked} onClick={actions.toggleShopLock} disabled={!editable}>

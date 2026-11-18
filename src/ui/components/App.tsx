@@ -1,11 +1,13 @@
 import type { Store } from '../store.ts';
 import { useStore } from '../useStore.ts';
+import { usePopupDismiss } from '../usePopupDismiss.ts';
 import { Home } from './Home.tsx';
 import { Game } from './Game.tsx';
 import { Overlays } from './Overlays.tsx';
 
 export function App({ store }: { store: Store }) {
   const ui = useStore(store);
+  usePopupDismiss(store);
   return (
     <>
       {ui.view === 'game' && ui.run ? (

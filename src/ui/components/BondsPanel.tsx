@@ -9,11 +9,12 @@ import styles from './BondsPanel.module.css';
 export function BondsPanel({ ui, actions }: GameProps) {
   const run = ui.run!;
   const [open, setOpen] = useState(true);
-  const [peek, setPeek] = useState<string | null>(null);
   const deployed = run.units.filter((u) => u.location === 'board');
   const all = D.evaluateSynergies(deployed) as BondView[];
   const shown = shownBonds(all);
   const recommended: string[] = run.recommendedBonds || [];
+  // 유대 상세는 저장소의 peek(바깥 클릭·Esc로 닫힘)
+  const peek = ui.peek?.kind === 'bond' ? ui.peek.id : null;
   const detail = all.find((b) => b.id === peek);
   return (
     <section class={styles.panel}>
@@ -53,7 +54,8 @@ export function BondsPanel({ ui, actions }: GameProps) {
                 class={styles.bond}
                 data-active={b.tier > 0}
                 aria-expanded={peek === b.id}
-                onClick={() => setPeek(peek === b.id ? null : b.id)}
+                data-popup-trigger="peek"
+                onClick={() => actions.setPeek('bond', b.id, true)}
               >
                 <span class={styles.icon}>✦</span>
                 <b>{b.name}</b>
@@ -69,10 +71,15 @@ export function BondsPanel({ ui, actions }: GameProps) {
         </ul>
       )}
       {detail && (
-        <aside class={styles.peek} role="dialog" aria-label={`유대 ${detail.name} 상세`}>
+        <aside
+          class={styles.peek}
+          role="dialog"
+          aria-label={`유대 ${detail.name} 상세`}
+          data-popup="peek"
+        >
           <div class={styles.peekHead}>
             <h3>유대 {detail.name}</h3>
-            <button aria-label="조합 상세 닫기" onClick={() => setPeek(null)}>
+            <button aria-label="조합 상세 닫기" onClick={actions.clearPeek}>
               ×
             </button>
           </div>

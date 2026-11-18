@@ -1,0 +1,84 @@
+/* 선택 증강 줄: 전장 왼쪽 아래(v0.15.18 .augment-rack) */
+.rack {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  z-index: 3;
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tag {
+  --tier-color: #9aa0ad;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 4px 12px;
+  background: #101422e6;
+  border: 2px solid var(--tier-color);
+  border-radius: 999px;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 35%, transparent);
+}
+.tag i {
+  font-style: normal;
+  color: var(--tier-color);
+}
+.tag b {
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.tag[data-tier='silver'],
+.peek[data-tier='silver'] {
+  --tier-color: #b6bac4;
+}
+.tag[data-tier='gold'],
+.peek[data-tier='gold'] {
+  --tier-color: #efc766;
+}
+.tag[data-tier='prism'],
+.peek[data-tier='prism'] {
+  --tier-color: #c49aff;
+}
+.tag[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--tier-color) 22%, #101422);
+}
+.peek {
+  --tier-color: #9aa0ad;
+  position: fixed;
+  z-index: 21;
+  width: 280px;
+  padding: var(--space-3);
+  background: #101422f5;
+  border: 1px solid var(--tier-color);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  box-shadow: 0 10px 28px #000b;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.head h3 {
+  margin: 0;
+  font-size: var(--text-md);
+  color: var(--tier-color);
+}
+.head button {
+  background: none;
+  border: 0;
+}
+.tierLabel {
+  font-size: var(--text-xs);
+  color: var(--tier-color);
+}
+.peek p {
+  margin: var(--space-2) 0;
+  line-height: 1.5;
+}
+.peek small {
+  color: var(--color-muted);
+}

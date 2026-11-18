@@ -255,3 +255,6 @@
 .kindTag[data-kind='고침'] {
   color: #e8c96f;
 }
+.kindTag[data-kind='복구'] {
+  color: #c49aff;
+}

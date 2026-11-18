@@ -1,5 +1,5 @@
 // 캐릭터·아이템 드래그: 문서 단위 포인터 처리, 포인터 아래 고스트,
-// 양쪽 판매 영역(v0.15.18 interaction-ui.js / drag-sales.js와 같은 규칙).
+// 양쪽 판매 영역(v0.15.18 interaction-ui.js / drag-sales.js와 같은 규칙). Esc 취소는 usePopupDismiss가 맡는다.
 import { useEffect } from 'preact/hooks';
 import { salePrice } from '../../core/shop.ts';
 import { CharacterImage } from './CharacterImage.tsx';
@@ -20,19 +20,16 @@ export function DragLayer({ ui, actions, kind }: GameProps & { kind?: 'unit' | '
     };
     const up = (e: PointerEvent) =>
       actions.dragEnd(e.pointerId, dropAt(kind, e.clientX, e.clientY));
-    const key = (e: KeyboardEvent) => e.key === 'Escape' && actions.dragCancel();
     const hidden = () => document.hidden && actions.dragCancel();
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
     document.addEventListener('pointercancel', actions.dragCancel);
-    document.addEventListener('keydown', key);
     document.addEventListener('visibilitychange', hidden);
     window.addEventListener('blur', actions.dragCancel);
     return () => {
       document.removeEventListener('pointermove', move);
       document.removeEventListener('pointerup', up);
       document.removeEventListener('pointercancel', actions.dragCancel);
-      document.removeEventListener('keydown', key);
       document.removeEventListener('visibilitychange', hidden);
       window.removeEventListener('blur', actions.dragCancel);
     };

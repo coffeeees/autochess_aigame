@@ -59,17 +59,35 @@ export function Hud({ ui, actions }: GameProps) {
       <nav class={styles.menu} aria-label="메뉴">
         <button
           aria-expanded={ui.popover === 'settings'}
+          data-popup-trigger="settings"
           onClick={() => actions.setPopover('settings')}
         >
-          <img src="assets/ui/settings-gear-64.png" alt="" />
+          <span class={styles.menuIcon}>
+            <img src="assets/ui/settings-gear-64.png" alt="" />
+          </span>
           설정
         </button>
         <button onClick={() => actions.openOverlay({ kind: 'codex', page: 'home' })}>
-          <img src="assets/ui/codex-book-64.png" alt="" />
+          <span class={styles.menuIcon}>
+            <img src="assets/ui/codex-book-64.png" alt="" />
+          </span>
           도감
         </button>
-        <button aria-expanded={ui.popover === 'more'} onClick={() => actions.setPopover('more')}>
-          <span aria-hidden="true">☷</span>
+        <button
+          aria-expanded={ui.popover === 'more'}
+          data-popup-trigger="more"
+          onClick={() => actions.setPopover('more')}
+        >
+          <span class={styles.menuIcon} aria-hidden="true">
+            {/* v0.15.18의 ☷ 모양을 다른 아이콘과 같은 크기로 그림 */}
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="3" y="4" width="7.5" height="3" rx="1" />
+              <rect x="13.5" y="4" width="7.5" height="3" rx="1" />
+              <rect x="3" y="10.5" width="18" height="3" rx="1" />
+              <rect x="3" y="17" width="7.5" height="3" rx="1" />
+              <rect x="13.5" y="17" width="7.5" height="3" rx="1" />
+            </svg>
+          </span>
           더보기
         </button>
       </nav>
@@ -85,7 +103,7 @@ function SettingsPopover({ ui, actions }: GameProps) {
   const d = W.difficulty(run.difficulty) as { level: number; damagePercent: number };
   const streakCap = (P.config as { rewards: { streakCap: number } }).rewards.streakCap;
   return (
-    <section class={styles.popover} role="dialog" aria-label="게임 설정">
+    <section class={styles.popover} role="dialog" aria-label="게임 설정" data-popup="settings">
       <div class={styles.popoverHead}>
         <b>게임 설정</b>
         <button aria-label="설정 닫기" onClick={() => actions.setPopover(null)}>
@@ -140,7 +158,7 @@ function SettingsPopover({ ui, actions }: GameProps) {
 /** 더보기 창(v0.15.18 #morePopover). 전투 기록·디버그 표는 개발용이라 옮기지 않았다. */
 function MorePopover({ actions }: GameProps) {
   return (
-    <section class={styles.popover} role="dialog" aria-label="더보기">
+    <section class={styles.popover} role="dialog" aria-label="더보기" data-popup="more">
       <div class={styles.popoverHead}>
         <b>원정 메뉴</b>
         <button aria-label="더보기 닫기" onClick={() => actions.setPopover(null)}>
