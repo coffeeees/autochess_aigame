@@ -257,3 +257,26 @@ test('재구축 변경 사항: 모든 항목이 종류·영역·원본·지금�
   a(md.startsWith('# AUTOCHESS 재구축 변경 사항'));
   for (const c of R.changes) a(md.includes(c.title));
 });
+
+test('밸런스 테스트 기록: 증강 후보 54종 판정이 모두 있고, 실행하지 않은 테스트를 통과로 적지 않는다', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.augment54;
+  const ids = t.candidates.map((c) => c.id);
+  const expected = ['S', 'G', 'P'].flatMap((k) =>
+    Array.from({ length: 18 }, (_, i) => k + String(i + 1).padStart(2, '0')),
+  );
+  a.deepEqual(ids, expected, '실버·골드·프리즘 각 18종');
+  for (const c of t.candidates) {
+    a(t.verdicts.includes(c.verdict), c.id);
+    a.notEqual(c.test, '통과', '아직 실행하지 않은 테스트');
+    a(c.note.length > 3 && c.effect.length > 3, c.id);
+  }
+  a.equal(
+    t.candidates.find((c) => c.id === 'G13').verdict,
+    '설계 충돌',
+    '같은 캐릭터 전장 1명 규칙',
+  );
+  const md = B.toMarkdown();
+  a(md.includes('## 54종 판정'));
+  a(md.includes('미실행'));
+});
