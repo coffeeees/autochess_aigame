@@ -256,7 +256,10 @@ function AugmentCodex({ ui, actions }: Props) {
     <section>
       <Back to={{ kind: 'codex', page: 'home' }} actions={actions} />
       <h2>증강 도감 · {(A.augments as Augment[]).length}종</h2>
-      <p>정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다.</p>
+      <p>
+        정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다. v0.16.0 1차
+        후보안이라 수치는 검증 전 임시값입니다. 보류 표시는 후보로 나오지 않습니다.
+      </p>
       {order.map((tier) => (
         <section key={tier}>
           <h3 style={{ color: tiers[tier].color }}>{tiers[tier].name}</h3>
@@ -271,6 +274,7 @@ function AugmentCodex({ ui, actions }: Props) {
                 >
                   <small>
                     {a.id}
+                    {a.hold ? ' · 보류' : ''}
                     {chosen.includes(a.id) ? ' · 이번 원정 선택' : ''}
                   </small>
                   <h3>

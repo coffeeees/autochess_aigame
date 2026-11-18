@@ -4,12 +4,13 @@
 // 직접 건드리지 않는다.
 import type { RunState } from './types.ts';
 import D from './data/units.js';
+import A from './augments.js';
 import P from './progression.js';
 import W from './encounters.js';
 
 export const SAVE_KEY = 'starlight-onecost-v1';
 /** progression.initialize / migrate가 쓰는 현재 RunState.version. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const BACKUP_PREFIX = SAVE_KEY + '-backup-';
 
 /** UI가 넘겨주는 저장소: window.localStorage 또는 테스트용 대체물. */
@@ -27,8 +28,13 @@ export interface SaveStorage {
  */
 export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [
   { from: 1, to: 2, note: 'progression.migrate: level, inventory, augments, 7-column board' },
+  {
+    from: 2,
+    to: 3,
+    note: 'progression.migrateAugmentIds: v0.15.18 증강 ID(S01 등) → 이전 증강 ID(LS01 등), augmentRun 추가',
+  },
 ];
-const ACCEPTED_VERSIONS = [1, SAVE_VERSION];
+const ACCEPTED_VERSIONS = [1, 2, SAVE_VERSION];
 
 type Raw = Record<string, any>;
 type Check = { id: string; message: string; ok: (s: Raw) => boolean };
@@ -84,7 +90,14 @@ export const CHECKS: readonly Check[] = [
   {
     id: 'boardCount',
     message: '전장 배치 인원이 한도를 넘습니다',
-    ok: (s) => boardUnits(s).length <= (s.augments?.includes('P12') ? 11 : 10),
+    // 버전 2까지는 'P12'(한계 돌파), 버전 3부터는 배치 한도 증강(P13·LP12)의 capacity로 판단
+    ok: (s) =>
+      boardUnits(s).length <=
+      ((s.version ?? 1) < 3
+        ? s.augments?.includes('P12')
+          ? 11
+          : 10
+        : Math.min(11, 10 + A.aggregate(s.augments).capacity)),
   },
   {
     id: 'benchCount',

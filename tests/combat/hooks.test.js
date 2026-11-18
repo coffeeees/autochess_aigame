@@ -17,14 +17,14 @@ const fight = (Class = Battle) =>
 test('기본 확장과 문서에 적은 순서', () => {
   a.deepEqual(
     Battle.extensions.map((e) => e.name),
-    ['item-effects', 'augment-effects', 'bond-effects'],
+    ['item-effects', 'augment-setup', 'augment-effects', 'bond-effects'],
   );
   a.equal(F.extension.order, 10);
   a.equal(AF.extension.order, 20);
   a.equal(Vfx.extension.order, 90);
   a.deepEqual(
-    [Bonds.extension, F.extension, AF.extension].map((e) => e.on.start.order),
-    [10, 20, 30],
+    [AF.setupExtension, Bonds.extension, F.extension, AF.extension].map((e) => e.on.start.order),
+    [5, 10, 20, 30],
   );
   a.deepEqual(
     [F.extension, AF.extension, Bonds.extension].map((e) => e.on.update.order),

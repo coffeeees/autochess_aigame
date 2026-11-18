@@ -1,6 +1,7 @@
 // 저장 시스템(4단계): src/core/save.ts. tests/fixtures/의 자료는 원본 v0.15.18에서 받은
 // 실제 저장이다(시작, 1-3 준비, 1-3 전투 중).
 import { test } from 'vitest';
+import A from '../../src/core/augments.js';
 import a from 'node:assert/strict';
 import fs from 'node:fs';
 import D from '../../src/core/data/units.js';
@@ -41,7 +42,8 @@ const NOW = new Date('2026-11-17T08:30:00.123Z');
 function originalCheck(s) {
   const occupied = new Set();
   return (
-    (s?.version === 1 || s?.version === 2) &&
+    // v0.16.0에서 저장 버전 3(증강 ID 이관)을 받아들이도록 넓혔다. 나머지는 v0.15.18 조건 그대로
+    (s?.version === 1 || s?.version === 2 || s?.version === 3) &&
     (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
     Array.isArray(s.units) &&
     s.units.every((u) => {
@@ -93,7 +95,8 @@ test('실제 v0.15.18 저장을 그대로 불러와 이어 할 수 있다', () =
       old.units.map((u) => [u.uid, u.id, u.star, u.location, u.pos]),
     );
     a.deepEqual(s.inventory, old.inventory);
-    a.deepEqual(s.augments, old.augments);
+    // 저장 버전 2 → 3: v0.15.18 증강 ID는 이전 증강 ID(L)로 바뀌고 효과는 같다
+    a.deepEqual(s.augments, old.augments.map(A.legacyId));
     a.equal(result.nextUid, Math.max(...old.units.map((u) => u.uid)));
     a.equal(storage.data.get(SAVE_KEY), raw, 'loading never rewrites the save by itself');
     // 이어서 플레이: 새로고침은 저장에서 만든 시드의 원정 생성기로 뽑는다
@@ -125,7 +128,7 @@ test('검증을 이름 붙은 검사로 나누었고 원래 조건과 같다', (
   const base = JSON.parse(fixture('prepare-with-augment'));
   const board = base.units.filter((u) => u.location === 'board');
   const cases = {
-    version: (s) => (s.version = 3),
+    version: (s) => (s.version = 9),
     boardColumns: (s) => (s.boardColumns = 9),
     units: (s) => (s.units = null),
     unitFields: (s) => (s.units[0].id = 'E01'),
@@ -278,10 +281,13 @@ test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보�
 });
 
 test('이관 목록과 버전 1 저장', () => {
-  a.equal(S.SAVE_VERSION, 2);
+  a.equal(S.SAVE_VERSION, 3);
   a.deepEqual(
     S.MIGRATIONS.map((m) => [m.from, m.to]),
-    [[1, 2]],
+    [
+      [1, 2],
+      [2, 3],
+    ],
   );
   const v1 = {
     version: 1,
@@ -296,7 +302,7 @@ test('이관 목록과 버전 1 저장', () => {
   };
   const result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(v1) }), NOW);
   a.equal(result.status, 'loaded');
-  a.equal(result.state.version, 2);
+  a.equal(result.state.version, 3);
   a.equal(result.state.gold, 43);
   a.equal(P.label(result.state), '2-1');
 });

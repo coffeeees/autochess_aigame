@@ -171,5 +171,11 @@ test('정상 저장은 알림이나 저장 쓰기 없이 불러온다', () => {
   a.equal(s().loadNotice, null);
   a.equal(data.get(KEY), raw, '저장을 다시 쓰지 않음');
   a.equal(data.size, 1, '백업 없음');
-  a.equal(s().run.augments.join(), JSON.parse(raw).augments.join());
+  // 저장 버전 3 이관: 예전 증강 ID는 이전 증강 ID(L)로(저장소에는 다시 쓰지 않음)
+  a.equal(
+    s().run.augments.join(),
+    JSON.parse(raw)
+      .augments.map((id) => 'L' + id)
+      .join(),
+  );
 });

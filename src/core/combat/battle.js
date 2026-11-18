@@ -676,6 +676,7 @@ class Battle {
 }
 enableHooks(Battle);
 Battle.use(F.extension);
+Battle.use(AF.setupExtension);
 Battle.use(AF.extension);
 Battle.use(Bonds.extension);
 const api = { Battle, distance, mitigatedDamage };

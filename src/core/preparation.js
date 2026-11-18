@@ -197,16 +197,16 @@ function enterShop(s, rng = runRng(s)) {
 }
 function manualReroll(s, rng = runRng(s)) {
   if (!editable(s) || s.gold < P.rerollCost(s)) return false;
-  s.gold -= P.rerollCost(s);
+  P.useReroll(s); // 무료 새로고침(증강)이 있으면 그것부터 쓴다
   s.shopLocked = false;
   s.shopCarry = null;
   rollShop(s, rng);
   return true;
 }
 function rollShop(s, rng = runRng(s)) {
-  return (s.shop = Array.from({ length: D.prototypeConfig.economy.shopSlots }, () =>
-    drawShop(s, rng),
-  ));
+  s.shop = Array.from({ length: D.prototypeConfig.economy.shopSlots }, () => drawShop(s, rng));
+  P.guaranteeShop(s, rng); // 운명의 상점(P10)
+  return s.shop;
 }
 function refreshShop(s, rng = runRng(s)) {
   const pool = shopPool(s);
