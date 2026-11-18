@@ -1,6 +1,7 @@
 import D from './data/units.js';
 import P from './progression.js';
 import I from './items.js';
+import A from './augments.js';
 import { runRng } from './rng.ts';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
@@ -64,6 +65,10 @@ function repairDeployment(s) {
   }
   return moved;
 }
+const sameUnitMessage = (limit) =>
+  limit > 1
+    ? `쌍둥이 전술: 동일한 캐릭터는 전장에 ${limit}명까지 배치할 수 있습니다.`
+    : '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.';
 function moveUnit(s, uid, target) {
   normalize(s);
   if (!editable(s)) return { ok: false, message: '준비 단계에서만 이동할 수 있습니다.' };
@@ -98,8 +103,10 @@ function moveUnit(s, uid, target) {
   if (target.location === 'bench') moving.benchSlot = target.slot;
   if (swapped) Object.assign(swapped, old);
   const board = next.filter((u) => u.location === 'board');
-  if (new Set(board.map((u) => u.id)).size !== board.length)
-    return { ok: false, message: '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.' };
+  // 같은 캐릭터는 전장에 1명(G13 쌍둥이 전술이 있으면 2명까지)
+  const limit = A.sameUnitLimit(s.augments);
+  if (board.some((u) => board.filter((x) => x.id === u.id).length > limit))
+    return { ok: false, message: sameUnitMessage(limit) };
   if (board.length > P.capacity(s))
     return {
       ok: false,

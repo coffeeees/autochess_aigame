@@ -6,6 +6,15 @@ import { createStore } from '../../src/ui/store.ts';
 import { allows, RETAINED, APPROVED, ADDED } from '../../src/ui/notices.ts';
 import D from '../../src/core/data/units.js';
 import P from '../../src/core/progression.js';
+import { newRun } from '../../src/core/run.ts';
+
+/** 현재 버전(4) 저장: 1-3에서 증강 하나를 고른 뒤 1-4 준비 단계 */
+function currentSave() {
+  const s = newRun({ seed: 11, difficulty: 1 });
+  Object.assign(s, { round: 4, wave: 4, augments: ['S07'], augmentSelections: { '1-3': 'S07' } });
+  s.augmentState.completedPicks = ['1-3'];
+  return s;
+}
 
 const KEY = 'starlight-onecost-v1';
 
@@ -32,7 +41,7 @@ function setup(initial = {}) {
   return { store, storage, data, timers, s: () => store.getState() };
 }
 
-test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 T42~T44만 보인다', () => {
+test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 T42~T45만 보인다', () => {
   // v0.15.18 notice-policy.js의 목록(기존 화면을 지우며 값으로 고정)
   const retained = [
     'T02',
@@ -52,12 +61,12 @@ test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 
     const id = 'T' + String(i).padStart(2, '0');
     a.equal(
       allows(id),
-      retained.includes(id) || id === 'T28' || ['T42', 'T43', 'T44'].includes(id),
+      retained.includes(id) || id === 'T28' || ['T42', 'T43', 'T44', 'T45'].includes(id),
       id,
     );
   }
   a.deepEqual([...RETAINED], retained);
-  a.deepEqual([...ADDED], ['T42', 'T43', 'T44']);
+  a.deepEqual([...ADDED], ['T42', 'T43', 'T44', 'T45']);
   a.deepEqual([...APPROVED], ['T28']);
 });
 
@@ -119,14 +128,22 @@ test('거절 시 허용된 알림만 보이고, 숨김 알림은 보이지 않�
   a.equal(s().notice, null);
 });
 
-test('불러오기: v0.15.18 저장은 이어지고, 손상 저장은 시작 화면에 T43', () => {
-  const raw = fs.readFileSync('tests/fixtures/v0.15.18-prepare-with-augment.json', 'utf8');
+test('불러오기: 현재 저장은 이어지고, 이전 버전 저장은 지우고 T45, 손상 저장은 T43', () => {
+  const raw = JSON.stringify(currentSave());
   const ok = setup({ [KEY]: raw });
   a(ok.s().hasSave);
   a.equal(ok.s().run.gold, JSON.parse(raw).gold);
   ok.store.actions.continueRun();
   a.equal(ok.s().view, 'game');
   a.equal(ok.s().run.enemyEncounter.key, P.label(ok.s().run), 'formation prepared on entry');
+
+  // v0.15.18 원본 저장(이전 버전): 백업 없이 지우고 새 원정
+  const old = setup({
+    [KEY]: fs.readFileSync('tests/fixtures/v0.15.18-prepare-with-augment.json', 'utf8'),
+  });
+  a.equal(old.s().hasSave, false);
+  a.equal(old.s().loadNotice.id, 'T45');
+  a.equal(old.data.size, 0, '이전 저장 삭제, 백업 없음');
 
   const bad = setup({ [KEY]: '{oops' });
   a.equal(bad.s().hasSave, false);
@@ -146,7 +163,7 @@ test('저장소가 실패하면 T42를 한 번만 알린다', () => {
 });
 
 test('T44: 전투 중 다시 열면 준비 단계로 돌아가 보너스를 회수하고, 고친 상태를 한 번 저장한다', () => {
-  const save = JSON.parse(fs.readFileSync('tests/fixtures/v0.15.18-mid-battle.json', 'utf8'));
+  const save = Object.assign(currentSave(), { roundPhase: 'combat' });
   const key = P.label(save);
   save.gold += 5;
   save.bonusLootLedger = { [key]: { kind: 'gold', amount: 5, key } };
@@ -166,16 +183,10 @@ test('T44: 전투 중 다시 열면 준비 단계로 돌아가 보너스를 회�
 });
 
 test('정상 저장은 알림이나 저장 쓰기 없이 불러온다', () => {
-  const raw = fs.readFileSync('tests/fixtures/v0.15.18-prepare-with-augment.json', 'utf8');
+  const raw = JSON.stringify(currentSave());
   const { s, data } = setup({ [KEY]: raw });
   a.equal(s().loadNotice, null);
   a.equal(data.get(KEY), raw, '저장을 다시 쓰지 않음');
   a.equal(data.size, 1, '백업 없음');
-  // 저장 버전 3 이관: 예전 증강 ID는 이전 증강 ID(L)로(저장소에는 다시 쓰지 않음)
-  a.equal(
-    s().run.augments.join(),
-    JSON.parse(raw)
-      .augments.map((id) => 'L' + id)
-      .join(),
-  );
+  a.deepEqual(s().run.augments, ['S07']);
 });

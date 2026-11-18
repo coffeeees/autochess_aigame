@@ -1,4 +1,4 @@
-// 증강의 전투 효과. 증강 ID가 아니라 effect 필드로 판정한다(이전 증강 36종과 v0.16.0 후보 54종이 같은 장치를 씀).
+// 증강의 전투 효과. 증강 ID가 아니라 effect 필드로 판정한다.
 // 기본안(사용자 승인 2026-11-18):
 //  - 능력치 %: 현재 값에 곱하기. GD +n: 고정값. 피해량 +%끼리는 더한 뒤 곱한다.
 //  - 앞줄·뒷줄: 전투 시작 때 아군이 서 있는 가장 앞(적과 가까운) 줄 / 가장 뒷줄. 전방 2줄 = 아군 4줄 중 앞 2줄.
@@ -96,8 +96,6 @@ function spawnClone(b, orig, e) {
 /** 전투 시작 전 단계(유대 효과보다 먼저): 희생(P18), 조합 단계 올림(P14) */
 function setup(b) {
   b.augment = {
-    heatTick: 0,
-    dominionUsed: false,
     haste: [],
     avenge: 0,
     lastStandUsed: false,
@@ -131,9 +129,6 @@ function setup(b) {
 function start(b) {
   b.augment ||= { haste: [], avenge: 0 };
   for (const u of b.units) u.augmentState = {};
-  // 이전 증강: 시작 보호막
-  for (const shield of list(b, 'startShield'))
-    for (const u of b.alive('ally')) b.shield(u, u.stats.HP * shield.ratio, shield.seconds, u);
   const allies = crew(b);
   if (!allies.length) return;
   const rows = allies.map((u) => rowOf(b, u)),
@@ -156,6 +151,14 @@ function start(b) {
     const line = allies.filter((u) => rowOf(b, u) === front);
     if (line.length === 2) for (const u of line) u.stats.GD += e.gd;
   }
+  // 쌍둥이 전술(G13): 같은 캐릭터가 정확히 2명이면 두 명 모두 AD·AP·GD 배율
+  for (const e of list(b, 'twins'))
+    for (const u of allies.filter((u) => allies.filter((x) => x.id === u.id).length === 2)) {
+      scaleStat(u, 'AD', 1 + e.power);
+      scaleStat(u, 'AP', 1 + e.power);
+      scaleStat(u, 'GD', 1 + e.power);
+      u.augmentState.twin = true;
+    }
   for (const e of list(b, 'ace')) {
     const best = [...allies].sort(
       (x, y) => b.stats(y).AD - b.stats(x).AD || cost(y) - cost(x) || x.pos - y.pos,
@@ -209,26 +212,6 @@ function start(b) {
 function update(b) {
   if (b.result) return;
   const g = b.augment;
-  // 이전 증강: 5초마다 AD·AP 중첩, 10초 1회 강화
-  const heat = first(b, 'heat');
-  if (heat) {
-    const tick = Math.min(heat.max, Math.floor((b.time + 1e-8) / heat.interval));
-    while (g.heatTick < tick) {
-      g.heatTick++;
-      for (const u of b.alive('ally')) {
-        u.augmentState.heat = Math.min(heat.max, (u.augmentState.heat || 0) + 1);
-        b.log('augment', '전투의 열기 ' + u.augmentState.heat + '중첩', { source: u.uid });
-      }
-    }
-  }
-  const dominion = first(b, 'dominion');
-  if (dominion && !g.dominionUsed && b.time + 1e-8 >= dominion.at) {
-    g.dominionUsed = true;
-    for (const u of b.alive('ally')) {
-      u.augmentState.dominion = true;
-      b.log('augment', '전장의 지배자 발동', { source: u.uid });
-    }
-  }
   // 시간마다 아군 전체 AS 중첩(S02·G03)
   list(b, 'haste').forEach((e, i) => {
     const tick = Math.min(e.max, Math.floor((b.time + 1e-8) / e.interval));
@@ -245,7 +228,7 @@ function update(b) {
   }
 }
 
-/** 이전 증강·불멸의 군단: 전투당 1회 HP 1로 생존 + 보호막 */
+/** 불멸의 군단(P01): 전투당 1회 HP 1로 생존 + 보호막 */
 function preventDeath(b, target) {
   const e = first(b, 'immortal');
   if (!e || target.team !== 'ally' || !alive(target) || target.augmentState.immortalUsed)
@@ -364,20 +347,6 @@ const extension = {
         if (tlOn) s.AS *= 1 + timeLord.enemy;
         return s;
       }
-      // 이전 증강
-      const heat = first(this, 'heat');
-      if (heat && st.heat) {
-        const ratio = 1 + heat.ratio * st.heat;
-        s.AD *= ratio;
-        s.AP *= ratio;
-      }
-      const dominion = first(this, 'dominion');
-      if (dominion && st.dominion) {
-        s.AD *= 1 + dominion.power;
-        s.AP *= 1 + dominion.power;
-        s.AS *= 1 + dominion.as;
-      }
-      // 후보 54종
       list(this, 'haste').forEach((e, i) => (s.AS *= 1 + e.as * (g.haste[i] || 0)));
       if (tlOn) s.AS *= 1 + timeLord.ally;
       if (st.killRush && this.time < st.killRush.until) {
@@ -420,8 +389,6 @@ const extension = {
     },
     cast(inner, u, target) {
       if (!alive(u) || !alive(target)) return;
-      const manaReturn = first(this, 'manaReturn');
-      const eligible = u.team === 'ally' && manaReturn && !this.itemProcDepth;
       const result = inner(u, target);
       if (u.team === 'ally' && alive(u) && !this.itemProcDepth) {
         const castPower = first(this, 'castPower');
@@ -430,11 +397,6 @@ const extension = {
         const castBuff = first(this, 'castBuff');
         if (castBuff)
           u.augmentState.castBuff = { until: this.time + castBuff.seconds, ap: castBuff.ap };
-      }
-      if (eligible && alive(u) && this.time + 1e-8 >= (u.augmentState.nextMana || 0)) {
-        u.augmentState.nextMana = this.time + manaReturn.cooldown;
-        u.mp = Math.min(u.stats.MP, u.mp + u.stats.MP * manaReturn.ratio);
-        this.log('augment', '마나 순환', { source: u.uid });
       }
       return result;
     },
@@ -451,9 +413,6 @@ const extension = {
       }
       if (normal && valid && alive(source) && result.damage > 0) {
         let ratio = 0;
-        if (kind === 'basic') ratio += list(this, 'basicLeech').reduce((n, v) => n + v, 0);
-        if (['basic', 'skill'].includes(kind))
-          ratio += list(this, 'attackLeech').reduce((n, v) => n + v, 0);
         if (['basic', 'skill', 'dot'].includes(kind))
           ratio += list(this, 'allLeech').reduce((n, v) => n + v, 0);
         if (ratio > 0) {

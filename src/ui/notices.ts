@@ -18,8 +18,8 @@ export const RETAINED = [
 ] as const;
 /** T28: 아이템 버리기 거절, 원인별 문구(승인됨). */
 export const APPROVED = ['T28'] as const;
-/** 재구축에서 추가: 저장 실패, 손상 저장 백업, 새로고침으로 전투 취소. */
-export const ADDED = ['T42', 'T43', 'T44'] as const;
+/** 재구축에서 추가: 저장 실패, 손상 저장 백업, 새로고침으로 전투 취소, 이전 버전 저장 삭제(v0.17.0). */
+export const ADDED = ['T42', 'T43', 'T44', 'T45'] as const;
 
 const shown = new Set<string>([...RETAINED, ...APPROVED, ...ADDED]);
 
@@ -38,6 +38,7 @@ const DRAG_MESSAGES: Record<string, string> = {
   '아군 진영 아래 4줄에만 배치할 수 있습니다.': 'T14',
   '대기석 칸에 놓아주세요.': 'T13',
   '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.': 'T15',
+  '쌍둥이 전술: 동일한 캐릭터는 전장에 2명까지 배치할 수 있습니다.': 'T15', // G13(v0.17.0)
   '대기석이 가득 찼습니다.': 'T19',
   '아이템은 준비 단계에서 옮길 수 있습니다.': 'T21',
   '아이템을 아군 캐릭터 위에 놓아주세요.': 'T22',

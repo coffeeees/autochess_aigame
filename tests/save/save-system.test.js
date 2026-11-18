@@ -1,5 +1,5 @@
-// 저장 시스템(4단계): src/core/save.ts. tests/fixtures/의 자료는 원본 v0.15.18에서 받은
-// 실제 저장이다(시작, 1-3 준비, 1-3 전투 중).
+// 저장 시스템(4단계, v0.17.0 갱신): src/core/save.ts. tests/fixtures/의 자료는 원본 v0.15.18에서 받은
+// 실제 저장이다(시작, 1-3 준비, 1-3 전투 중). v0.17.0부터 이런 이전 버전 저장은 불러오지 않고 지운다.
 import { test } from 'vitest';
 import A from '../../src/core/augments.js';
 import a from 'node:assert/strict';
@@ -16,6 +16,7 @@ import S, {
   backupKey,
 } from '../../src/core/save.ts';
 import { createRng } from '../../src/core/rng.ts';
+import { newRun } from '../../src/core/run.ts';
 
 const fixture = (name) =>
   fs.readFileSync(`tests/fixtures/v0.15.18-${name}.json`, 'utf8').replace(/\s+$/, '');
@@ -37,13 +38,22 @@ function memoryStorage(initial = {}, { failSet = false, failGet = false } = {}) 
 }
 const NOW = new Date('2026-11-17T08:30:00.123Z');
 
-// v0.15.18 load()의 한 줄 조건을 그대로 둔다. 나눈 검사가 정확히 같은 저장을
-// 받아들이는지 증명하는 데 쓴다.
+/** 현재 버전(4) 저장: 새 원정에서 동료 2명을 전장에 두고 증강 하나를 고른 상태 */
+function currentSave() {
+  const s = newRun({ seed: 7, difficulty: 1 });
+  const bench = s.units.filter((u) => u.location === 'bench');
+  a(V.moveUnit(s, bench[0].uid, { location: 'board', pos: 38 }).ok);
+  a(V.moveUnit(s, bench[1].uid, { location: 'board', pos: 45 }).ok);
+  s.augments = ['S09'];
+  return s;
+}
+
+// v0.15.18 load()의 한 줄 조건에서 버전(4만)과 배치 한도(P13 배치 한도 증강)만 바꾼 조건.
+// 나눈 검사가 정확히 같은 저장을 받아들이는지 증명하는 데 쓴다.
 function originalCheck(s) {
   const occupied = new Set();
   return (
-    // v0.16.0에서 저장 버전 3(증강 ID 이관)을 받아들이도록 넓혔다. 나머지는 v0.15.18 조건 그대로
-    (s?.version === 1 || s?.version === 2 || s?.version === 3) &&
+    s?.version === 4 &&
     (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
     Array.isArray(s.units) &&
     s.units.every((u) => {
@@ -68,7 +78,7 @@ function originalCheck(s) {
       return true;
     }) &&
     s.units.filter((u) => u.location === 'board').length <=
-      (s.augments?.includes('P12') ? 11 : 10) &&
+      Math.min(11, 10 + A.aggregate(s.augments).capacity) &&
     s.units.filter((u) => u.location === 'bench').length <= 22 &&
     new Set(s.units.map((u) => u.uid)).size === s.units.length &&
     Number.isFinite(s.gold) &&
@@ -79,36 +89,44 @@ function originalCheck(s) {
   );
 }
 
-test('실제 v0.15.18 저장을 그대로 불러와 이어 할 수 있다', () => {
-  for (const name of ['start', 'prepare-with-augment']) {
-    const raw = fixture(name);
+test('이전 버전 저장(v0.15.18 원본·v0.16.0, 버전 1~3)은 백업 없이 지우고 outdated로 알린다', () => {
+  const raws = ['start', 'prepare-with-augment', 'mid-battle'].map(fixture);
+  const v3 = currentSave();
+  v3.version = 3;
+  v3.augments = ['LS11'];
+  raws.push(JSON.stringify(v3), JSON.stringify({ version: 1, wave: 6, units: [], shop: [] }));
+  for (const raw of raws) {
     const storage = memoryStorage({ [SAVE_KEY]: raw });
     const result = loadSave(storage, NOW);
-    a.equal(result.status, 'loaded', name);
-    a.equal(result.reverted, null);
-    const old = JSON.parse(raw);
-    const s = result.state;
-    for (const key of ['gold', 'health', 'stage', 'round', 'level', 'xp', 'difficulty'])
-      a.deepEqual(s[key], old[key], `${name} ${key}`);
-    a.deepEqual(
-      s.units.map((u) => [u.uid, u.id, u.star, u.location, u.pos]),
-      old.units.map((u) => [u.uid, u.id, u.star, u.location, u.pos]),
-    );
-    a.deepEqual(s.inventory, old.inventory);
-    // 저장 버전 2 → 3: v0.15.18 증강 ID는 이전 증강 ID(L)로 바뀌고 효과는 같다
-    a.deepEqual(s.augments, old.augments.map(A.legacyId));
-    a.equal(result.nextUid, Math.max(...old.units.map((u) => u.uid)));
-    a.equal(storage.data.get(SAVE_KEY), raw, 'loading never rewrites the save by itself');
-    // 이어서 플레이: 새로고침은 저장에서 만든 시드의 원정 생성기로 뽑는다
-    s.gold = 20;
-    a(V.manualReroll(s));
-    a.equal(s.gold, old.augments.includes('S11') ? 19 : 18);
-    a(Number.isInteger(s.rngState));
+    a.deepEqual(result, { status: 'outdated', version: JSON.parse(raw).version });
+    a(!storage.data.has(SAVE_KEY), '이전 저장은 지움');
+    a.equal(storage.data.size, 0, '백업도 만들지 않음');
   }
 });
 
+test('현재 버전 저장은 그대로 불러와 이어 할 수 있다', () => {
+  const save = currentSave();
+  const raw = JSON.stringify(save);
+  const storage = memoryStorage({ [SAVE_KEY]: raw });
+  const result = loadSave(storage, NOW);
+  a.equal(result.status, 'loaded');
+  a.equal(result.reverted, null);
+  const s = result.state;
+  for (const key of ['gold', 'health', 'stage', 'round', 'level', 'xp', 'difficulty', 'version'])
+    a.deepEqual(s[key], save[key], key);
+  a.deepEqual(s.units, save.units);
+  a.deepEqual(s.augments, ['S09']);
+  a.equal(result.nextUid, Math.max(...save.units.map((u) => u.uid)));
+  a.equal(storage.data.get(SAVE_KEY), raw, 'loading never rewrites the save by itself');
+  s.gold = 20;
+  a(V.manualReroll(s));
+  a.equal(s.gold, 19, 'S09 절약 정신: 새로고침 1G');
+  a(Number.isInteger(s.rngState));
+});
+
 test('검증을 이름 붙은 검사로 나누었고 원래 조건과 같다', () => {
-  a.deepEqual(validateSave(JSON.parse(fixture('prepare-with-augment'))), []);
+  const base = clone(currentSave());
+  a.deepEqual(validateSave(base), []);
   a.deepEqual(
     CHECKS.map((c) => c.id),
     [
@@ -125,17 +143,13 @@ test('검증을 이름 붙은 검사로 나누었고 원래 조건과 같다', (
       'shop',
     ],
   );
-  const base = JSON.parse(fixture('prepare-with-augment'));
   const board = base.units.filter((u) => u.location === 'board');
   const cases = {
     version: (s) => (s.version = 9),
     boardColumns: (s) => (s.boardColumns = 9),
     units: (s) => (s.units = null),
     unitFields: (s) => (s.units[0].id = 'E01'),
-    boardCells: (s) =>
-      board.length > 1
-        ? (s.units.find((u) => u.uid === board[1].uid).pos = board[0].pos)
-        : (s.units[0].pos = 3),
+    boardCells: (s) => (s.units.find((u) => u.uid === board[1].uid).pos = board[0].pos),
     boardCount: (s) => {
       s.units = D.playableIds
         .slice(0, 11)
@@ -204,7 +218,7 @@ test('검증을 이름 붙은 검사로 나누었고 원래 조건과 같다', (
       'E01',
       'board',
       'bench',
-      ['P12'],
+      ['P13'],
       [],
       ['C99'],
     ]);
@@ -244,9 +258,9 @@ test('손상·검증 실패 저장은 백업 후 지우고 결과로 알린다',
 });
 
 test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보상을 회수한다', () => {
-  const raw = fixture('mid-battle');
-  const old = JSON.parse(raw);
-  a.equal(old.roundPhase, 'combat');
+  const old = currentSave();
+  Object.assign(old, { round: 4, wave: 4, roundPhase: 'combat' }); // 1-4 전투 중
+  const raw = JSON.stringify(old);
   // 받은 그대로: 그 전투에는 보너스 몬스터가 없었다
   let result = loadSave(memoryStorage({ [SAVE_KEY]: raw }), NOW);
   a.equal(result.status, 'loaded');
@@ -276,33 +290,11 @@ test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보�
   result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(earlier) }), NOW);
   a.deepEqual(Object.keys(result.state.bonusLootLedger), ['1-1']);
   // 전투 중이 아니면 되돌릴 것 없음
-  const prepared = JSON.parse(fixture('prepare-with-augment'));
-  a.equal(revertInterruptedBattle(prepared), null);
+  a.equal(revertInterruptedBattle(currentSave()), null);
 });
 
-test('이관 목록과 버전 1 저장', () => {
-  a.equal(S.SAVE_VERSION, 3);
-  a.deepEqual(
-    S.MIGRATIONS.map((m) => [m.from, m.to]),
-    [
-      [1, 2],
-      [2, 3],
-    ],
-  );
-  const v1 = {
-    version: 1,
-    wave: 6,
-    gold: 43,
-    health: 72,
-    units: D.playableIds
-      .slice(0, 5)
-      .map((id, i) => ({ id, uid: i + 1, location: 'board', pos: 32 + i, star: 1 })),
-    shop: [],
-    done: false,
-  };
-  const result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(v1) }), NOW);
-  a.equal(result.status, 'loaded');
-  a.equal(result.state.version, 3);
-  a.equal(result.state.gold, 43);
-  a.equal(P.label(result.state), '2-1');
+test('저장 버전 4, 이관 목록 없음(이전 저장은 지움)', () => {
+  a.equal(S.SAVE_VERSION, 4);
+  a.deepEqual(S.MIGRATIONS, []);
+  a.equal(currentSave().version, 4);
 });

@@ -17,61 +17,8 @@ const a = require('node:assert/strict'),
   { Battle, distance } = $engine;
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
-test('legacy8column units and enemy cache preserve identities, rewards and gear without collisions', () => {
-  const units = Array.from({ length: 11 }, (_, i) => ({
-      uid: i + 1,
-      id: D.playableIds[i],
-      location: 'board',
-      star: 1,
-      pos: 32 + i,
-    })),
-    s = {
-      version: 2,
-      stage: 3,
-      round: 5,
-      wave: 15,
-      level: 10,
-      health: 73,
-      gold: 49,
-      xp: 0,
-      units,
-      inventory: [{ id: 'I28', uid: 'I1', equippedTo: 8 }],
-      itemSequence: 1,
-      augments: ['P12'],
-      augmentSelections: {},
-      completedRounds: { '3-4': { total: 7 } },
-      roundPhase: 'prepare',
-      shop: ['C03'],
-      enemyEncounter: {
-        key: '3-5',
-        bonusAppeared: true,
-        units: [
-          { id: 'E99', pos: 23, star: 2, bonus: true },
-          { id: 'E06', pos: 22, star: 3 },
-          { id: 'E01', pos: 3, star: 1 },
-        ],
-      },
-    };
-  const before = clone(s);
-  P.migrate(s);
-  a.equal(s.boardColumns, 7);
-  a.equal(s.gold, before.gold);
-  a.equal(s.health, before.health);
-  a.deepEqual(s.inventory, before.inventory);
-  a.deepEqual(s.completedRounds, before.completedRounds);
-  a.equal(s.units.length, 11);
-  a.equal(new Set(s.units.map((u) => u.pos)).size, 11);
-  a(s.units.every((u) => u.pos >= 28 && u.pos < 56));
-  a.deepEqual(
-    s.units.map((u) => [u.uid, u.id, u.star]),
-    before.units.map((u) => [u.uid, u.id, u.star]),
-  );
-  a.equal(new Set(s.enemyEncounter.units.map((u) => u.pos)).size, 3);
-  a(s.enemyEncounter.units.every((u) => u.pos >= 0 && u.pos < 28));
-  a.equal(s.enemyEncounter.bonusAppeared, true);
-  a.equal(s.enemyEncounter.units[0].id, 'E99');
-  new Battle(s.units, s.enemyEncounter.units, { allyModifiers: P.allyModifiers(s) });
-});
+// v0.17.0: 이전 버전(8열) 저장을 P.migrate로 이관하던 테스트는 이전 저장 삭제와 함께 지웠다.
+// 아래 B.migrate 테스트는 전장 모듈의 열 변환 함수 자체를 확인한다.
 test('migration prioritizes surviving columns and moves removed last column to nearest vacancy', () => {
   const s = {
     units: [

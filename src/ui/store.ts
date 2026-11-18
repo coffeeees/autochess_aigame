@@ -244,6 +244,14 @@ export function createStore(env: StoreEnv) {
       }
       state = { ...state, run: result.state, hasSave: true, loadNotice };
       if (result.reverted) save();
+    } else if (result.status === 'outdated') {
+      state = {
+        ...state,
+        loadNotice: {
+          id: 'T45',
+          text: '이전 버전(0.17.0 이전) 저장은 이어할 수 없어 지웠습니다. 새 원정을 시작하세요.',
+        },
+      };
     } else if (result.status === 'invalid') {
       state = {
         ...state,

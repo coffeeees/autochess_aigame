@@ -12,7 +12,7 @@ const tiers = {
   gold: { name: '골드', color: '#efc766' },
   prism: { name: '프리즘', color: '#c49aff' },
 };
-// v0.16.0 증강 54종 1차 후보안(AUTOCHESS_AUGMENT_54_TEST_DRAFT). 모든 수치는 검증 전 임시값.
+// v0.17.0 증강 54종 1차 후보안(AUTOCHESS_AUGMENT_54_TEST_DRAFT). 모든 수치는 검증 전 임시값.
 // 효과는 effect 필드로만 표현하고, 전투 효과는 combat/augment-effects.js, 원정 효과는 augment-run.js가 읽는다.
 // 기본안(사용자 승인 2026-11-18): 능력치 %는 현재 값에 곱하기, GD +n은 고정값, 동률은 코스트 → 성급 → 앞쪽 칸,
 // 소환수·분신의 처치는 주인 몫, 아군 사망·생존 판정에서는 소환수·분신 제외. 자세한 정의는 docs/GAME_DESIGN.md 증강 절.
@@ -160,9 +160,8 @@ const rows = [
   [
     'G13',
     '쌍둥이 전술',
-    '전장에 같은 동료를 정확히 2명 배치하면 두 동료 AD·AP·GD +25% · 보류: "같은 캐릭터 전장 1명" 규칙과 충돌해 후보에서 제외',
-    { twins: { power: 0.25 } },
-    { hold: true },
+    '전장에 같은 동료를 정확히 2명 배치하면 두 동료 AD·AP·GD +25% · 이 증강이 있으면 같은 동료를 전장에 2명까지 배치 가능("같은 캐릭터 전장 1명" 규칙의 예외)',
+    { twins: { power: 0.25, limit: 2 } },
   ],
   [
     'G14',
@@ -303,109 +302,9 @@ const rows = [
     { sacrifice: { perCost: 0.1 } },
   ],
 ];
-// v0.15.18까지의 확정 증강 36종. v0.16.0에서 54종 후보안으로 바꾸며 ID 앞에 L을 붙여 남겼다.
-// 새 후보로는 나오지 않고, 예전 저장(저장 버전 2 이하)에서 고른 증강이 원래 효과대로 동작하게 한다.
-const legacyRows = [
-  ['LS01', '강인한 육체', '모든 아군 최대 HP +150', { flat: { HP: 150 } }],
-  ['LS02', '날카로운 무기', '모든 아군 AD +12', { flat: { AD: 12 } }],
-  ['LS03', '마력 증폭', '모든 아군 AP +15', { flat: { AP: 15 } }],
-  ['LS04', '견고한 방어', '모든 아군 GD +12', { flat: { GD: 12 } }],
-  ['LS05', '신속한 공격', '모든 아군 AS +10%', { as: 0.1 }],
-  ['LS06', '정밀 타격', '모든 아군 CTC +8%p', { flat: { CTC: 8 } }],
-  ['LS07', '마나 저장소', '모든 아군 최대 MP -10%', { mpReduction: 0.1 }],
-  [
-    'LS08',
-    '전투 준비',
-    '전투 시작 시 모든 아군에게 최대 HP의 8% 보호막을 5초간 부여',
-    { startShield: { ratio: 0.08, seconds: 5 } },
-  ],
-  ['LS09', '작은 행운', '선택 즉시 6G 획득', { gold: 6 }],
-  ['LS10', '경험의 지혜', '선택 즉시 8XP 획득', { xp: 8 }],
-  ['LS11', '절약 정신', '상점 새로고침 비용 2G → 1G', { reroll: 1 }],
-  ['LS12', '생존 본능', '모든 아군 DOD +6%p', { flat: { DOD: 6 } }],
-  ['LG01', '거인의 축복', '모든 아군 최대 HP +300', { flat: { HP: 300 } }],
-  ['LG02', '전투의 달인', '모든 아군 AD +20, AS +10%', { flat: { AD: 20 }, as: 0.1 }],
-  [
-    'LG03',
-    '대마법사의 지혜',
-    '모든 아군 AP +30, 최대 MP -10%',
-    { flat: { AP: 30 }, mpReduction: 0.1 },
-  ],
-  ['LG04', '철벽 진형', '모든 아군 GD +20, DOD +8%p', { flat: { GD: 20, DOD: 8 } }],
-  ['LG05', '치명적인 일격', '모든 아군 CTC +12%p, CTH +25%p', { flat: { CTC: 12, CTH: 25 } }],
-  [
-    'LG06',
-    '흡혈의 본능',
-    '아군 기본 공격의 실제 피해 12%만큼 공격자 HP 회복',
-    { basicLeech: 0.12 },
-  ],
-  [
-    'LG07',
-    '전투의 열기',
-    '전투 시작 후 5초마다 생존 아군 AD·AP +5%, 최대 4중첩',
-    { heat: { interval: 5, ratio: 0.05, max: 4 } },
-  ],
-  [
-    'LG08',
-    '마나 순환',
-    '스킬 사용 시 해당 캐릭터 최대 MP 15% 회복 · 캐릭터별 쿨다운 5초',
-    { manaReturn: { ratio: 0.15, cooldown: 5 } },
-  ],
-  [
-    'LG09',
-    '수호자의 맹세',
-    '전투 시작 시 모든 아군에게 최대 HP의 15% 보호막을 6초간 부여',
-    { startShield: { ratio: 0.15, seconds: 6 } },
-  ],
-  ['LG10', '풍요의 축복', '선택 즉시 12G 획득', { gold: 12 }],
-  ['LG11', '빠른 성장', '선택 즉시 16XP 획득', { xp: 16 }],
-  ['LG12', '승리의 보상', '일반/보스 전투 승리 시 추가 2G 획득', { winGold: 2 }],
-  [
-    'LP01',
-    '초월자의 축복',
-    '모든 아군 최대 HP +400, AD +25, AP +30',
-    { flat: { HP: 400, AD: 25, AP: 30 } },
-  ],
-  ['LP02', '광전사의 군단', '모든 아군 AS +30%, CTC +15%p', { as: 0.3, flat: { CTC: 15 } }],
-  ['LP03', '마력의 폭풍', '모든 아군 AP +60, 최대 MP -20%', { flat: { AP: 60 }, mpReduction: 0.2 }],
-  [
-    'LP04',
-    '불멸의 군대',
-    '모든 아군이 전투당 1회 치명적 피해를 받으면 HP 1로 생존하고 최대 HP의 20% 보호막을 3초간 획득',
-    { immortal: { ratio: 0.2, seconds: 3 } },
-  ],
-  [
-    'LP05',
-    '피의 축제',
-    '아군 기본 공격 및 스킬의 실제 피해 15%만큼 공격자 HP 회복',
-    { attackLeech: 0.15 },
-  ],
-  [
-    'LP06',
-    '전장의 지배자',
-    '전투 시작 10초 후 생존 아군 AD·AP +40%, AS +20% · 1회',
-    { dominion: { at: 10, power: 0.4, as: 0.2 } },
-  ],
-  ['LP07', '마나의 해방', '모든 아군이 전투 시작 시 최대 MP의 50%를 보유', { startMana: 0.5 }],
-  [
-    'LP08',
-    '완벽한 방어',
-    '모든 아군 GD +35, DOD +15%p, 최대 HP +250',
-    { flat: { GD: 35, DOD: 15, HP: 250 } },
-  ],
-  [
-    'LP09',
-    '황금의 제국',
-    '선택 즉시 25G 획득. 이후 일반/보스 전투 승리 시 추가 2G',
-    { gold: 25, winGold: 2 },
-  ],
-  ['LP10', '초고속 성장', '선택 즉시 32XP 획득', { xp: 32 }],
-  ['LP11', '장비의 축복', '선택 즉시 T3 아이템 2개 획득', { items: { tier: 3, count: 2 } }],
-  ['LP12', '한계 돌파', '이번 원정의 레벨별 배치 한도 +1 · 최대 11명', { capacity: 1 }],
-];
 const tierOf = (letter) => (letter === 'S' ? 'silver' : letter === 'G' ? 'gold' : 'prism');
 const iconOf = (letter) => (letter === 'S' ? '◇' : letter === 'G' ? '◆' : '✦');
-/** 현재 후보 54종(hold: 보류 — 후보로 나오지 않음) */
+/** 후보 54종(hold: 보류 — 후보로 나오지 않음. 지금은 보류 없음) */
 const augments = rows.map(([id, name, text, effect, flags = {}]) => ({
   id,
   name,
@@ -415,20 +314,7 @@ const augments = rows.map(([id, name, text, effect, flags = {}]) => ({
   icon: iconOf(id[0]),
   hold: !!flags.hold,
 }));
-/** 이전 확정 증강 36종(L로 시작). 예전 저장 전용 */
-const legacy = legacyRows.map(([id, name, text, effect]) => ({
-  id,
-  name,
-  text,
-  effect,
-  tier: tierOf(id[1]),
-  icon: iconOf(id[1]),
-  legacy: true,
-}));
-const all = [...augments, ...legacy];
-const byId = (id) => all.find((a) => a.id === id);
-/** 저장 버전 2 이하의 증강 ID('S01') → 이전 증강 ID('LS01') */
-const legacyId = (id) => (/^[SGP]\d\d$/.test(id) && byId('L' + id) ? 'L' + id : id);
+const byId = (id) => augments.find((a) => a.id === id);
 const selected = (ids) => [...new Set(ids || [])].map(byId).filter(Boolean);
 /** 고른 증강들의 효과 중 key가 있는 것들의 값 */
 const effects = (ids, key) =>
@@ -436,6 +322,8 @@ const effects = (ids, key) =>
     .map((a) => a.effect[key])
     .filter((v) => v !== undefined && v !== null && v !== false);
 const hasEffect = (ids, key) => effects(ids, key).length > 0;
+/** 전장에 같은 캐릭터를 몇 명까지 둘 수 있는지(기본 1명, G13 쌍둥이 전술이 있으면 2명) */
+const sameUnitLimit = (ids) => Math.max(1, ...effects(ids, 'twins').map((e) => e.limit || 1));
 function aggregate(ids) {
   const out = {
     flat: {},
@@ -485,12 +373,11 @@ const api = {
   config,
   tiers,
   augments,
-  legacy,
   byId,
-  legacyId,
   selected,
   effects,
   hasEffect,
+  sameUnitLimit,
   aggregate,
   applyStats,
   nodeOrdinal,

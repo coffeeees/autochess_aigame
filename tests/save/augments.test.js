@@ -53,13 +53,14 @@ function battle(ids = [], id = 'C03', gear = []) {
     { rng: () => 0.99, allyModifiers: { augmentIds: ids } },
   );
 }
-test('old v1/v2 saves migrate without retroactive picks/rewards and keep legacy effects', () => {
+// v0.17.0: 이전 버전 저장은 이관하지 않고 지운다(tests/save/save-system.test.js). 여기서는 현재 버전 저장의
+// 증강 상태가 비었을 때 지난 선택 시점을 소급해 열지 않는지 확인한다.
+test('증강 상태가 빠진 저장은 지난 선택 시점을 소급하지 않고, 지운 이전 증강 ID는 버린다', () => {
   for (const node of ['1-3', '2-1', '3-3', '6-1']) {
     const s = state();
     [s.stage, s.round] = node.split('-').map(Number);
-    s.augments = ['training', 'mana', 'funds'];
+    s.augments = ['S07', 'LS01', 'training'];
     delete s.augmentState;
-    s.augmentSelections = { 2: 'training' };
     s.roundPhase = 'augment';
     const before = s.gold;
     P.migrate(s);
@@ -67,7 +68,7 @@ test('old v1/v2 saves migrate without retroactive picks/rewards and keep legacy 
     a.equal(P.label(s), node);
     a.equal(s.roundPhase, 'prepare');
     a(!P.ensureAugment(s));
-    a.deepEqual(s.augments, ['training', 'mana', 'funds']);
+    a.deepEqual(s.augments, ['S07'], '이전 증강 ID(LS01·training)는 남지 않음');
     a(s.augmentState.skippedPicks.every((n) => A.nodeOrdinal(n) <= A.nodeOrdinal(node)));
   }
   const s = state();

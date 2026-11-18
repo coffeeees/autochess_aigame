@@ -36,7 +36,6 @@ const load = async (p) => (await import(new URL('../src/core/' + p, import.meta.
 const D = await load('data/units.js');
 const I = await load('items.js');
 const W = await load('encounters.js');
-const A = await load('augments.js');
 const { Battle } = await load('combat/battle.js');
 
 const hash = (value) =>
@@ -136,25 +135,8 @@ function scenarios() {
     );
   }
 
-  // 4) 증강: 고정 편성에 증강을 하나씩 적용.
-  // 기준선은 v0.15.18의 36종이다. v0.16.0부터 이 36종은 이전 증강(ID 앞에 L)으로 남았으므로
-  // 같은 이름(augment-S01 등)·같은 시드로 이전 증강을 돌려 결과가 그대로인지 확인한다.
-  // 새 후보 54종은 tests/augments/의 테스트가 확인한다.
-  (A.legacy ?? A.augments).forEach((aug, k) => {
-    out.push(
-      run(
-        `augment-${aug.id.replace(/^L/, '')}`,
-        4000 + k,
-        ['C01', 'C03', 'C05', 'C09'].map((id, i) => ({ id, pos: allyCells[i + 3] })),
-        [
-          { id: 'E06', pos: 17, star: 2 },
-          { id: 'E01', pos: 3 },
-          { id: 'E03', pos: 18 },
-        ],
-        { allyModifiers: { augmentIds: [aug.id] } },
-      ),
-    );
-  });
+  // 4) 증강: v0.15.18 기준선에는 그때의 증강 36종 전투가 있었지만, v0.17.0에서 그 증강을 지웠다.
+  //    그래서 이 단계는 더 만들지 않고 --check에서도 비교하지 않는다(새 증강은 tests/augments/가 확인).
 
   // 5) 적 편성 생성기로 만든 실제 편성, 여러 스테이지·난이도.
   const stages = [
@@ -210,16 +192,22 @@ if (process.argv.includes('--write')) {
   console.log(`wrote ${result.battles.length} battles to ${path.relative(ROOT, OUT)}`);
 } else if (process.argv.includes('--check')) {
   const stored = JSON.parse(fs.readFileSync(OUT, 'utf8'));
+  // 지운 증강의 기준선 전투(augment-*)는 비교하지 않는다(4단계 주석)
+  const kept = stored.battles.filter((b) => !b.name.startsWith('augment-'));
+  const now = new Map(result.battles.map((b) => [b.name, b]));
   let diffs = 0;
-  stored.battles.forEach((b, i) => {
-    const now = result.battles[i];
-    if (JSON.stringify(b) !== JSON.stringify(now)) {
+  for (const b of kept)
+    if (JSON.stringify(b) !== JSON.stringify(now.get(b.name))) {
       diffs++;
       console.error(`DIFF ${b.name}`);
     }
-  });
-  if (stored.battles.length !== result.battles.length) diffs++;
-  console.log(diffs ? `${diffs} battle(s) differ` : `all ${stored.battles.length} battles match`);
+  if (kept.length !== result.battles.length) diffs++;
+  const skipped = stored.battles.length - kept.length;
+  console.log(
+    diffs
+      ? `${diffs} battle(s) differ`
+      : `all ${kept.length} battles match (지운 증강 전투 ${skipped}건은 비교하지 않음)`,
+  );
   process.exit(diffs ? 1 : 0);
 } else {
   process.stdout.write(json);

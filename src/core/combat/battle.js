@@ -51,8 +51,13 @@ class Battle {
       enemies.length > this.config.board.maxDeployed
     )
       throw Error('전장 배치 한도를 초과했습니다.');
-    if (new Set(allies.map((u) => u.id)).size !== allies.length)
-      throw Error('동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.');
+    const sameLimit = A.sameUnitLimit(this.augmentIds); // G13 쌍둥이 전술이면 2명
+    if (allies.some((u) => allies.filter((x) => x.id === u.id).length > sameLimit))
+      throw Error(
+        sameLimit > 1
+          ? `동일한 캐릭터는 전장에 ${sameLimit}명까지 배치할 수 있습니다.`
+          : '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.',
+      );
     const occupied = new Set();
     for (const [team, list] of [
       ['ally', allies],

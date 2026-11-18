@@ -257,8 +257,8 @@ function AugmentCodex({ ui, actions }: Props) {
       <Back to={{ kind: 'codex', page: 'home' }} actions={actions} />
       <h2>증강 도감 · {(A.augments as Augment[]).length}종</h2>
       <p>
-        정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다. v0.16.0 1차
-        후보안이라 수치는 검증 전 임시값입니다. 보류 표시는 후보로 나오지 않습니다.
+        정보를 확인하는 도감입니다. 실제 선택은 정해진 증강 단계에서 진행합니다. 1차 후보안이라
+        수치는 검증 전 임시값입니다.
       </p>
       {order.map((tier) => (
         <section key={tier}>
@@ -896,7 +896,7 @@ function BalanceStage2View({ t, counts }: { t: BalanceStage2; counts: BalanceApi
         </ul>
       </details>
       <details open>
-        <summary>남은 결정 사항 {t.decisions.length}</summary>
+        <summary>결정 사항(결정 결과) {t.decisions.length}</summary>
         <ol>
           {t.decisions.map((x) => (
             <li key={x}>{x}</li>
