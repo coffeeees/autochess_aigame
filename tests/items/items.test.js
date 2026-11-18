@@ -213,7 +213,8 @@ test('regular1..6 supplies14 + bosses6 exactly20 items, endless supply/boss T3',
   const s = state();
   while (s.stage <= 6) {
     if (s.roundPhase === 'augment')
-      P.chooseAugment(s, P.availableAugments(s).find((option) => option.id !== 'P11').id);
+      // 아이템을 주는 증강(S10·P11)은 피한다: 보급·보스 지급 수만 센다
+      P.chooseAugment(s, P.availableAugments(s).find((option) => !option.effect.items).id);
     if (P.roundType(s.stage, s.round) === 'SUPPLY') choose(s);
     else {
       s.roundPhase = 'combat';

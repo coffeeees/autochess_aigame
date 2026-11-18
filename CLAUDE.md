@@ -4,7 +4,7 @@
 
 ## 현재 진행 상황
 - 0~7단계 완료(재구축 계획 끝). 화면은 `index.html` → `src/ui/`. 기존 화면(legacy.html)은 6단계에서 지웠다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
-- 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건), `docs/archive/screenshots-v0.15.18/`.
+- 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건, v0.17.0부터 지운 증강 전투 36건을 뺀 45건만 비교), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
 - 그림: 큰 그림은 WebP로 배포한다. 원본 PNG는 `assets-src/images/`, 변환은 `python3 tools/convert-images.py`(결과 목록 `docs/specs/images.json`).
@@ -32,8 +32,8 @@
 - `src/ui/render/`: 전투 연출. `plan.ts`(이벤트 → 연출 명령, 순수), `timeline.ts`(시간축 모델, 순수), `screen.ts`(화면 연출 시간·수치, 순수),
   `battlefield.ts`(PixiJS 그리기, 전투 중에만 동적 import). 연출은 전투 상태를 읽기만 한다. 화면 연출 신호는 저장소의 `cues`
   (`ScreenCues.tsx`가 재생 후 `doneCue`), 전투 끝 장면은 `finishing`. 연출 시간은 `presentation` 환경을 줄 때만 켜진다(테스트는 끔).
-- 증강: `augments.js`의 `augments`(후보 54종, `hold`면 추첨 제외)와 `legacy`(v0.15.18의 36종, ID `LS01`~`LP12`, 예전 저장 전용).
-  효과는 ID가 아니라 `effect` 필드로 판정한다(`combat/augment-effects.js`). 원정 중 상태(지연 보상·투자·무료 새로고침·분신 지정)는 `augment-run.js`와 `state.augmentRun`(저장 버전 3).
+- 증강: `augments.js`의 54종(`hold`면 추첨 제외, 지금은 없음). v0.15.18의 36종은 v0.17.0에서 지웠다. G13 쌍둥이 전술이 있으면 같은 캐릭터 전장 2명(`sameUnitLimit`).
+  효과는 ID가 아니라 `effect` 필드로 판정한다(`combat/augment-effects.js`). 원정 중 상태(지연 보상·투자·무료 새로고침·분신 지정)는 `augment-run.js`와 `state.augmentRun`.
   밸런스 자동 시뮬레이션: `node tools/balance-sim.mjs --seeds 8 --part base|S|G|P --out x.json`(고정 규칙 봇, 브라우저 플레이와 구분해 기록).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
@@ -49,8 +49,8 @@
 - Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.
 - 문서의 소스 링크(`../src/core/x.js#L<n>`)는 줄 번호 기준이다. 코드를 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
 - `docs/specs/CORE_RULES_BASELINE_v0.15.10.json`의 `coreHashes`는 일부 core 모듈의 해시다. 그 모듈을 의도적으로 고쳤을 때만 갱신한다.
-- 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`)다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
-  `tests/fixtures/v0.15.18-*.json`은 원본 게임에서 받은 실제 저장이므로 고치지 않는다.
+- 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`, 저장 버전 4)다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
+  v0.17.0부터 이전 버전 저장(버전 1~3)은 이관하지 않고 지운다(T45, 사용자 결정). `tests/fixtures/v0.15.18-*.json`은 원본 게임에서 받은 실제 저장으로, 지워지는지 확인하는 데 쓴다. 고치지 않는다.
 - 새 알림은 `src/ui/notices.ts`의 `ADDED`(T42~)에 넣고 `src/content/notice-audit.js`에 행을 추가한다. T01~T41 목록은 v0.15.7 조사 기록이라 바꾸지 않는다.
 - `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.
 

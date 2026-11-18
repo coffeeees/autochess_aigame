@@ -1,6 +1,6 @@
 # AUTOCHESS 용어·약어·코드 대응
 
-기준 버전: **0.16.0** (재구축 버전). 게임 규칙·수치·밸런스는 **0.15.18**과 같고, 0.16.0은 코드 구조(재구축)와 화면 표시만 바꿨습니다(차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.17.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -124,7 +124,7 @@
 | E01~E08/E99 | 적군/보물슬라임 | 9종,아군구매불가 |
 | I01~I40 | 장비종류 | 40종 |
 | I1,I2,…(inventory.uid) | 획득장비인스턴스 | 아이템종류I01과다름 |
-| S01~S12/G01~G12/P01~P12 | 실버/골드/프리즘증강 | 36종 |
+| S01~S18/G01~G18/P01~P18 | 실버/골드/프리즘증강 | 54종(0.17.0, 수치 임시값) |
 | T01~T41 | 공통알림감사ID | 아이템티어T1/T2/T3와다름 |
 | SUPPLY/BATTLE/BOSS | 보급/일반전투/보스전 | 노드종류 |
 | metaLevel/metaXp | 전체/메타레벨·XP | 인게임level/xp와별개,성장지급비활성 |
@@ -188,6 +188,6 @@
 
 ## 7. 저장 및 소스 위치
 
-[src/core/data/units.js:67](../src/core/data/units.js#L67) · `const statKeys=`; [src/core/combat/battle.js:70](../src/core/combat/battle.js#L70) · `makeUnit(entry,team)`; [src/core/progression.js:452](../src/core/progression.js#L452) · `const receipt=`; [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
+[src/core/data/units.js:67](../src/core/data/units.js#L67) · `const statKeys=`; [src/core/combat/battle.js:77](../src/core/combat/battle.js#L77) · `makeUnit(entry,team)`; [src/core/progression.js:460](../src/core/progression.js#L460) · `const receipt=`; [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 문서의정의에없는프로젝트고유약어를새로추측해추가하지않았습니다. 임시숫자/상태차이는 [미구현](UNIMPLEMENTED.md) 및 [불일치](CHANGELOG.md) 참조.

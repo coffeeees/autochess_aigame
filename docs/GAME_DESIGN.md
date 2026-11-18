@@ -1,6 +1,6 @@
 # AUTOCHESS 전체 게임 기획·현재 실행 명세
 
-기준 버전: **0.16.0** (재구축 버전). 게임 규칙·수치·밸런스는 **0.15.18**과 같고, 0.16.0은 코드 구조(재구축)와 화면 표시만 바꿨습니다(차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.17.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:265](../src/core/preparation.js#L265) · `function startingRoster`.
+[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:272](../src/core/preparation.js#L272) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 6-5 정산후HP>0이면 종료/계속 선택.종료는complete 상태로기록보존,계속은7-1. HP0은gameover가우선. 이미7+구간인기존세이브는소급팝업없음.7+는동일패턴기록용이며 메타XP미지급을안내하지만 실제메타XP지급은1~6을포함해모두비활성입니다.
 
-[src/core/progression.js:489](../src/core/progression.js#L489) · `function advanceRound`, [src/core/progression.js:511](../src/core/progression.js#L511) · `function chooseCompletion`.
+[src/core/progression.js:498](../src/core/progression.js#L498) · `function advanceRound`, [src/core/progression.js:521](../src/core/progression.js#L521) · `function chooseCompletion`.
 
 ## 3. 난이도·플레이어 체력
 
@@ -62,7 +62,7 @@
 
 적피해배율은적의기본/스킬/DOT/소환공격에적용되며 플레이어패배HP손실배율은아닙니다. 난이도는시작HP가낮아져도최대HP100을유지합니다.
 
-[src/core/encounters.js:12](../src/core/encounters.js#L12) · `const difficulties=`, [src/core/progression.js:424](../src/core/progression.js#L424) · `legacyDamage=`.
+[src/core/encounters.js:12](../src/core/encounters.js#L12) · `const difficulties=`, [src/core/progression.js:431](../src/core/progression.js#L431) · `legacyDamage=`.
 
 ## 4. 전장·준비 조작
 
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:67](../src/core/preparation.js#L67) · `function moveUnit`, [src/ui/store.ts:271](../src/ui/store.ts#L271) · `function beginBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:72](../src/core/preparation.js#L72) · `function moveUnit`, [src/ui/store.ts:304](../src/ui/store.ts#L304) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -87,7 +87,7 @@
 | 보급추가 | 50%발동,당첨시2G/3G각50% |
 | 보스추가골드 | 승리시독립60%,stage1~6=5/7/9/11/13/15G,7+=15G(테스트금액) |
 | 보너스몬스터골드 | 처치시즉시3~5G중하나.정산전에입금되어이자기준잔고에포함될수있음 |
-| 증강승리추가 | v0.16.0: P07 승리마다+2G, S11 사망0승리+2G, P12 승리시보유골드10%(최대5G), G10 패배시+3G·무료새로고침1, S12/G11 전투횟수지연보상, 보급제외(이전 증강 LG12/LP09 각각+2G) |
+| 증강승리추가 | v0.17.0: P07 승리마다+2G, S11 사망0승리+2G, P12 승리시보유골드10%(최대5G), G10 패배시+3G·무료새로고침1, S12/G11 전투횟수지연보상, 보급제외 |
 | 판매 | cost×3^(star−1),합성가격과일치 |
 | 합성 | 같은ID/같은성급3명→다음성급,최대3성,1성9명분=3성 |
 | 성급기본스탯 | HP/AD/AP에2^(star−1),나머지기본스탯미증가 |
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외,판매후복귀.1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:370](../src/core/progression.js#L370) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:186](../src/core/preparation.js#L186) · `function enterShop`.
+[src/core/progression.js:369](../src/core/progression.js#L369) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:193](../src/core/preparation.js#L193) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -119,7 +119,7 @@
 | 10 | 5 | 10 | 20 | 40 | 25 | 5 | 10 | 20 |
 
 
-[src/core/preparation.js:151](../src/core/preparation.js#L151) · `const baseOdds=`.
+[src/core/preparation.js:158](../src/core/preparation.js#L158) · `const baseOdds=`.
 
 ## 6. 인게임 레벨·메타 레벨
 
@@ -140,7 +140,7 @@
 
 메타프로필은version1/metaLevel1/metaXp0/growthEnabled=false. 능력치·뽑기메뉴는disabled.원정종료나승리로메타XP를지급하는경로없음.7+미지급안내와인게임XP를혼동하지않습니다.
 
-[src/core/progression.js:138](../src/core/progression.js#L138) · `function addXp`, [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile`.
+[src/core/progression.js:126](../src/core/progression.js#L126) · `function addXp`, [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile`.
 
 ## 7. 전투 판정 상세(구현된 임시 수치 포함)
 
@@ -167,7 +167,7 @@
 
 DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시간갱신(일부amount갱신),다른시전자DOT중첩.시전자사망후에도units에남아있어기존DOT는지속할수있습니다. harmful상태하나정화는배열의첫항목.
 
-[src/core/combat/battle.js:570](../src/core/combat/battle.js#L570) · `tick(dt=`, [src/core/combat/battle.js:242](../src/core/combat/battle.js#L242) · `deal(source,target`, [src/core/combat/battle.js:211](../src/core/combat/battle.js#L211) · `heal(target,amount`, [src/core/items.js:602](../src/core/items.js#L602) · `function applyStats`, [src/core/augments.js:129](../src/core/augments.js#L129) · `function applyStats`.
+[src/core/combat/battle.js:575](../src/core/combat/battle.js#L575) · `tick(dt=`, [src/core/combat/battle.js:247](../src/core/combat/battle.js#L247) · `deal(source,target`, [src/core/combat/battle.js:216](../src/core/combat/battle.js#L216) · `heal(target,amount`, [src/core/items.js:602](../src/core/items.js#L602) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
 
 ### 전투 공통 임시 설정 원문값
 
@@ -240,7 +240,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 45명×2유대=90배정. 전체45명 모두해금. 16종전부4인단계,8종은6인단계활성가능. 전투의 상태/부활/분담/재귀 차단은 bond-effects.js, 기본 단계 데이터는 bonds.js, 이전 추천은 preparation.normalize에서 유효 ID만 남깁니다.
 
-[src/core/combat/bond-effects.js:7](../src/core/combat/bond-effects.js#L7) · `function init`, [src/core/data/bonds.js:6](../src/core/data/bonds.js#L6) · `const rules=`.
+[src/core/combat/bond-effects.js:7](../src/core/combat/bond-effects.js#L7) · `function init`, [src/core/data/bonds.js:8](../src/core/data/bonds.js#L8) · `const rules=`.
 
 ## 10. 캐릭터45명 전체 데이터와 스킬
 
@@ -1138,7 +1138,7 @@ T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성�
 
 모든아이템고유효과는비소환수장착자만(has가summon제외).피해출처ITEM_PROC와itemProcDepth가다른고유효과연쇄재귀를차단합니다. 세부확정여부는원문아이템명세의가정과구분해테스트해야합니다.
 
-[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:307](../src/core/progression.js#L307) · `function beginSupply`.
+[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:306](../src/core/progression.js#L306) · `function beginSupply`.
 
 ### 이전세이브장비
 
@@ -1149,10 +1149,10 @@ T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성�
 | crystal | 마력 수정 | AP +10 | 호환조회/기존장착가능,새드롭풀제외 |
 
 
-## 12. 증강 — v0.16.0 후보 54종(1차, 임시값)과 이전 36종
+## 12. 증강 — 54종(1차 후보안, 임시값)
 
-v0.16.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종)으로 바꿨습니다(사용자 결정: 기존 36종 교체). **모든 수치는 검증 전 임시값**이며, 밸런스 테스트 결과는 패치노트 "밸런스 테스트" 탭에 기록합니다.
-정해진3노드(1-3/3-3/5-3 진입 전)마다 등급을 독립균등 1/3 추첨 → 그 등급에서 아직 고르지 않은 후보 3개를 비복원 추첨 → 하나 선택. 한 판 최대3개, 같은 등급 반복 가능, 고르지 않은 후보는 다시 나올 수 있음. G13은 보류(후보에서 제외).
+v0.17.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종)으로 바꾸고 이전 36종은 지웠습니다(사용자 결정). **모든 수치는 검증 전 임시값**이며, 밸런스 테스트 결과는 패치노트 "밸런스 테스트" 탭에 기록합니다.
+정해진3노드(1-3/3-3/5-3 진입 전)마다 등급을 독립균등 1/3 추첨 → 그 등급에서 아직 고르지 않은 후보 3개를 비복원 추첨 → 하나 선택. 한 판 최대3개, 같은 등급 반복 가능, 고르지 않은 후보는 다시 나올 수 있음. 54종 모두 후보로 나옴.
 
 기본안(사용자 승인 2026-11-18):
 - 능력치 %는 현재 값에 곱하기, GD +n은 고정값, 피해량 +%끼리는 더한 뒤 곱하기.
@@ -1198,7 +1198,7 @@ v0.16.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종
 | G10 | 골드 | 역전의 자금 | 전투에서 지면 추가 3G와 무료 새로고침 1회(쌓임) | `{"lossGold":3,"lossFreeReroll":1}` |
 | G11 | 골드 | 고위험 투자 | 보유 골드의 절반(내림)을 맡기고, 전투 3회를 마치면 맡긴 골드의 2배를 돌려받음 · 원정이 끝나면 돌려받지 못함 | `{"invest":{"ratio":0.5,"battles":3,"multiplier":2}}` |
 | G12 | 골드 | 성장의 보상 | 레벨이 오를 때마다 무작위 2코스트 또는 3코스트 동료 1명 획득 | `{"levelUnits":{"costs":[2,3]}}` |
-| G13 | 골드 | 쌍둥이 전술 (보류) | 전장에 같은 동료를 정확히 2명 배치하면 두 동료 AD·AP·GD +25% · 보류: "같은 캐릭터 전장 1명" 규칙과 충돌해 후보에서 제외 | `{"twins":{"power":0.25}}` |
+| G13 | 골드 | 쌍둥이 전술 | 전장에 같은 동료를 정확히 2명 배치하면 두 동료 AD·AP·GD +25% · 이 증강이 있으면 같은 동료를 전장에 2명까지 배치 가능("같은 캐릭터 전장 1명" 규칙의 예외) | `{"twins":{"power":0.25,"limit":2}}` |
 | G14 | 골드 | 전장의 지휘관 | 전방 2줄 아군 1명당 후방 2줄 아군 피해량 +5%, 최대 25% | `{"command":{"per":0.05,"max":0.25}}` |
 | G15 | 골드 | 조합의 대가 | 활성화된 조합 하나당 모든 아군 최대 HP +80, AD·AP +3% | `{"bondPower":{"power":0.03,"hp":80}}` |
 | G16 | 골드 | 선택받은 영웅 | 전투 시작 시 코스트가 가장 높은 아군 1명 최대 HP +30%, 피해량 +20% | `{"chosen":{"hp":0.3,"damage":0.2}}` |
@@ -1223,65 +1223,17 @@ v0.16.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종
 | P17 | 프리즘 | 완벽한 조화 | 활성화된 서로 다른 조합이 4개 이상이면 모든 아군 피해량 +30%, 최대 HP +30% | `{"harmony":{"bonds":4,"damage":0.3,"hp":0.3}}` |
 | P18 | 프리즘 | 희생의 의식 | 전투 시작 시 코스트가 가장 낮은 아군 1명 희생(아군 2명 이상일 때) · 나머지 아군 AD·AP·최대 HP +희생자 코스트×10% | `{"sacrifice":{"perCost":0.1}}` |
 
-### 이전 증강 36종(v0.15.18 확정, ID 앞에 L)
+G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 캐릭터를 전장에 2명까지 둘 수 있습니다(3명은 불가, 배치와 전투 시작 모두 검사). 조합 인원은 원래대로 서로 다른 캐릭터만 세므로 같은 캐릭터 2명은 1명분입니다.
 
-새 후보로는 나오지 않습니다. 저장 버전 2 이하의 저장에서 고른 증강(S01 등)은 불러올 때 같은 효과의 이전 증강(LS01 등)으로 바뀌어 원래대로 동작합니다.
-
-| ID | 등급 | 이름 | 표시효과 | 실행effect데이터 |
-| --- | --- | --- | --- | --- |
-| LS01 | 실버 | 강인한 육체 | 모든 아군 최대 HP +150 | `{"flat":{"HP":150}}` |
-| LS02 | 실버 | 날카로운 무기 | 모든 아군 AD +12 | `{"flat":{"AD":12}}` |
-| LS03 | 실버 | 마력 증폭 | 모든 아군 AP +15 | `{"flat":{"AP":15}}` |
-| LS04 | 실버 | 견고한 방어 | 모든 아군 GD +12 | `{"flat":{"GD":12}}` |
-| LS05 | 실버 | 신속한 공격 | 모든 아군 AS +10% | `{"as":0.1}` |
-| LS06 | 실버 | 정밀 타격 | 모든 아군 CTC +8%p | `{"flat":{"CTC":8}}` |
-| LS07 | 실버 | 마나 저장소 | 모든 아군 최대 MP -10% | `{"mpReduction":0.1}` |
-| LS08 | 실버 | 전투 준비 | 전투 시작 시 모든 아군에게 최대 HP의 8% 보호막을 5초간 부여 | `{"startShield":{"ratio":0.08,"seconds":5}}` |
-| LS09 | 실버 | 작은 행운 | 선택 즉시 6G 획득 | `{"gold":6}` |
-| LS10 | 실버 | 경험의 지혜 | 선택 즉시 8XP 획득 | `{"xp":8}` |
-| LS11 | 실버 | 절약 정신 | 상점 새로고침 비용 2G → 1G | `{"reroll":1}` |
-| LS12 | 실버 | 생존 본능 | 모든 아군 DOD +6%p | `{"flat":{"DOD":6}}` |
-| LG01 | 골드 | 거인의 축복 | 모든 아군 최대 HP +300 | `{"flat":{"HP":300}}` |
-| LG02 | 골드 | 전투의 달인 | 모든 아군 AD +20, AS +10% | `{"flat":{"AD":20},"as":0.1}` |
-| LG03 | 골드 | 대마법사의 지혜 | 모든 아군 AP +30, 최대 MP -10% | `{"flat":{"AP":30},"mpReduction":0.1}` |
-| LG04 | 골드 | 철벽 진형 | 모든 아군 GD +20, DOD +8%p | `{"flat":{"GD":20,"DOD":8}}` |
-| LG05 | 골드 | 치명적인 일격 | 모든 아군 CTC +12%p, CTH +25%p | `{"flat":{"CTC":12,"CTH":25}}` |
-| LG06 | 골드 | 흡혈의 본능 | 아군 기본 공격의 실제 피해 12%만큼 공격자 HP 회복 | `{"basicLeech":0.12}` |
-| LG07 | 골드 | 전투의 열기 | 전투 시작 후 5초마다 생존 아군 AD·AP +5%, 최대 4중첩 | `{"heat":{"interval":5,"ratio":0.05,"max":4}}` |
-| LG08 | 골드 | 마나 순환 | 스킬 사용 시 해당 캐릭터 최대 MP 15% 회복 · 캐릭터별 쿨다운 5초 | `{"manaReturn":{"ratio":0.15,"cooldown":5}}` |
-| LG09 | 골드 | 수호자의 맹세 | 전투 시작 시 모든 아군에게 최대 HP의 15% 보호막을 6초간 부여 | `{"startShield":{"ratio":0.15,"seconds":6}}` |
-| LG10 | 골드 | 풍요의 축복 | 선택 즉시 12G 획득 | `{"gold":12}` |
-| LG11 | 골드 | 빠른 성장 | 선택 즉시 16XP 획득 | `{"xp":16}` |
-| LG12 | 골드 | 승리의 보상 | 일반/보스 전투 승리 시 추가 2G 획득 | `{"winGold":2}` |
-| LP01 | 프리즘 | 초월자의 축복 | 모든 아군 최대 HP +400, AD +25, AP +30 | `{"flat":{"HP":400,"AD":25,"AP":30}}` |
-| LP02 | 프리즘 | 광전사의 군단 | 모든 아군 AS +30%, CTC +15%p | `{"as":0.3,"flat":{"CTC":15}}` |
-| LP03 | 프리즘 | 마력의 폭풍 | 모든 아군 AP +60, 최대 MP -20% | `{"flat":{"AP":60},"mpReduction":0.2}` |
-| LP04 | 프리즘 | 불멸의 군대 | 모든 아군이 전투당 1회 치명적 피해를 받으면 HP 1로 생존하고 최대 HP의 20% 보호막을 3초간 획득 | `{"immortal":{"ratio":0.2,"seconds":3}}` |
-| LP05 | 프리즘 | 피의 축제 | 아군 기본 공격 및 스킬의 실제 피해 15%만큼 공격자 HP 회복 | `{"attackLeech":0.15}` |
-| LP06 | 프리즘 | 전장의 지배자 | 전투 시작 10초 후 생존 아군 AD·AP +40%, AS +20% · 1회 | `{"dominion":{"at":10,"power":0.4,"as":0.2}}` |
-| LP07 | 프리즘 | 마나의 해방 | 모든 아군이 전투 시작 시 최대 MP의 50%를 보유 | `{"startMana":0.5}` |
-| LP08 | 프리즘 | 완벽한 방어 | 모든 아군 GD +35, DOD +15%p, 최대 HP +250 | `{"flat":{"GD":35,"DOD":15,"HP":250}}` |
-| LP09 | 프리즘 | 황금의 제국 | 선택 즉시 25G 획득. 이후 일반/보스 전투 승리 시 추가 2G | `{"gold":25,"winGold":2}` |
-| LP10 | 프리즘 | 초고속 성장 | 선택 즉시 32XP 획득 | `{"xp":32}` |
-| LP11 | 프리즘 | 장비의 축복 | 선택 즉시 T3 아이템 2개 획득 | `{"items":{"tier":3,"count":2}}` |
-| LP12 | 프리즘 | 한계 돌파 | 이번 원정의 레벨별 배치 한도 +1 · 최대 11명 | `{"capacity":1}` |
-
-G07은5/10/15/20초마다해당시점생존아군만,단계별AD/AP5%합산최대20%.P06은10초시점생존자1회AD/AP40%,AS20%,G07과독립곱.후기소환수에는지나간발동을소급하지않음. 아군전체flat/흡혈/죽음방지는소환수도대상,시작보호막/마나는시작명단만.
-
-G08정상스킬후최대MP15%,개체별5초,아이템무료추가시전은환급없음. P11은T3독립2회추첨이라같은ID2개가능하지만장착중복제한은동일. G06/P05합산흡혈,P05는직접스킬도포함하고DOT/아이템파생은제외.
-
-legacy training/mana/funds는저장호환효과만유지하고신규선택풀에없습니다.
-
-[src/core/augments.js:474](../src/core/augments.js#L474) · `function draw`, [src/core/combat/augment-effects.js:209](../src/core/combat/augment-effects.js#L209) · `function update`, [src/core/augment-run.js:127](../src/core/augment-run.js#L127) · `function settle`.
+[src/core/augments.js:362](../src/core/augments.js#L362) · `function draw`, [src/core/combat/augment-effects.js:212](../src/core/combat/augment-effects.js#L212) · `function update`, [src/core/augment-run.js:134](../src/core/augment-run.js#L134) · `function settle`.
 
 ## 13. 저장·호환·UI·연출
 
-- 게임키starlight-onecost-v1의payload.version=2. 메타키autochess-meta-v1,폰트키autochess-ui-font. 브라우저로컬이며서버동기화확인되지않음.
-- 8열세이브는7열로좌표이관,잘린열은가까운빈칸으로이동.동료ID/장비UID/보상장부보존.중복아군ID배치는대기석으로수선.
+- 게임키starlight-onecost-v1의payload.version=4(v0.17.0). 0.17.0 이전 저장(버전 1~3)은 이관하지 않고 처음 열 때 지우며 T45로 알립니다(사용자 결정). 메타키autochess-meta-v1,폰트키autochess-ui-font. 브라우저로컬이며서버동기화확인되지않음.
 - 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
 - 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
 
-[src/core/save.ts:179](../src/core/save.ts#L179) · `function loadSave`, [src/core/save.ts:142](../src/core/save.ts#L142) · `function revertInterruptedBattle`, [src/ui/store.ts:184](../src/ui/store.ts#L184) · `function save`.
+[src/core/save.ts:177](../src/core/save.ts#L177) · `function loadSave`, [src/core/save.ts:139](../src/core/save.ts#L139) · `function revertInterruptedBattle`, [src/ui/store.ts:207](../src/ui/store.ts#L207) · `function save`.
 
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
@@ -1292,7 +1244,7 @@ legacy training/mana/funds는저장호환효과만유지하고신규선택풀에
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
 - 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/ui/store.ts:202](../src/ui/store.ts#L202) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
+[src/ui/store.ts:227](../src/ui/store.ts#L227) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 ## 14. 남은 결정과 불일치
 

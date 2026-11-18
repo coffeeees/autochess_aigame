@@ -41,34 +41,10 @@ function combat(s, winner = 'ally', rng = () => 0.8) {
   s.roundPhase = 'combat';
   return P.settleRound(s, { winner, time: 10, survivingEnemies: winner === 'ally' ? 0 : 2 }, rng);
 }
-test('old saves retain characters, gold, HP and deployed capacity during migration', () => {
-  const old = {
-    version: 1,
-    wave: 6,
-    gold: 43,
-    health: 72,
-    units: Array.from({ length: 5 }, (_, i) => ({
-      id: D.playableIds[i],
-      uid: i + 1,
-      location: 'board',
-      pos: 32 + i,
-      star: 1,
-    })),
-    shop: [],
-    done: false,
-  };
-  const migrated = P.migrate(clone(old));
-  assert.equal(migrated.gold, 43);
-  assert.equal(migrated.health, 72);
-  assert.deepEqual(
-    migrated.units.map((u) => ({ ...u, pos: 0 })),
-    old.units.map((u) => ({ ...u, pos: 0 })),
-  );
-  assert.deepEqual(
-    migrated.units.map((u) => u.pos),
-    [28, 29, 30, 31, 32],
-  );
-  assert.equal(migrated.level, 5);
-  assert.equal(P.label(migrated), '2-1');
-  assert.equal(migrated.roundPhase, 'prepare');
+test('이전 버전 저장(버전 1~3)은 이관하지 않는다(v0.17.0, save.ts가 지움)', () => {
+  for (const version of [1, 2, 3])
+    assert.throws(() => P.migrate({ version, wave: 6, units: [], shop: [] }), /이전 버전 저장/);
+  const now = P.initialize({ units: [], shop: [], gold: 7, health: 100 });
+  assert.equal(now.version, 4);
+  assert.equal(P.migrate(clone(now)).version, 4);
 });

@@ -1,7 +1,7 @@
-// 원정 저장: 형식, 검증, 이관, 백업, 중단된 전투 복구.
-// 저장 형식은 SAVE_KEY 아래의 RunState JSON 그대로이고(v0.15.18과 같음), 그래서
-// 기존 저장을 그대로 불러온다. 저장소는 UI가 넘겨주며 이 모듈은 localStorage를
-// 직접 건드리지 않는다.
+// 원정 저장: 형식, 검증, 이전 버전 삭제, 백업, 중단된 전투 복구.
+// 저장 형식은 SAVE_KEY 아래의 RunState JSON 그대로다. v0.17.0부터 이전 버전 저장
+// (버전 1~3: v0.15.18 원본·v0.16.0)은 이관하지 않고 지운 뒤 새 원정을 시작한다(사용자 결정).
+// 저장소는 UI가 넘겨주며 이 모듈은 localStorage를 직접 건드리지 않는다.
 import type { RunState } from './types.ts';
 import D from './data/units.js';
 import A from './augments.js';
@@ -10,7 +10,7 @@ import W from './encounters.js';
 
 export const SAVE_KEY = 'starlight-onecost-v1';
 /** progression.initialize / migrate가 쓰는 현재 RunState.version. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const BACKUP_PREFIX = SAVE_KEY + '-backup-';
 
 /** UI가 넘겨주는 저장소: window.localStorage 또는 테스트용 대체물. */
@@ -21,20 +21,11 @@ export interface SaveStorage {
 }
 
 /**
- * 저장 형식 이관 목록(오래된 것부터). progression.migrate가 받아들이는 모든 버전을
- * SAVE_VERSION으로 올리고(v1 → v2: 배치 인원 기준 레벨, 아이템, 증강, 전장 8열 → 7열)
- * 현재 저장도 정리한다. 여러 번 실행해도 결과가 같다.
- * SAVE_VERSION을 바꿀 때 여기에 단계를 추가한다.
+ * 저장 형식 이관 목록(오래된 것부터). v0.17.0에서 이전 버전 저장을 지우기로 해서 비어 있다.
+ * 앞으로 SAVE_VERSION을 올리면서 저장을 살려야 하면 여기에 단계를 추가하고 progression.migrate를 고친다.
  */
-export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [
-  { from: 1, to: 2, note: 'progression.migrate: level, inventory, augments, 7-column board' },
-  {
-    from: 2,
-    to: 3,
-    note: 'progression.migrateAugmentIds: v0.15.18 증강 ID(S01 등) → 이전 증강 ID(LS01 등), augmentRun 추가',
-  },
-];
-const ACCEPTED_VERSIONS = [1, 2, SAVE_VERSION];
+export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [];
+const ACCEPTED_VERSIONS = [SAVE_VERSION];
 
 type Raw = Record<string, any>;
 type Check = { id: string; message: string; ok: (s: Raw) => boolean };
@@ -47,7 +38,7 @@ const columns = (s: Raw) => s.boardColumns || 8;
 export const CHECKS: readonly Check[] = [
   {
     id: 'version',
-    message: '저장 버전이 1 또는 2가 아닙니다',
+    message: `저장 버전이 ${SAVE_VERSION}이 아닙니다`,
     ok: (s) => ACCEPTED_VERSIONS.includes(s?.version),
   },
   {
@@ -90,14 +81,8 @@ export const CHECKS: readonly Check[] = [
   {
     id: 'boardCount',
     message: '전장 배치 인원이 한도를 넘습니다',
-    // 버전 2까지는 'P12'(한계 돌파), 버전 3부터는 배치 한도 증강(P13·LP12)의 capacity로 판단
-    ok: (s) =>
-      boardUnits(s).length <=
-      ((s.version ?? 1) < 3
-        ? s.augments?.includes('P12')
-          ? 11
-          : 10
-        : Math.min(11, 10 + A.aggregate(s.augments).capacity)),
+    // 배치 한도 증강(P13)의 capacity 포함, 최대 11명
+    ok: (s) => boardUnits(s).length <= Math.min(11, 10 + A.aggregate(s.augments).capacity),
   },
   {
     id: 'benchCount',
@@ -171,6 +156,8 @@ export function revertInterruptedBattle(state: RunState): RevertedBattle | null 
 
 export type LoadResult =
   | { status: 'empty' }
+  /** 이전 버전 저장(v0.17.0 이전)을 지웠다 */
+  | { status: 'outdated'; version: number }
   | { status: 'loaded'; state: RunState; nextUid: number; reverted: RevertedBattle | null }
   | {
       status: 'invalid';
@@ -184,7 +171,7 @@ export function backupKey(now: Date): string {
 }
 
 /**
- * 원정 저장을 읽고 검증·이관한다. 잘못된 데이터는 백업 키에 복사한 뒤 SAVE_KEY에서
+ * 원정 저장을 읽고 검증·정리한다. 이전 버전 저장은 지운다. 잘못된 데이터는 백업 키에 복사한 뒤 SAVE_KEY에서
  * 지운다(페이지를 열 때마다 다시 백업되지 않게). 백업을 쓸 수 없으면 원본은 그대로 둔다.
  */
 export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadResult {
@@ -207,6 +194,16 @@ export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadRes
     problems = validateSave(parsed).map((c) => c.message);
   } catch {
     problems = ['저장 데이터를 해석할 수 없습니다'];
+  }
+  // 이전 버전 저장은 백업하지 않고 지운다(v0.17.0 사용자 결정)
+  const version = (parsed as Raw | null)?.version;
+  if (typeof version === 'number' && version < SAVE_VERSION) {
+    try {
+      storage.removeItem(SAVE_KEY);
+    } catch {
+      // 지우지 못해도 다음에 열 때 다시 지운다
+    }
+    return { status: 'outdated', version };
   }
   if (!problems.length) {
     // 복사본을 이관해서, 도중에 실패해도 반쯤 바뀐 데이터가 남지 않게 한다

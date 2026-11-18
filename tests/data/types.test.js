@@ -89,18 +89,18 @@ test('아이템이 Item과 맞다(ItemStats는 AS 대신 ASPercent)', () => {
 });
 
 test('증강이 Augment와 맞다', () => {
-  for (const aug of [...A.augments, ...A.legacy])
+  for (const aug of A.augments)
     fields(
       aug,
       {
-        id: (v) => /^L?[SGP]\d\d$/.test(v),
+        id: (v) => /^[SGP]\d\d$/.test(v),
         name: str,
         text: str,
         tier: (v) => ['silver', 'gold', 'prism'].includes(v),
         icon: str,
         effect: (v) => v && typeof v === 'object' && !Array.isArray(v),
       },
-      { hold: (v) => typeof v === 'boolean', legacy: (v) => v === true },
+      { hold: (v) => typeof v === 'boolean' },
     );
 });
 

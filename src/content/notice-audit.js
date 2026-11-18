@@ -298,6 +298,14 @@ rows.push(
     repeat: '페이지를 열 때 1회. 시작 화면 이어하기 안내에도 표시.',
     status: '추가 · 재구축 4단계',
   },
+  {
+    id: 'T45',
+    condition: '불러온 저장이 이전 버전(0.17.0 이전, 저장 버전 1~3)',
+    message: '이전 버전(0.17.0 이전) 저장은 이어할 수 없어 지웠습니다. 새 원정을 시작하세요.',
+    source: 'store.ts: load → core/save.ts: loadSave',
+    repeat: '이전 저장을 지운 뒤 처음 열 때 1회. 지운 뒤에는 다시 나오지 않음.',
+    status: '추가 · v0.17.0',
+  },
 );
 rows.find((r) => r.id === 'T38').repeat =
   '이번부터 아군0명은 시작을 차단하며 기존 즉시 패배 경로/알림은 실행하지 않음.';
@@ -323,7 +331,7 @@ function toHTML() {
     escape(behavior) +
     '</p><p>총 ' +
     rows.length +
-    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가3(T42~T44). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
+    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가4(T42~T45). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
     ['조건 / 사용자 행동', '화면 문구', '관련 코드', '중복·연속 발생 가능성', '현재 상태']
       .map((x) => '<th scope="col">' + x + '</th>')
       .join('') +

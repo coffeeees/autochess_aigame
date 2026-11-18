@@ -8,7 +8,7 @@
 //   판매: 대기석이 8칸 이상 차면 배치 순위 밖에서 짝이 없고 약한 캐릭터부터 7칸이 될 때까지 판다.
 //   상점: 이미 가진 캐릭터 → 코스트 높은 순으로 살 수 있는 만큼(대기석 여유). 2스테이지까지 20G·3스테이지부터 10G를 남기고
 //   XP 구매(레벨 6/9까지), 남는 골드로 새로고침 최대 4회.
-//   배치: 성급·코스트 높은 순으로 배치 한도만큼, 사거리 1은 앞줄·나머지는 뒷줄. 장비: 강한 캐릭터부터 3칸.
+//   배치: 성급·코스트 높은 순으로 배치 한도만큼(G13이 있으면 같은 캐릭터 한 쌍을 먼저), 사거리 1은 앞줄·나머지는 뒷줄. 장비: 강한 캐릭터부터 3칸.
 //   6-5를 마치면 원정 종료를 고른다.
 import fs from 'node:fs';
 const root = new URL('../src/core/', import.meta.url);
@@ -132,14 +132,33 @@ function rank(s) {
   );
 }
 
+/** 전장에 둘 캐릭터: 배치 순위대로 한도만큼, 같은 캐릭터는 1명(G13이면 같은 캐릭터 한 쌍을 먼저 넣는다) */
+function team(s) {
+  const cap = P.capacity(s),
+    limit = A.sameUnitLimit(s.augments),
+    ranked = rank(s),
+    chosen = [];
+  if (limit > 1 && cap >= 2) {
+    const pairs = [...new Set(s.units.map((u) => u.id))]
+      .map((id) => ranked.filter((u) => u.id === id).slice(0, 2))
+      .filter((p) => p.length === 2)
+      .sort(
+        (x, y) => y[0].star + y[1].star - (x[0].star + x[1].star) || cost(y[0].id) - cost(x[0].id),
+      );
+    if (pairs[0]) chosen.push(...pairs[0]);
+  }
+  for (const u of ranked) {
+    if (chosen.length >= cap) break;
+    if (chosen.includes(u) || chosen.filter((c) => c.id === u.id).length >= limit) continue;
+    chosen.push(u);
+  }
+  return chosen;
+}
+
 function sellSpare(s) {
   const bench = () => s.units.filter((u) => u.location === 'bench');
   for (let n = 0; n < 10 && bench().length >= 8; n++) {
-    const keep = new Set();
-    for (const u of rank(s)) {
-      if (keep.size >= P.capacity(s)) break;
-      if (![...keep].some((k) => k.id === u.id)) keep.add(u);
-    }
+    const keep = new Set(team(s));
     const copies = (id) => s.units.filter((u) => u.id === id && u.star === 1).length;
     const spare = bench()
       .filter((u) => !keep.has(u))
@@ -179,14 +198,7 @@ function shop(s, bot) {
 }
 
 function deploy(s) {
-  const cap = P.capacity(s);
-  const ranked = rank(s);
-  const chosen = [];
-  for (const u of ranked) {
-    if (chosen.length >= cap) break;
-    if (chosen.some((c) => c.id === u.id)) continue; // 같은 캐릭터 전장 1명
-    chosen.push(u);
-  }
+  const chosen = team(s);
   for (const u of s.units.filter((u) => u.location === 'board' && !chosen.includes(u)))
     V.moveUnit(s, u.uid, { location: 'bench' });
   const front = [31, 30, 32, 29, 33, 28, 34, 38, 37, 39],

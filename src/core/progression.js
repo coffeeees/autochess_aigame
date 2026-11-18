@@ -50,24 +50,20 @@ const config = {
   ],
 };
 const items = I.items;
-const legacyAugments = [
-  { id: 'training', name: '전투 훈련', text: '모든 아군 AD +10%', icon: '⚔' },
-  { id: 'mana', name: '마력 순환', text: '아군 전투 시작 MP +20 · 최대 MP 상한', icon: '✧' },
-  { id: 'funds', name: '전쟁 자금', text: '선택 즉시 +10G', icon: 'G' },
-];
+/** 원정 저장 버전(save.ts SAVE_VERSION과 같음). v0.17.0: 4 */
+const VERSION = 4;
 const augments = A.augments;
 const label = (s) => `${s.stage}-${s.round}`,
   ordinal = (s) => (s.stage - 1) * config.roundsPerStage + s.round;
 const roundType = (stage, round) =>
   (stage === 1 ? config.firstStage : config.laterStages)[round - 1];
 const itemById = I.byId,
-  // 후보 54종 + 이전 36종(L) + 그보다 오래된 증강(training 등)
-  augmentById = (id) => A.byId(id) || legacyAugments.find((a) => a.id === id);
+  augmentById = A.byId;
 function initialize(state) {
   state.shopLocked = false;
   state.shopCarry = null;
   state.completionChoice = null;
-  state.version = 3;
+  state.version = VERSION;
   state.boardColumns = B.config.columns;
   state.stage = 1;
   state.round = 1;
@@ -106,41 +102,17 @@ function normalizeRunFeatures(state) {
           : null;
   return state;
 }
-/** 저장 버전 2 → 3: v0.15.18 증강 ID(S01 등)를 이전 증강 ID(LS01 등)로 바꾼다(효과는 그대로). */
-function migrateAugmentIds(state) {
-  const map = (ids) => (Array.isArray(ids) ? ids.map(A.legacyId) : ids);
-  state.augments = map(state.augments);
-  for (const node of Object.keys(state.augmentSelections || {}))
-    state.augmentSelections[node] = A.legacyId(state.augmentSelections[node]);
-  const pending = state.augmentState?.pendingPick;
-  if (pending?.optionIds) pending.optionIds = map(pending.optionIds);
-}
+/**
+ * 불러온 원정 정리(새로고침·다시 열기). 현재 저장 버전만 받는다.
+ * v0.17.0부터 이전 버전 저장은 이관하지 않고 save.ts가 지운다.
+ */
 function migrate(state) {
-  if (state.version === 2) {
-    migrateAugmentIds(state);
-    state.version = 3;
-  }
-  if (state.version === 3) {
-    normalizeRunFeatures(state);
-    B.migrate(state);
-    state.recommendedBond = state.recommendedBond || null;
-    state.skipDeploymentWarning = state.skipDeploymentWarning === true;
-    normalizeAugments(state);
-    return state;
-  }
-  const wave = state.wave || 1,
-    done = state.done,
-    oldColumns = state.boardColumns || 8;
-  initialize(state);
-  state.boardColumns = oldColumns;
+  if (state.version !== VERSION)
+    throw Error('이전 버전 저장은 불러오지 않습니다: ' + state.version);
+  normalizeRunFeatures(state);
   B.migrate(state);
-  state.stage = Math.floor((wave - 1) / 5) + 1;
-  state.round = ((wave - 1) % 5) + 1;
-  state.wave = wave;
-  state.level = Math.max(3, Math.min(10, state.units.filter((u) => u.location === 'board').length));
-  state.done = !!done;
-  state.migrationNotice = `기존 동료·골드·체력을 보존했습니다. 배치 인원에 맞춰 레벨 ${state.level}로 이관했습니다.`;
-  state.augmentState = null;
+  state.recommendedBond = state.recommendedBond || null;
+  state.skipDeploymentWarning = state.skipDeploymentWarning === true;
   normalizeAugments(state);
   return state;
 }

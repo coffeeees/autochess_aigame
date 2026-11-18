@@ -645,21 +645,86 @@ test('저장 복원: augmentRun(지연 보상·투자·무료 새로고침·가�
   s.augmentRun.cloneTarget = 1;
   const restored = P.migrate(JSON.parse(JSON.stringify(s)));
   a.deepEqual(restored.augmentRun, s.augmentRun);
-  a.equal(restored.version, 3);
+  a.equal(restored.version, 4);
 });
 
-test('예전 저장(버전 2)의 증강 S01 등은 이전 증강 LS01 등으로 바뀌고 효과가 같다', () => {
-  const old = run();
-  Object.assign(old, { version: 2, augments: ['S11', 'P12'], augmentSelections: { '1-3': 'S11' } });
-  delete old.augmentRun;
-  const s = P.migrate(old);
-  a.deepEqual(s.augments, ['LS11', 'LP12']);
-  a.equal(s.augmentSelections['1-3'], 'LS11');
-  a.equal(P.rerollCost(s), 1, 'LS11 절약 정신');
-  a.equal(P.capacity(Object.assign(s, { level: 10 })), 11, 'LP12 한계 돌파');
+test('G13 쌍둥이 전술: 같은 캐릭터 정확히 2명이면 두 명 AD·AP·GD +25%, 1명·다른 캐릭터는 그대로', () => {
+  const allies = [
+    { id: 'C03', pos: 37 },
+    { id: 'C03', pos: 38 },
+    { id: 'C05', pos: 45 },
+  ];
+  const b = fight(['G13'], allies);
+  const [base] = pair([], [allies[0], allies[2]]);
+  const twins = b.units.filter((u) => u.team === 'ally' && u.id === 'C03');
+  a.equal(twins.length, 2);
+  for (const u of twins) {
+    near(u.stats.AD, ally(base, 'C03').stats.AD * 1.25);
+    near(u.stats.AP, ally(base, 'C03').stats.AP * 1.25);
+    near(u.stats.GD, ally(base, 'C03').stats.GD * 1.25, 'GD도 배율(기본안: % = 곱하기)');
+  }
+  near(ally(b, 'C05').stats.AD, ally(base, 'C05').stats.AD);
+  const solo = fight(['G13'], [allies[0], allies[2]]);
+  near(ally(solo, 'C03').stats.AD, ally(base, 'C03').stats.AD, '1명이면 효과 없음');
+  // 전투도 끝까지 돈다
+  let r = null;
+  for (let n = 0; n < 6000 && !r; n++) r = b.tick();
+  a(r);
 });
 
-test('1-3·3-3·5-3마다 등급 동일 확률, 같은 등급 후보 3개, 고른 ID 제외, 보류·이전 증강 제외', () => {
+test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까지, 3명은 안 됨(배치·전투 모두)', () => {
+  const s = run();
+  s.units.push({ uid: 3, id: 'C03', location: 'bench', pos: -1, star: 1, benchSlot: 0 });
+  s.units.push({ uid: 4, id: 'C03', location: 'bench', pos: -1, star: 2, benchSlot: 1 });
+  s.level = 6;
+  s.roundPhase = 'prepare';
+  const move = (uid, pos) => V.moveUnit(s, uid, { location: 'board', pos });
+  a.deepEqual(move(3, 39), {
+    ok: false,
+    message: '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.',
+  });
+  a.throws(
+    () =>
+      fight(
+        [],
+        [
+          { id: 'C03', pos: 37 },
+          { id: 'C03', pos: 38 },
+        ],
+      ),
+    /1명만/,
+    'G13 없으면 전투도 거절',
+  );
+  s.augments = ['G13'];
+  a(move(3, 39).ok, 'G13이 있으면 2명째 허용');
+  a.deepEqual(move(4, 40), {
+    ok: false,
+    message: '쌍둥이 전술: 동일한 캐릭터는 전장에 2명까지 배치할 수 있습니다.',
+  });
+  a.throws(
+    () =>
+      fight(
+        ['G13'],
+        [
+          { id: 'C03', pos: 37 },
+          { id: 'C03', pos: 38 },
+          { id: 'C03', pos: 39 },
+        ],
+      ),
+    /2명까지/,
+  );
+  // 조합은 서로 다른 캐릭터만 센다(같은 캐릭터 2명이어도 1명분)
+  const b = fight(
+    ['G13'],
+    [
+      { id: 'C03', pos: 37 },
+      { id: 'C03', pos: 38 },
+    ],
+  );
+  for (const bond of b.synergySnapshot.ally.filter((x) => x.count)) a.equal(bond.count, 1);
+});
+
+test('1-3·3-3·5-3마다 등급 동일 확률, 같은 등급 후보 3개, 고른 ID 제외', () => {
   const rng = createRng(5);
   const tiers = { silver: 0, gold: 0, prism: 0 };
   for (let n = 0; n < 3000; n++) {
@@ -670,7 +735,7 @@ test('1-3·3-3·5-3마다 등급 동일 확률, 같은 등급 후보 3개, 고�
       a.equal(new Set(d.optionIds).size, 3);
       for (const id of d.optionIds) {
         const def = A.byId(id);
-        a(def.tier === d.tier && !def.hold && !def.legacy && !picked.includes(id));
+        a(def.tier === d.tier && !def.hold && !picked.includes(id));
       }
       picked.push(d.optionIds[0]);
     }

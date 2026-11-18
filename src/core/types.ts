@@ -76,14 +76,13 @@ export type AugmentTier = 'silver' | 'gold' | 'prism';
 
 /** 증강(augments.js `augments`). `effect`에 조정 가능한 수치가 있다. */
 export interface Augment {
-  id: string; // 후보 S01..S18, G01..G18, P01..P18 / 이전 증강 LS01..LP12
+  id: string; // S01..S18, G01..G18, P01..P18
   name: string;
   text: string;
   tier: AugmentTier;
   icon: string;
   effect: Record<string, unknown>;
-  hold?: boolean; // 보류: 후보로 나오지 않음(G13)
-  legacy?: boolean; // v0.15.18까지의 확정 증강(예전 저장 전용)
+  hold?: boolean; // 보류: 후보로 나오지 않음(지금은 없음)
 }
 
 /** 원정에서 보유한 캐릭터. */
@@ -111,7 +110,7 @@ export interface SupplyOffer {
   selected: number[]; // 고른 후보 번호(2개면 확정 가능)
 }
 
-/** 저장되는 원정(localStorage `starlight-onecost-v1`, 버전 2). */
+/** 저장되는 원정(localStorage `starlight-onecost-v1`, 버전 4). */
 export interface RunState {
   version: number;
   health: number;
@@ -146,7 +145,7 @@ export interface RunState {
   bonusLootLedger?: Record<string, unknown>;
   /** 원정 난수 상태(rng.ts). 재구축 이전 저장에는 없다. */
   rngState?: number;
-  /** 증강의 원정 진행 상태(저장 버전 3, augment-run.js) */
+  /** 증강의 원정 진행 상태(augment-run.js) */
   augmentRun?: AugmentRun | null;
 }
 
