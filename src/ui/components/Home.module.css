@@ -45,6 +45,11 @@
   font-size: var(--text-xs);
   color: #a99bbb;
 }
+.metaPill .metaXp {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d9c2ff;
+}
 .menu {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

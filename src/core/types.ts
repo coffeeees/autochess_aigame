@@ -145,6 +145,8 @@ export interface RunState {
   bonusLootLedger?: Record<string, unknown>;
   /** 원정 난수 상태(rng.ts). 재구축 이전 저장에는 없다. */
   rngState?: number;
+  /** 원정 ID: 메타 XP를 원정마다 한 번만 주는 데 쓴다(v0.17.2, 그 전 저장에는 없음) */
+  runId?: string;
   /** 증강의 원정 진행 상태(augment-run.js) */
   augmentRun?: AugmentRun | null;
 }

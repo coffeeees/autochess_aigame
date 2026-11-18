@@ -1,6 +1,6 @@
 # AUTOCHESS 전체 게임 기획·현재 실행 명세
 
-기준 버전: **0.17.1**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.17.2**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:274](../src/core/preparation.js#L274) · `function startingRoster`.
+[src/core/run.ts:21](../src/core/run.ts#L21) · `function newRun`, [src/core/preparation.js:274](../src/core/preparation.js#L274) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -62,7 +62,7 @@
 
 적피해배율은적의기본/스킬/DOT/소환공격에적용되며 플레이어패배HP손실배율은아닙니다. 난이도는시작HP가낮아져도최대HP100을유지합니다.
 
-[src/core/encounters.js:12](../src/core/encounters.js#L12) · `const difficulties=`, [src/core/progression.js:428](../src/core/progression.js#L428) · `legacyDamage=`.
+[src/core/encounters.js:13](../src/core/encounters.js#L13) · `const difficulties=`, [src/core/progression.js:428](../src/core/progression.js#L428) · `legacyDamage=`.
 
 ## 4. 전장·준비 조작
 
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:74](../src/core/preparation.js#L74) · `function moveUnit`, [src/ui/store.ts:304](../src/ui/store.ts#L304) · `function beginBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:74](../src/core/preparation.js#L74) · `function moveUnit`, [src/ui/store.ts:349](../src/ui/store.ts#L349) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -138,9 +138,9 @@
 
 인게임시작Lv3,4G로4XP,모든노드정산시자동2XP(보급·패배포함/임시),초과XP이월,다중레벨업,최고10에서는XP0. 증강S08/P09은즉시10/20XP(P09는스테이지5라운드정산마다+3XP), G12는레벨상승마다2·3코스트동료1명(이전 증강 LS10/LG11/LP10은즉시8/16/32XP).
 
-메타프로필은version1/metaLevel1/metaXp0/growthEnabled=false. 능력치·뽑기메뉴는disabled.원정종료나승리로메타XP를지급하는경로없음.7+미지급안내와인게임XP를혼동하지않습니다.
+메타 레벨(v0.17.2, 수치 임시값 `src/core/data/meta.js`): Lv.1·0 XP에서 시작, 최대 Lv.100(확정). 레벨 L→L+1 필요 XP는 1~10: 8+2×(L−1), 11~25: 28+4×(L−11), 26~50: 92+8×(L−26), 51~75: 300+12×(L−51), 76~99: 620+20×(L−76). 누적 Lv.7 78, Lv.10 144, Lv.50 5,426, Lv.100 37,210. 원정이 끝날 때(HP 0 게임 오버, 6-5 뒤 게임 종료, 무한 라운드 게임 오버) 한 번 지급: 5 + 정규 구간(1-1~6-5) 완료 스테이지(보급 포함, 패배 제외) × 2 + 6-5 승리 시 15, 최대 80. 7-1 이후 추가 0. 원정 ID(runId)로 같은 원정에 한 번만 지급하고, 남는 XP는 이월, Lv.100에서는 더 쌓지 않음. 프로필 저장 키 `autochess-meta-v1`(메타 레벨·현재 XP·누적 XP·최근 지급 20건). 인게임 레벨·XP와 별개이고, 레벨업 보상·영구 강화는 없음(growthEnabled=false, 능력치·뽑기 메뉴 준비 중). 원정을 끝내지 않고 새 원정으로 덮어쓰면 지급하지 않음(결정 필요).
 
-[src/core/progression.js:126](../src/core/progression.js#L126) · `function addXp`, [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile`.
+[src/core/progression.js:126](../src/core/progression.js#L126) · `function addXp`, [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY`, [src/core/meta.ts:151](../src/core/meta.ts#L151) · `export function settleRun`.
 
 ## 7. 전투 판정 상세(구현된 임시 수치 포함)
 
@@ -212,7 +212,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 | E99 | 보물 슬라임 | C10 | 650 | 100 | 35 | 20 | 20 |
 
 
-[src/core/encounters.js:81](../src/core/encounters.js#L81) · `function encounter`, [src/core/encounters.js:74](../src/core/encounters.js#L74) · `function stageStars`, [src/core/encounters.js:109](../src/core/encounters.js#L109) · `function claimBonusLoot`.
+[src/core/encounters.js:82](../src/core/encounters.js#L82) · `function encounter`, [src/core/encounters.js:75](../src/core/encounters.js#L75) · `function stageStars`, [src/core/encounters.js:110](../src/core/encounters.js#L110) · `function claimBonusLoot`.
 
 ## 9. 테마 유대16종 · 임시 밸런스 v1
 
@@ -1224,7 +1224,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
 - 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
 
-[src/core/save.ts:177](../src/core/save.ts#L177) · `function loadSave`, [src/core/save.ts:139](../src/core/save.ts#L139) · `function revertInterruptedBattle`, [src/ui/store.ts:207](../src/ui/store.ts#L207) · `function save`.
+[src/core/save.ts:177](../src/core/save.ts#L177) · `function loadSave`, [src/core/save.ts:139](../src/core/save.ts#L139) · `function revertInterruptedBattle`, [src/ui/store.ts:211](../src/ui/store.ts#L211) · `function save`.
 
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
@@ -1235,7 +1235,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
 - 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/ui/store.ts:227](../src/ui/store.ts#L227) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
+[src/ui/store.ts:226](../src/ui/store.ts#L226) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 ## 14. 남은 결정과 불일치
 

@@ -1,6 +1,7 @@
 // 시작 화면(v0.15.18 #homeView).
 import P from '../../core/progression.js';
 import W from '../../core/encounters.js';
+import M from '../../core/meta.ts';
 import type { Store, UiState } from '../store.ts';
 import styles from './Home.module.css';
 
@@ -16,9 +17,10 @@ export function Home({ ui, actions }: Props) {
         <span class={styles.eyebrow}>SINGLE PLAYER · FANTASY AUTO BATTLER</span>
         <h1 class={styles.title}>AUTOCHESS</h1>
         <p class={styles.subtitle}>동료를 모으고, 조합을 완성하고, 다음 전투로.</p>
-        <div class={styles.metaPill}>
-          <strong>메타 레벨 1</strong>
-          <span>인게임 레벨과 별도 · 성장 규칙은 추후 적용</span>
+        <div class={styles.metaPill} aria-label="메타 레벨">
+          <strong>메타 레벨 {ui.meta.metaLevel}</strong>
+          <span class={styles.metaXp}>{M.progressLabel(ui.meta.metaLevel, ui.meta.metaXp)}</span>
+          <span>인게임 레벨과 별도 · 원정이 끝나면 메타 XP 획득 · 성장 보상은 추후 적용</span>
         </div>
         {ui.view === 'difficulty' ? (
           <DifficultyPicker ui={ui} actions={actions} />

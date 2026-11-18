@@ -10,6 +10,7 @@ import { newRun, battleSetup } from '../core/run.ts';
 import Engine from '../core/combat/battle.js';
 import type { CombatRunner, LiveBattle } from './combat/runner.ts';
 import W from '../core/encounters.js';
+import M, { type MetaProfile } from '../core/meta.ts';
 import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
@@ -70,6 +71,8 @@ export interface UiState {
   battle: LiveBattle | null;
   /** 직전 전투(결과 창의 딜 그래프용) */
   lastBattle: LiveBattle | null;
+  /** 메타 레벨 프로필(원정 사이에 이어짐, 저장 키 autochess-meta-v1) */
+  meta: MetaProfile;
   speed: 1 | 2 | 4;
   overlay: Overlay | null;
   /** HUD 메뉴의 작은 창 */
@@ -176,6 +179,7 @@ export function createStore(env: StoreEnv) {
     experimental: true,
     cues: [],
     finishing: null,
+    meta: M.newProfile(),
     version: 0,
   };
   let clickGuardUntil = 0;
@@ -215,6 +219,38 @@ export function createStore(env: StoreEnv) {
         notify('T42', '진행 상황을 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인하세요.');
       saveFailed = true;
     }
+    settleMeta();
+  }
+
+  /** 메타 프로필을 읽는다. 읽을 수 없거나 잘못된 값이면 새 프로필(저장은 지우지 않음). */
+  function loadMeta(): MetaProfile {
+    try {
+      const raw = env.storage.getItem(M.META_KEY);
+      return M.normalizeProfile(raw === null ? null : JSON.parse(raw));
+    } catch {
+      return M.newProfile();
+    }
+  }
+  function saveMeta() {
+    try {
+      env.storage.setItem(M.META_KEY, JSON.stringify(state.meta));
+    } catch {
+      if (!saveFailed)
+        notify('T42', '진행 상황을 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인하세요.');
+      saveFailed = true;
+    }
+  }
+  /**
+   * 원정이 끝났으면(게임 오버·6-5 뒤 게임 종료·무한 라운드 게임 오버) 메타 XP를 한 번 준다.
+   * 같은 원정 ID는 다시 주지 않으므로 새로고침·이어하기·결과 창을 다시 열어도 중복되지 않는다.
+   */
+  function settleMeta() {
+    const r = state.run;
+    if (!r?.done || !r.runId || M.paymentFor(state.meta, r.runId)) return;
+    const meta = M.normalizeProfile(JSON.parse(JSON.stringify(state.meta)));
+    if (!M.settleRun(meta, r)) return;
+    state = { ...state, meta };
+    saveMeta();
   }
   const changed = (patch: Partial<UiState> = {}) => {
     // 증강이 동료를 지급하면 core가 uid를 붙이므로, 다음 번호가 겹치지 않게 맞춘다
@@ -225,9 +261,14 @@ export function createStore(env: StoreEnv) {
 
   /** 시작할 때 저장을 한 번 읽는다(기존 UI와 같은 규칙, core/save.ts). */
   function load() {
+    state = { ...state, meta: loadMeta() };
     const result = Save.loadSave(env.storage, env.now?.() ?? new Date());
     if (result.status === 'loaded') {
       nextUid = result.nextUid;
+      // 0.17.2 이전에 시작한 원정에는 ID가 없다. 진행 중이면 ID를 붙여 끝날 때 메타 XP를 받게 하고,
+      // 이미 끝난 원정은 소급해서 주지 않는다(ID 없이 둔다).
+      if (!result.state.runId && !result.state.done)
+        result.state.runId = `run-${clock()}-${env.newSeed() >>> 0}`;
       let loadNotice: UiState['loadNotice'] = null;
       if (result.reverted) {
         const loot = result.reverted.loot;
@@ -244,6 +285,8 @@ export function createStore(env: StoreEnv) {
       }
       state = { ...state, run: result.state, hasSave: true, loadNotice };
       if (result.reverted) save();
+      // 끝난 원정인데 메타 XP를 아직 못 받았으면(정산 직후 창이 닫힌 경우 등) 지금 한 번 준다
+      settleMeta();
     } else if (result.status === 'outdated') {
       state = {
         ...state,
@@ -294,7 +337,9 @@ export function createStore(env: StoreEnv) {
     if (!state.run || state.battle) return null;
     if (phase === 'complete' || (state.run.done && state.run.completionChoice === 'end'))
       return 'summary';
-    if (phase === 'result') return 'result';
+    // 게임 오버(HP 0)도 결과 창("원정 종료", 메타 XP 표시)을 연다. 전에는 하트 연출 뒤·이어하기에서
+    // 이 단계를 몰라 결과 창이 뜨지 않았다(v0.17.2 수정)
+    if (phase === 'result' || phase === 'gameover') return 'result';
     if (phase === 'augment') return 'augment';
     if (phase === 'supply') return 'supply';
     return null;
@@ -465,10 +510,12 @@ export function createStore(env: StoreEnv) {
     chooseDifficulty: (difficulty: number) => publish({ difficulty }),
     /** 고른 난이도로 새 원정 시작(저장된 원정은 교체). */
     startRun() {
+      const seed = env.newSeed();
       const created = newRun({
-        seed: env.newSeed(),
+        seed,
         difficulty: state.difficulty,
         firstUid: nextUid + 1,
+        runId: `run-${clock()}-${seed >>> 0}`,
       });
       nextUid += created.units.length;
       state = { ...state, run: created };

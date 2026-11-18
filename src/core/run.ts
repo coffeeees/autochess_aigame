@@ -14,10 +14,11 @@ export interface NewRunOptions {
   seed: number; // 원정 시드(UI가 crypto로 뽑음)
   difficulty: number; // 1..10
   firstUid?: number; // 첫 시작 캐릭터의 uid(번호는 UI가 관리)
+  runId?: string; // 원정 ID(메타 XP 중복 지급 방지). 없으면 시드로 만든다
 }
 
 /** 새 원정: 7G, 레벨 3, 무작위 1코스트 2명·2코스트 1명, 고정된 첫 상점. */
-export function newRun({ seed, difficulty, firstUid = 1 }: NewRunOptions): RunState {
+export function newRun({ seed, difficulty, firstUid = 1, runId }: NewRunOptions): RunState {
   const seedHolder: Pick<RunState, 'rngState'> = { rngState: seed };
   let uid = firstUid;
   const units: RunUnit[] = V.startingRoster(P.runRng(seedHolder)).map((id: string) => ({
@@ -34,6 +35,7 @@ export function newRun({ seed, difficulty, firstUid = 1 }: NewRunOptions): RunSt
     shop: [...FIRST_SHOP],
   }) as RunState;
   state.rngState = seedHolder.rngState;
+  state.runId = runId ?? `run-${seed >>> 0}`;
   W.configureNewRun(state, difficulty);
   V.normalize(state);
   return state;

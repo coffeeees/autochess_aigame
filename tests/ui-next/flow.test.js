@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.17.1');
+  a.equal(notes.current, '0.17.2');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -305,4 +305,14 @@ test('밸런스 테스트 2차 기록: 구현 상태·기능 테스트·시뮬�
   for (const x of t.issues) a(x.repro.length > 5 && x.status, x.title);
   const md = B.toMarkdown();
   a(md.includes('## 증강별 결과') && md.includes('## 54종 판정'), '1차·2차 기록 모두 내보냄');
+});
+
+test('밸런스 테스트 메타 레벨 기록: 실행 방법을 구분하고 사례마다 예상·실제·판정을 적는다', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.meta;
+  const kinds = new Set(t.runs.map((r) => r.kind));
+  for (const k of ['단위 테스트', '자동 시뮬레이션', '브라우저 조작']) a(kinds.has(k), k);
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.notRun.some((x) => x.includes('사람이 직접')));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 메타 레벨'));
 });
