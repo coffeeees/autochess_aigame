@@ -20,7 +20,7 @@ export function Hud({ ui, actions }: GameProps) {
       <button class={styles.brand} onClick={actions.showHome} title="시작 화면">
         <i aria-hidden="true">✦</i>
         <span>
-          AUTOCHESS<small>v0.17.0</small>
+          AUTOCHESS<small>v0.17.1</small>
         </span>
       </button>
       <div class={styles.stage}>

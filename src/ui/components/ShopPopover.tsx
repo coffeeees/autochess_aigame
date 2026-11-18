@@ -73,6 +73,11 @@ function Offer({
       <span class={styles.art}>
         <CharacterImage id={id} context="shop" />
       </span>
+      {recommended.length > 0 && (
+        <span class={styles.recommend} data-badge="recommend">
+          추천
+        </span>
+      )}
       {preview > 0 && (
         <strong class={styles.preview} aria-label={`구매 시 ${preview}성 합성`}>
           {'★'.repeat(preview)}
