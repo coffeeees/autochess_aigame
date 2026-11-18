@@ -258,3 +258,58 @@
 .kindTag[data-kind='복구'] {
   color: #c49aff;
 }
+
+/* 밸런스 테스트 탭 */
+.balanceMeta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px var(--space-3);
+  font-size: var(--text-sm);
+}
+.balanceMeta dt {
+  color: var(--color-muted);
+}
+.balanceMeta dd {
+  margin: 0;
+}
+.balanceTable {
+  overflow-x: auto;
+}
+.balanceTable table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.balanceTable th,
+.balanceTable td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #ffffff14;
+  text-align: left;
+  vertical-align: top;
+}
+.balanceTable th {
+  color: var(--color-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.balanceTable small {
+  color: var(--color-muted);
+}
+.balanceTable .kindTag {
+  white-space: nowrap;
+}
+.kindTag[data-verdict='기존 지원'] {
+  color: #8dd5ac;
+}
+.kindTag[data-verdict='확장 필요'] {
+  color: #8ebbea;
+}
+.kindTag[data-verdict='신규 구현'] {
+  color: #e8c96f;
+}
+.kindTag[data-verdict='설계 충돌'] {
+  color: #ee8a9b;
+}
+.kindTag[data-verdict='미확인'] {
+  color: #9aa0ad;
+}

@@ -365,7 +365,39 @@ interface RebuildApi {
   toMarkdown(): string;
 }
 
-/** 클립보드 복사·MD 파일 저장(패치노트 두 탭이 함께 씀) */
+/** 밸런스 테스트 기록(src/content/balance-tests.js) */
+interface BalanceCandidate {
+  id: string;
+  name: string;
+  effect: string;
+  verdict: string;
+  related: string;
+  note: string;
+  status: string;
+  test: string;
+}
+interface BalanceApi {
+  augment54: {
+    title: string;
+    date: string;
+    stage: string;
+    method: string;
+    environment: string;
+    scope: string;
+    notRun: string[];
+    currentRules: string[];
+    verdicts: string[];
+    candidates: BalanceCandidate[];
+    idConflict: string;
+    currentBehavior: string[];
+    decisions: string[];
+    plan: [string, string][];
+  };
+  counts(list: BalanceCandidate[], key: keyof BalanceCandidate): Record<string, number>;
+  toMarkdown(): string;
+}
+
+/** 클립보드 복사·MD 파일 저장(패치노트 탭들이 함께 씀) */
 function exportActions(markdown: () => string, filename: string, setStatus: (s: string) => void) {
   return {
     copy: async () => {
@@ -394,22 +426,25 @@ function PatchNotes() {
     notes: PatchApi;
     auditHtml: string;
     rebuild: RebuildApi;
+    balance: BalanceApi;
   } | null>(null);
   const [status, setStatus] = useState('');
-  const [tab, setTab] = useState<'history' | 'rebuild'>('history');
+  const [tab, setTab] = useState<'history' | 'rebuild' | 'balance'>('history');
   useEffect(() => {
     let alive = true;
     Promise.all([
       import('../../content/patch-notes.js'),
       import('../../content/notice-audit.js'),
       import('../../content/rebuild-changes.js'),
+      import('../../content/balance-tests.js'),
     ]).then(
-      ([n, a, r]) =>
+      ([n, a, r, t]) =>
         alive &&
         setData({
           notes: n.default as PatchApi,
           auditHtml: a.default.toHTML(),
           rebuild: r.default as RebuildApi,
+          balance: t.default as BalanceApi,
         }),
     );
     return () => {
@@ -439,8 +474,13 @@ function PatchNotes() {
         <button role="tab" aria-selected={tab === 'rebuild'} onClick={() => pick('rebuild')}>
           재구축 변경 사항 <small>{data.rebuild.changes.length}</small>
         </button>
+        <button role="tab" aria-selected={tab === 'balance'} onClick={() => pick('balance')}>
+          밸런스 테스트
+        </button>
       </div>
-      {tab === 'rebuild' ? (
+      {tab === 'balance' ? (
+        <BalanceTests balance={data.balance} />
+      ) : tab === 'rebuild' ? (
         <RebuildChanges rebuild={data.rebuild} />
       ) : (
         <PatchHistory
@@ -705,5 +745,134 @@ function ResetConfirm({ actions }: Props) {
         </button>
       </div>
     </section>
+  );
+}
+
+/** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
+function BalanceTests({ balance }: { balance: BalanceApi }) {
+  const t = balance.augment54;
+  const [verdict, setVerdict] = useState<string | null>(null);
+  const [status, setStatus] = useState('');
+  const { copy, download } = exportActions(
+    () => balance.toMarkdown(),
+    'AUTOCHESS_BALANCE_TEST_AUGMENT54.md',
+    setStatus,
+  );
+  const counts = balance.counts(t.candidates, 'verdict');
+  const shown = t.candidates.filter((c) => !verdict || c.verdict === verdict);
+  return (
+    <>
+      <h3>{t.title}</h3>
+      <dl class={styles.balanceMeta}>
+        <dt>단계</dt>
+        <dd>
+          {t.stage} · {t.date}
+        </dd>
+        <dt>테스트 방법</dt>
+        <dd>{t.method}</dd>
+        <dt>실행 환경</dt>
+        <dd>{t.environment}</dd>
+        <dt>완료 범위</dt>
+        <dd>{t.scope}</dd>
+      </dl>
+      <div class={styles.patchActions}>
+        <button data-variant="primary" onClick={copy}>
+          기획용 전체 복사
+        </button>
+        <button onClick={download}>MD 파일 저장</button>
+        <span role="status">{status}</span>
+      </div>
+      <details open>
+        <summary>실행하지 않은 테스트 {t.notRun.length}</summary>
+        <ul>
+          {t.notRun.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <details open>
+        <summary>결정이 필요한 사항 {t.decisions.length}</summary>
+        <ol>
+          {t.decisions.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ol>
+      </details>
+      <details>
+        <summary>ID 충돌 · 현재 선택 규칙 대조 · 현재 코드 동작</summary>
+        <p>{t.idConflict}</p>
+        <ul>
+          {[...t.currentRules, ...t.currentBehavior].map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <div class={styles.kindFilter} aria-label="판정으로 걸러 보기">
+        <button aria-pressed={verdict === null} onClick={() => setVerdict(null)}>
+          전체 {t.candidates.length}
+        </button>
+        {t.verdicts
+          .filter((v) => counts[v])
+          .map((v) => (
+            <button
+              key={v}
+              aria-pressed={verdict === v}
+              onClick={() => setVerdict(verdict === v ? null : v)}
+            >
+              {v} {counts[v]}
+            </button>
+          ))}
+      </div>
+      <div class={styles.balanceTable}>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>이름 · 후보 효과</th>
+              <th>판정</th>
+              <th>구현 · 테스트</th>
+              <th>관련 현재 증강 · 메모</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((c) => (
+              <tr key={c.id}>
+                <td>{c.id}</td>
+                <td>
+                  <b>{c.name}</b>
+                  <br />
+                  {c.effect}
+                </td>
+                <td>
+                  <span class={styles.kindTag} data-verdict={c.verdict}>
+                    {c.verdict}
+                  </span>
+                </td>
+                <td>
+                  {c.status}
+                  <br />
+                  <small>{c.test}</small>
+                </td>
+                <td>
+                  <small>{c.related}</small>
+                  <br />
+                  {c.note}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <details>
+        <summary>구현 묶음과 예상 작업량(합의 후 진행)</summary>
+        <ul>
+          {t.plan.map(([what, size]) => (
+            <li key={what}>
+              <b>[{size}]</b> {what}
+            </li>
+          ))}
+        </ul>
+      </details>
+    </>
   );
 }
