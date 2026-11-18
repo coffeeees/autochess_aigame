@@ -169,3 +169,89 @@
   font-size: var(--text-xs);
   white-space: pre-wrap;
 }
+
+/* 패치노트 탭: 버전 기록 / 재구축 변경 사항 */
+.tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--panel-edge);
+}
+.tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  padding: 8px 12px;
+  color: var(--color-muted);
+}
+.tabs button[aria-selected='true'] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-gold);
+}
+.tabs small {
+  margin-left: 4px;
+  color: var(--color-gold);
+}
+.kindFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+.kindFilter button {
+  padding: 4px 10px;
+  font-size: var(--text-sm);
+}
+.kindFilter button[aria-pressed='true'] {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+.rebuildArea h3 {
+  margin: var(--space-4) 0 var(--space-2);
+}
+.rebuildList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-2);
+}
+.rebuildList li {
+  padding: var(--space-2) var(--space-3);
+  background: #ffffff08;
+  border: 1px solid #ffffff14;
+  border-radius: var(--radius-md);
+}
+.rebuildList dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px var(--space-2);
+  margin: 6px 0 0;
+  font-size: var(--text-sm);
+}
+.rebuildList dt {
+  color: var(--color-muted);
+}
+.rebuildList dd {
+  margin: 0;
+}
+.kindTag {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: var(--text-xs);
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.kindTag[data-kind='바뀜'] {
+  color: #8ebbea;
+}
+.kindTag[data-kind='빠짐'] {
+  color: #ee8a9b;
+}
+.kindTag[data-kind='추가'] {
+  color: #8dd5ac;
+}
+.kindTag[data-kind='고침'] {
+  color: #e8c96f;
+}

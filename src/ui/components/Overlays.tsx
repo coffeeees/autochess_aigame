@@ -350,16 +350,67 @@ interface PatchApi {
 }
 
 /** 패치노트: 데이터(90KB)는 창을 열 때만 불러온다. */
+/** 재구축 변경 사항(src/content/rebuild-changes.js) */
+interface RebuildChange {
+  area: string;
+  kind: string;
+  title: string;
+  before: string;
+  after: string;
+}
+interface RebuildApi {
+  base: string;
+  kinds: string[];
+  changes: RebuildChange[];
+  toMarkdown(): string;
+}
+
+/** 클립보드 복사·MD 파일 저장(패치노트 두 탭이 함께 씀) */
+function exportActions(markdown: () => string, filename: string, setStatus: (s: string) => void) {
+  return {
+    copy: async () => {
+      try {
+        await navigator.clipboard.writeText(markdown());
+        setStatus('복사 완료');
+      } catch {
+        setStatus('복사하지 못했습니다. MD 파일 저장을 이용하세요.');
+      }
+    },
+    download: () => {
+      const url = URL.createObjectURL(
+        new Blob([markdown()], { type: 'text/markdown;charset=utf-8' }),
+      );
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    },
+  };
+}
+
 function PatchNotes() {
-  const [data, setData] = useState<{ notes: PatchApi; auditHtml: string } | null>(null);
+  const [data, setData] = useState<{
+    notes: PatchApi;
+    auditHtml: string;
+    rebuild: RebuildApi;
+  } | null>(null);
   const [status, setStatus] = useState('');
+  const [tab, setTab] = useState<'history' | 'rebuild'>('history');
   useEffect(() => {
     let alive = true;
     Promise.all([
       import('../../content/patch-notes.js'),
       import('../../content/notice-audit.js'),
+      import('../../content/rebuild-changes.js'),
     ]).then(
-      ([n, a]) => alive && setData({ notes: n.default as PatchApi, auditHtml: a.default.toHTML() }),
+      ([n, a, r]) =>
+        alive &&
+        setData({
+          notes: n.default as PatchApi,
+          auditHtml: a.default.toHTML(),
+          rebuild: r.default as RebuildApi,
+        }),
     );
     return () => {
       alive = false;
@@ -368,28 +419,60 @@ function PatchNotes() {
   if (!data) return <p>패치노트를 불러오는 중…</p>;
   const { notes } = data;
   const latest = notes.history.at(-1)!;
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(notes.toMarkdown());
-      setStatus('복사 완료');
-    } catch {
-      setStatus('복사하지 못했습니다. MD 파일 저장을 이용하세요.');
-    }
-  };
-  const download = () => {
-    const url = URL.createObjectURL(
-      new Blob([notes.toMarkdown()], { type: 'text/markdown;charset=utf-8' }),
-    );
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'AUTOCHESS_PATCH_NOTES_v' + notes.current + '.md';
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const { copy, download } = exportActions(
+    () => notes.toMarkdown(),
+    'AUTOCHESS_PATCH_NOTES_v' + notes.current + '.md',
+    setStatus,
+  );
+  const pick = (next: typeof tab) => {
+    setTab(next);
+    setStatus('');
   };
   return (
     <div class={styles.patch}>
       <span class={styles.eyebrow}>AUTOCHESS · PROTOTYPE {notes.current}</span>
       <h2>패치노트</h2>
+      <div class={styles.tabs} role="tablist" aria-label="패치노트 보기">
+        <button role="tab" aria-selected={tab === 'history'} onClick={() => pick('history')}>
+          버전 기록
+        </button>
+        <button role="tab" aria-selected={tab === 'rebuild'} onClick={() => pick('rebuild')}>
+          재구축 변경 사항 <small>{data.rebuild.changes.length}</small>
+        </button>
+      </div>
+      {tab === 'rebuild' ? (
+        <RebuildChanges rebuild={data.rebuild} />
+      ) : (
+        <PatchHistory
+          notes={notes}
+          latest={latest}
+          auditHtml={data.auditHtml}
+          copy={copy}
+          download={download}
+          status={status}
+        />
+      )}
+    </div>
+  );
+}
+
+function PatchHistory({
+  notes,
+  latest,
+  auditHtml,
+  copy,
+  download,
+  status,
+}: {
+  notes: PatchApi;
+  latest: PatchEntry;
+  auditHtml: string;
+  copy: () => void;
+  download: () => void;
+  status: string;
+}) {
+  return (
+    <>
       <p>
         버전별 추가·수정 내역과 현재 규칙을 정리했습니다. 아래 내용을 복사해 ChatGPT 기획 대화에
         전달하세요.
@@ -411,7 +494,7 @@ function PatchNotes() {
       </section>
       <Decisions entry={latest} />
       {/* 알림 조사표는 고정 데이터로 만든 HTML(값은 escape됨) */}
-      <div dangerouslySetInnerHTML={{ __html: data.auditHtml }} />
+      <div dangerouslySetInnerHTML={{ __html: auditHtml }} />
       <details>
         <summary>현재 적용 규칙 · 미구현 사항</summary>
         <pre class={styles.pre}>{notes.currentRules}</pre>
@@ -435,7 +518,70 @@ function PatchNotes() {
             </details>
           ))}
       </div>
-    </div>
+    </>
+  );
+}
+
+/** 재구축 변경 사항 탭: 원본 v0.15.18과 기능·표시가 달라진 점(영역별, 종류 걸러 보기). */
+function RebuildChanges({ rebuild }: { rebuild: RebuildApi }) {
+  const [kind, setKind] = useState<string | null>(null);
+  const [status, setStatus] = useState('');
+  const { copy, download } = exportActions(
+    () => rebuild.toMarkdown(),
+    'AUTOCHESS_REBUILD_CHANGES.md',
+    setStatus,
+  );
+  const shown = rebuild.changes.filter((c) => !kind || c.kind === kind);
+  const areas = [...new Set(shown.map((c) => c.area))];
+  return (
+    <>
+      <p>
+        코드를 옮기면서(재구축) 원본 {rebuild.base}과 기능·표시가 달라진 점입니다. 소스 구조만 바뀐
+        것은 빼고, 플레이할 때 달라지는 것만 적었습니다.
+      </p>
+      <div class={styles.patchActions}>
+        <button data-variant="primary" onClick={copy}>
+          기획용 전체 복사
+        </button>
+        <button onClick={download}>MD 파일 저장</button>
+        <span role="status">{status}</span>
+      </div>
+      <div class={styles.kindFilter} aria-label="종류로 걸러 보기">
+        <button aria-pressed={kind === null} onClick={() => setKind(null)}>
+          전체 {rebuild.changes.length}
+        </button>
+        {rebuild.kinds.map((k) => (
+          <button key={k} aria-pressed={kind === k} onClick={() => setKind(kind === k ? null : k)}>
+            {k} {rebuild.changes.filter((c) => c.kind === k).length}
+          </button>
+        ))}
+      </div>
+      {areas.map((area) => (
+        <section key={area} class={styles.rebuildArea}>
+          <h3>{area}</h3>
+          <ul class={styles.rebuildList}>
+            {shown
+              .filter((c) => c.area === area)
+              .map((c) => (
+                <li key={c.title}>
+                  <b>
+                    <span class={styles.kindTag} data-kind={c.kind}>
+                      {c.kind}
+                    </span>{' '}
+                    {c.title}
+                  </b>
+                  <dl>
+                    <dt>원본</dt>
+                    <dd>{c.before}</dd>
+                    <dt>지금</dt>
+                    <dd>{c.after}</dd>
+                  </dl>
+                </li>
+              ))}
+          </ul>
+        </section>
+      ))}
+    </>
   );
 }
 

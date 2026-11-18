@@ -33,6 +33,7 @@
   `battlefield.ts`(PixiJS 그리기, 전투 중에만 동적 import). 연출은 전투 상태를 읽기만 한다. 화면 연출 신호는 저장소의 `cues`
   (`ScreenCues.tsx`가 재생 후 `doneCue`), 전투 끝 장면은 `finishing`. 연출 시간은 `presentation` 환경을 줄 때만 켜진다(테스트는 끔).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
+- 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
 - 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).
 - 글꼴: `public/assets/fonts/pretendard-subset.woff2`는 쓰인 글자만 남긴 부분 집합이다. 화면 글에 새 글자를 넣어 테스트가 실패하면
   `pip install fonttools brotli && python3 tools/subset-font.py`로 다시 만든다(원본은 `assets-src/fonts/`). 배포하지 않는 원본 에셋은 `assets-src/`.

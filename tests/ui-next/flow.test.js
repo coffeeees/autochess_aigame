@@ -237,3 +237,23 @@ test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기�
     ['T42', 'T43', 'T44'],
   );
 });
+
+test('재구축 변경 사항: 모든 항목이 종류·영역·원본·지금을 갖고, MD로 내보낼 수 있다', async () => {
+  const R = (await import('../../src/content/rebuild-changes.js')).default;
+  a.equal(R.base, 'v0.15.18');
+  a(R.changes.length >= 20);
+  const titles = new Set();
+  for (const c of R.changes) {
+    a(R.kinds.includes(c.kind), c.title);
+    for (const k of ['area', 'title', 'before', 'after'])
+      a(c[k] && c[k].length > 1, c.title + ' ' + k);
+    a(!titles.has(c.title), '제목 중복 ' + c.title);
+    titles.add(c.title);
+  }
+  // 사용자가 짚은 두 차이가 들어 있다
+  a(titles.has('캐릭터 상세 창 위치'));
+  a(titles.has('팝업 바깥을 누르면 닫기'));
+  const md = R.toMarkdown();
+  a(md.startsWith('# AUTOCHESS 재구축 변경 사항'));
+  for (const c of R.changes) a(md.includes(c.title));
+});
