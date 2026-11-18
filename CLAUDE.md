@@ -32,6 +32,9 @@
 - `src/ui/render/`: 전투 연출. `plan.ts`(이벤트 → 연출 명령, 순수), `timeline.ts`(시간축 모델, 순수), `screen.ts`(화면 연출 시간·수치, 순수),
   `battlefield.ts`(PixiJS 그리기, 전투 중에만 동적 import). 연출은 전투 상태를 읽기만 한다. 화면 연출 신호는 저장소의 `cues`
   (`ScreenCues.tsx`가 재생 후 `doneCue`), 전투 끝 장면은 `finishing`. 연출 시간은 `presentation` 환경을 줄 때만 켜진다(테스트는 끔).
+- 증강: `augments.js`의 `augments`(후보 54종, `hold`면 추첨 제외)와 `legacy`(v0.15.18의 36종, ID `LS01`~`LP12`, 예전 저장 전용).
+  효과는 ID가 아니라 `effect` 필드로 판정한다(`combat/augment-effects.js`). 원정 중 상태(지연 보상·투자·무료 새로고침·분신 지정)는 `augment-run.js`와 `state.augmentRun`(저장 버전 3).
+  밸런스 자동 시뮬레이션: `node tools/balance-sim.mjs --seeds 8 --part base|S|G|P --out x.json`(고정 규칙 봇, 브라우저 플레이와 구분해 기록).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
 - 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).

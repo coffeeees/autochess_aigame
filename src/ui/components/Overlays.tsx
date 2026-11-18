@@ -397,8 +397,36 @@ interface BalanceApi {
     decisions: string[];
     plan: [string, string][];
   };
-  counts(list: BalanceCandidate[], key: keyof BalanceCandidate): Record<string, number>;
+  /** 2차: 구현 후 기능 테스트·자동 시뮬레이션·브라우저 자동 조작 */
+  stage2: BalanceStage2;
+  counts<T>(list: T[], key: keyof T & string): Record<string, number>;
   toMarkdown(): string;
+}
+interface BalanceStage2 {
+  title: string;
+  date: string;
+  stage: string;
+  method: string;
+  environment: string;
+  scope: string;
+  applied: string[];
+  runs: { kind: string; name: string; how: string; result: string; evidence: string }[];
+  notRun: string[];
+  statuses: string[];
+  candidates: {
+    id: string;
+    name: string;
+    effect: string;
+    status: string;
+    test: string;
+    sim: string;
+    note: string;
+  }[];
+  simNote: string[];
+  browser: { summary: string[]; rounds: string[] };
+  issues: { title: string; detail: string; repro: string; status: string }[];
+  suggestions: string[];
+  decisions: string[];
 }
 
 /** 클립보드 복사·MD 파일 저장(패치노트 탭들이 함께 씀) */
@@ -754,14 +782,194 @@ function ResetConfirm({ actions }: Props) {
 
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
-  const t = balance.augment54;
-  const [verdict, setVerdict] = useState<string | null>(null);
+  const [record, setRecord] = useState<'stage2' | 'stage1'>('stage2');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
     'AUTOCHESS_BALANCE_TEST_AUGMENT54.md',
     setStatus,
   );
+  return (
+    <>
+      <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'stage2'} onClick={() => setRecord('stage2')}>
+          2차 · 구현 후 테스트
+        </button>
+        <button aria-pressed={record === 'stage1'} onClick={() => setRecord('stage1')}>
+          1차 · 구현 전 정적 검토
+        </button>
+      </div>
+      <div class={styles.patchActions}>
+        <button data-variant="primary" onClick={copy}>
+          기획용 전체 복사
+        </button>
+        <button onClick={download}>MD 파일 저장</button>
+        <span role="status">{status}</span>
+      </div>
+      {record === 'stage2' ? (
+        <BalanceStage2View t={balance.stage2} counts={balance.counts} />
+      ) : (
+        <BalanceStage1 balance={balance} />
+      )}
+    </>
+  );
+}
+
+function BalanceStage2View({ t, counts }: { t: BalanceStage2; counts: BalanceApi['counts'] }) {
+  const [only, setOnly] = useState<string | null>(null);
+  const c = counts(t.candidates, 'status');
+  const shown = t.candidates.filter((x) => !only || x.status === only);
+  return (
+    <>
+      <h3>{t.title}</h3>
+      <dl class={styles.balanceMeta}>
+        <dt>단계</dt>
+        <dd>
+          {t.stage} · {t.date}
+        </dd>
+        <dt>테스트 방법</dt>
+        <dd>{t.method}</dd>
+        <dt>실행 환경</dt>
+        <dd>{t.environment}</dd>
+        <dt>완료 범위</dt>
+        <dd>{t.scope}</dd>
+      </dl>
+      <details open>
+        <summary>실행한 테스트 {t.runs.length}</summary>
+        <ul>
+          {t.runs.map((r) => (
+            <li key={r.name}>
+              <b>[{r.kind}]</b> {r.name} — {r.how}
+              <br />
+              결과: {r.result} <small>({r.evidence})</small>
+            </li>
+          ))}
+        </ul>
+      </details>
+      <details open>
+        <summary>실행하지 않았거나 확인하지 못한 항목 {t.notRun.length}</summary>
+        <ul>
+          {t.notRun.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <details open>
+        <summary>발견한 문제 {t.issues.length}</summary>
+        <ul>
+          {t.issues.map((x) => (
+            <li key={x.title}>
+              <b>{x.title}</b> [{x.status}] — {x.detail}
+              <br />
+              <small>재현: {x.repro}</small>
+            </li>
+          ))}
+        </ul>
+      </details>
+      <details>
+        <summary>자동 시뮬레이션 기준과 읽는 법</summary>
+        <ul>
+          {t.simNote.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <details>
+        <summary>브라우저 자동 조작 플레이(사람 플레이 아님)</summary>
+        <ul>
+          {t.browser.summary.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+        <ol>
+          {t.browser.rounds.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ol>
+      </details>
+      <details open>
+        <summary>밸런스 조정 제안(적용하지 않음) {t.suggestions.length}</summary>
+        <ul>
+          {t.suggestions.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <details open>
+        <summary>남은 결정 사항 {t.decisions.length}</summary>
+        <ol>
+          {t.decisions.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ol>
+      </details>
+      <details>
+        <summary>적용한 기본안 {t.applied.length}</summary>
+        <ul>
+          {t.applied.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+      <div class={styles.kindFilter} aria-label="구현 상태로 걸러 보기">
+        <button aria-pressed={only === null} onClick={() => setOnly(null)}>
+          전체 {t.candidates.length}
+        </button>
+        {t.statuses
+          .filter((v) => c[v])
+          .map((v) => (
+            <button
+              key={v}
+              aria-pressed={only === v}
+              onClick={() => setOnly(only === v ? null : v)}
+            >
+              {v} {c[v]}
+            </button>
+          ))}
+      </div>
+      <div class={styles.balanceTable}>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>이름 · 효과(임시값)</th>
+              <th>구현 · 기능 테스트</th>
+              <th>자동 시뮬레이션(1-3 / 3-3 / 5-3)</th>
+              <th>메모</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((x) => (
+              <tr key={x.id}>
+                <td>{x.id}</td>
+                <td>
+                  <b>{x.name}</b>
+                  <br />
+                  {x.effect}
+                </td>
+                <td>
+                  <span class={styles.kindTag} data-verdict={x.status}>
+                    {x.status}
+                  </span>
+                  <br />
+                  <small>{x.test}</small>
+                </td>
+                <td>
+                  <small>{x.sim}</small>
+                </td>
+                <td>{x.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function BalanceStage1({ balance }: { balance: BalanceApi }) {
+  const t = balance.augment54;
+  const [verdict, setVerdict] = useState<string | null>(null);
   const counts = balance.counts(t.candidates, 'verdict');
   const shown = t.candidates.filter((c) => !verdict || c.verdict === verdict);
   return (
@@ -779,13 +987,6 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <dt>완료 범위</dt>
         <dd>{t.scope}</dd>
       </dl>
-      <div class={styles.patchActions}>
-        <button data-variant="primary" onClick={copy}>
-          기획용 전체 복사
-        </button>
-        <button onClick={download}>MD 파일 저장</button>
-        <span role="status">{status}</span>
-      </div>
       <details open>
         <summary>실행하지 않은 테스트 {t.notRun.length}</summary>
         <ul>
