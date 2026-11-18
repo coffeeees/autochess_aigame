@@ -50,7 +50,7 @@
 .bond {
   width: 100%;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--space-2);
   padding: 6px 8px;
@@ -68,20 +68,25 @@
 .bond[data-active='true'] .icon {
   color: #e8c96f;
 }
+.bond[data-active='true'] .count {
+  color: #f1dc9c;
+  font-weight: 700;
+}
 .count {
   font-size: var(--text-sm);
   color: var(--color-muted);
 }
-.tiers {
-  font-size: var(--text-xs);
-  color: #e8c96f;
+/* 상세 창 층: body에 포털로 붙고, 화면 기준 고정 위치(BondPeek가 left/top을 정함) */
+.peekLayer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 25;
 }
 .peek {
-  position: absolute;
-  top: 0;
-  left: calc(100% + var(--space-2));
-  z-index: 8;
   width: 280px;
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
   padding: var(--space-3);
   background: #101422f5;
   border: 1px solid var(--panel-edge);

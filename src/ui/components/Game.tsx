@@ -36,6 +36,7 @@ export function Game({ ui, actions }: GameProps) {
       <main class={styles.stage}>
         <Board ui={ui} actions={actions} />
         <AugmentRack ui={ui} actions={actions} />
+        <LiveDamage ui={ui} actions={actions} />
         <SpeedButton ui={ui} actions={actions} />
         {ui.shopOpen && <ShopPopover ui={ui} actions={actions} />}
         <NoticeToast notice={ui.notice} />
@@ -43,7 +44,6 @@ export function Game({ ui, actions }: GameProps) {
       <aside class={styles.right}>
         <InventoryPanel ui={ui} actions={actions} />
         <ItemDetail ui={ui} actions={actions} />
-        <LiveDamage ui={ui} actions={actions} />
       </aside>
       <ReserveBar ui={ui} actions={actions} />
       <DragLayer ui={ui} actions={actions} kind={ui.drag?.kind} />
