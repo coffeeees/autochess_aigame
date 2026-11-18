@@ -80,18 +80,10 @@ test('all40 IDs, exact names/text/stats from Markdown and tier10/15/15', () => {
       a.equal(def.stats[m[1] === 'AS' ? 'ASPercent' : m[1]], Number(m[2]));
   }
 });
-test('legacy equipment IDs/numbers preserved, excluded from new drop pool', () => {
-  for (const id of ['sword', 'armor', 'crystal']) {
-    a.equal(I.byId(id).amount, 10);
-    a(!P.items.some((i) => i.id === id));
-    const s = state(),
-      item = P.addItem(s, id);
-    a(P.equip(s, item.uid, 1));
-    a.equal(
-      P.previewStats(s, s.units[0])[I.byId(id).stat],
-      D.byId('C03').stats[I.byId(id).stat] + 10,
-    );
-  }
+test('이전 장비(sword·armor·crystal)는 v0.17.0에서 지웠다', () => {
+  a.equal(I.legacy, undefined);
+  for (const id of ['sword', 'armor', 'crystal']) a.equal(I.byId(id), undefined, id);
+  a.equal(I.items.length, 40);
 });
 test('all tiers allow identical equipment and preserve3slots', () => {
   for (const id of ['I01', 'I11', 'I26']) {

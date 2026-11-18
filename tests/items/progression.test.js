@@ -42,16 +42,17 @@ function combat(s, winner = 'ally', rng = () => 0.8) {
   return P.settleRound(s, { winner, time: 10, survivingEnemies: winner === 'ally' ? 0 : 2 }, rng);
 }
 test('items equip, slot limit, free unequip, and actual AD/AP/GD stats', () => {
-  for (const [id, stat] of [
-    ['sword', 'AD'],
-    ['armor', 'GD'],
-    ['crystal', 'AP'],
+  // v0.17.0: 이전 장비 대신 같은 성격의 1티어 장비
+  for (const [id, stat, plus] of [
+    ['I01', 'AD', 12],
+    ['I02', 'GD', 12],
+    ['I03', 'AP', 15],
   ]) {
     const s = state(),
       item = P.addItem(s, id),
       base = D.byId('C03').stats[stat];
     assert(P.equip(s, item.uid, 1));
-    assert.equal(P.previewStats(s, s.units[0])[stat], base + 10);
+    assert.equal(P.previewStats(s, s.units[0])[stat], base + plus);
     const other = P.addItem(s, 'I26');
     assert(P.equip(s, other.uid, 2));
     const b = new Battle(
@@ -59,7 +60,7 @@ test('items equip, slot limit, free unequip, and actual AD/AP/GD stats', () => {
       [{ id: 'C10', pos: 17 }],
       { allyModifiers: P.allyModifiers(s) },
     );
-    assert.equal(b.units[0].stats[stat], base + 10);
+    assert.equal(b.units[0].stats[stat], base + plus);
     assert(P.unequip(s, item.uid));
     assert.equal(s.gold, 12);
     assert.equal(P.previewStats(s, s.units[0])[stat], base);
@@ -67,7 +68,7 @@ test('items equip, slot limit, free unequip, and actual AD/AP/GD stats', () => {
 });
 test('sell/merge release items; unknown or mid-combat equip is rejected', () => {
   const s = state(),
-    i = P.addItem(s, 'armor');
+    i = P.addItem(s, 'I02');
   assert(!P.equip(s, i.uid, 999));
   assert(P.equip(s, i.uid, 1));
   P.releaseEquipment(s, [1]);

@@ -86,23 +86,26 @@ test('repeated supply, reload, or result confirmation cannot duplicate rewards/X
   assert(!P.advanceRound(s));
   assert.equal(P.label(s), '1-2');
 });
-test('training AD+10%, mana+20 cap, no base roster mutation or enemy changes', () => {
+test('미리보기와 전투 능력치가 같고, 명단·적은 바뀌지 않는다(지운 증강 training·mana는 효과 없음)', () => {
   const before = clone(D.roster),
     s = state();
   s.augments = ['training', 'mana'];
-  const item = P.addItem(s, 'sword');
+  const item = P.addItem(s, 'I01');
   P.equip(s, item.uid, 1);
+  const mods = P.allyModifiers(s);
+  assert.deepEqual(mods.augmentIds, [], '지운 증강 ID는 전투에 넘기지 않음');
+  assert.equal(mods.adMultiplier, undefined);
+  assert.equal(mods.startManaFlat, undefined);
   const b = new Battle(
     s.units.map((u) => ({ ...u, bonuses: P.unitBonuses(s, u.uid) })),
     [{ id: 'C10', pos: 17 }],
-    { allyModifiers: P.allyModifiers(s) },
+    { allyModifiers: mods },
   );
-  near(b.units[0].stats.AD, (55 + 10) * 1.1);
-  assert.equal(b.units[0].mp, 20);
-  assert.equal(b.units.at(-1).mp, 0);
+  near(b.units[0].stats.AD, D.byId('C03').stats.AD + 12);
+  assert.equal(b.units[0].mp, 0);
   const quick = new Battle(s.units, [{ id: 'C10', pos: 17 }], {
     quickMana: true,
-    allyModifiers: P.allyModifiers(s),
+    allyModifiers: mods,
   });
   assert.equal(quick.units[0].mp, 100);
   assert.deepEqual(D.roster, before);

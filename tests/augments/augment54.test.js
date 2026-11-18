@@ -713,6 +713,13 @@ test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까�
       ),
     /2명까지/,
   );
+  // 배치 수선도 같은 한도: G13이면 2명은 그대로, 3명째만 대기석으로
+  const r = run({ augments: ['G13'] });
+  r.units = [1, 2, 3].map((uid) => ({ uid, id: 'C03', location: 'board', pos: 36 + uid, star: 1 }));
+  a.equal(V.repairDeployment(r), 1);
+  a.equal(r.units.filter((u) => u.location === 'board').length, 2);
+  r.augments = [];
+  a.equal(V.repairDeployment(r), 1, 'G13이 없으면 1명만');
   // 조합은 서로 다른 캐릭터만 센다(같은 캐릭터 2명이어도 1명분)
   const b = fight(
     ['G13'],

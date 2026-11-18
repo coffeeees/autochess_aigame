@@ -515,48 +515,7 @@ const items = [
     icon: '⚔',
   },
 ];
-const legacy = [
-  {
-    id: 'sword',
-    name: '강철 검',
-    tier: 1,
-    stats: { AD: 10 },
-    statsText: 'AD +10',
-    effect: '',
-    iconKey: 'sword',
-    icon: '⚔',
-    legacy: true,
-    stat: 'AD',
-    amount: 10,
-  },
-  {
-    id: 'armor',
-    name: '수호 갑옷',
-    tier: 1,
-    stats: { GD: 10 },
-    statsText: 'GD +10',
-    effect: '',
-    iconKey: 'armor',
-    icon: '◈',
-    legacy: true,
-    stat: 'GD',
-    amount: 10,
-  },
-  {
-    id: 'crystal',
-    name: '마력 수정',
-    tier: 1,
-    stats: { AP: 10 },
-    statsText: 'AP +10',
-    effect: '',
-    iconKey: 'crystal',
-    icon: '◆',
-    legacy: true,
-    stat: 'AP',
-    amount: 10,
-  },
-];
-const byId = (id) => items.find((i) => i.id === id) || legacy.find((i) => i.id === id);
+const byId = (id) => items.find((i) => i.id === id);
 const tierColors = { 1: '#9699a2', 2: '#578ce5', 3: '#e6c449' };
 const tierOdds = {
   1: [100, 0, 0],
@@ -599,12 +558,11 @@ function bonuses(equipment) {
   if (as) out.ASMultiplier = 1 + as / 100;
   return out;
 }
-function applyStats(base, bonus = {}, mult = 1, adMultiplier = 1) {
+function applyStats(base, bonus = {}, mult = 1) {
   const s = { ...base };
   for (const key of ['HP', 'AD', 'AP']) s[key] *= mult;
   for (const key of Object.keys(base)) s[key] += bonus[key] || 0;
   s.AS *= bonus.ASMultiplier || 1;
-  s.AD *= adMultiplier;
   return s;
 }
 function canStack(id, equipped) {
@@ -613,7 +571,6 @@ function canStack(id, equipped) {
 }
 const api = {
   items,
-  legacy,
   byId,
   tierColors,
   tierOdds,
