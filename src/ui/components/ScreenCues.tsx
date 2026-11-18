@@ -207,7 +207,9 @@ function MergeFlight({ cue, done }: { cue: Extract<Cue, { kind: 'merge' }>; done
   if (!rects) return null;
   const t = rects.target;
   return (
-    <div ref={host} aria-hidden="true">
+    // 감싸는 div는 화면 격자(.screen)의 직속 자식이다. 상자를 만들면 격자에 빈 행과 간격이 하나 더 생겨
+    // 합성 연출 동안 전장이 줄고 대기석이 올라갔다(v0.17.1 수정). 그래서 display: contents로 상자를 없앤다.
+    <div ref={host} class={styles.mergeLayer} aria-hidden="true">
       {cue.parts.map((p, i) => {
         const r = rects.parts[i];
         return (

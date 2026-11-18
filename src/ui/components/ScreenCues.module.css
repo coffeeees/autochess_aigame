@@ -214,6 +214,10 @@
 }
 
 /* 합성: 재료가 날아가는 복제본과 섬광 */
+.mergeLayer {
+  /* 레이아웃에 참여하지 않는 묶음(자식 .flight·.flare는 화면 기준 fixed) */
+  display: contents;
+}
 .flight {
   position: fixed;
   z-index: 35;
