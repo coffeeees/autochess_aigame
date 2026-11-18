@@ -10,11 +10,14 @@ export const boardArt = {
   rows: [94, 186.5, 277, 366, 453, 542, 628, 719.5, 813],
 } as const;
 
-/** 잰 선 위치를 따르는 CSS 그리드 트랙 목록, 예: "160fr 156.5fr ...". */
+/**
+ * 잰 선 위치를 따르는 CSS 그리드 트랙 목록, 예: "minmax(0, 160fr) minmax(0, 156.5fr) ...".
+ * 최솟값을 0으로 두어 칸 안의 캐릭터 말 크기 때문에 줄이 늘어나 그림의 선과 어긋나지 않게 한다.
+ */
 export const tracks = (lines: readonly number[]) =>
   lines
     .slice(1)
-    .map((v, i) => `${v - lines[i]}fr`)
+    .map((v, i) => `minmax(0, ${v - lines[i]}fr)`)
     .join(' ');
 
 /** 그림 기준 %로 나타낸 실제 칸 영역(절대 위치 지정용). */

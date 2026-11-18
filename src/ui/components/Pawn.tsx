@@ -44,6 +44,7 @@ export function Pawn({
     <Tag
       class={styles.pawn}
       data-unit-uid={uid}
+      data-context={context}
       data-enemy={enemy}
       data-selected={selected}
       style={{ '--cost-color': costColor(cost) }}
