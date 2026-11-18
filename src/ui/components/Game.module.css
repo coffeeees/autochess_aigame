@@ -1,7 +1,8 @@
 .screen {
-  /* 화면 높이에 맞춘다: 전장이 남는 공간에 맞게 줄어들고 대기석 바가 잘리지 않는다 */
-  height: 100vh;
-  height: 100dvh;
+  /* 창에서 실제로 보이는 영역에 고정한다(스크롤바·브라우저 막대·화면 배율과 무관).
+     페이지가 창보다 길어지지 않아 스크롤이 생기지 않고, 전장이 남는 공간에 맞게 줄어든다 */
+  position: fixed;
+  inset: 0;
   overflow: hidden;
   display: grid;
   grid-template-columns: var(--side-width) 1fr var(--side-width);

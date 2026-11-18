@@ -80,6 +80,19 @@
   --item-slot: 56px;
   --bench-slots: 10;
 }
+/* 높이가 낮은 창(노트북, 화면 배율 125% 이상): 위 HUD와 아래 대기석 바를 줄여 전장 자리를 남긴다 */
+@media (max-height: 820px) {
+  :root {
+    --hud-h: 60px;
+    --reserve-h: 112px;
+  }
+}
+@media (max-height: 680px) {
+  :root {
+    --hud-h: 60px;
+    --reserve-h: 100px;
+  }
+}
 
 *,
 *::before,

@@ -1,8 +1,10 @@
 .hud {
   grid-area: hud;
   position: relative;
+  min-height: 0;
   display: grid;
   grid-template-columns: auto 1fr auto auto;
+  grid-template-rows: minmax(0, 1fr);
   gap: var(--space-3);
   align-items: stretch;
 }
