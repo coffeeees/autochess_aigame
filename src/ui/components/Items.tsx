@@ -17,6 +17,7 @@ export function ItemSlot({ item, ui, actions }: GameProps & { item: RunItem }) {
       class={styles.slot}
       data-tier={def.tier}
       data-selected={ui.selectedItem === item.uid}
+      data-popup-trigger="item"
       aria-label={`${def.name} · ${def.tier}티어 · ${def.statsText}`}
       title={`${def.name} · ${def.statsText}`}
       onClick={() => actions.selectItem(item.uid)}
@@ -28,6 +29,38 @@ export function ItemSlot({ item, ui, actions }: GameProps & { item: RunItem }) {
   );
 }
 
+/** 휴지통·되돌리기 아이콘(v0.15.18 #itemTrash / #undoDiscardBtn의 SVG) */
+const TrashIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7M14 10v7" />
+  </svg>
+);
+const UndoIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M8 5 3 10l5 5M3 10h11a6 6 0 0 1 0 12" transform="translate(0 -2)" />
+  </svg>
+);
+
+/**
+ * 아이템 보관함(요청서 4): 접기·펼치기(미끄러지듯), 특수 아이템 예약 2칸(기능 없음),
+ * 일반 칸 2열 × 6행(12칸, 넘치면 스크롤), 휴지통·되돌리기.
+ */
 export function InventoryPanel(props: GameProps) {
   const { ui, actions } = props;
   const run = ui.run!;
@@ -35,41 +68,63 @@ export function InventoryPanel(props: GameProps) {
   const slots = Math.max(12, Math.ceil(loose.length / 2) * 2);
   const editable = V.editable(run);
   const over = ui.drag?.active && ui.drag.kind === 'item' ? ui.drag.over : null;
+  const open = ui.inventoryOpen;
   return (
-    <section class={styles.panel}>
+    <section class={styles.panel} data-open={open}>
       <header class={styles.head}>
-        <h2>아이템</h2>
-        <small>
-          {loose.length}개 보관 · 총 {run.inventory.length}개
-        </small>
-      </header>
-      <div class={styles.grid} data-item-drop="inventory" data-over={over === 'inventory'}>
-        {Array.from({ length: slots }, (_, i) =>
-          loose[i] ? (
-            <ItemSlot key={loose[i].uid} item={loose[i]} {...props} />
-          ) : (
-            <div key={'empty' + i} class={styles.empty} aria-label="빈 보관함 칸" />
-          ),
-        )}
-      </div>
-      <p class={styles.hint}>아이템 클릭 → 능력치 · 아군에게 드래그 → 장착</p>
-      <div class={styles.tools}>
-        <div
-          class={styles.trash}
-          data-item-drop="trash"
-          data-over={over === 'trash'}
-          aria-label="버리기: 아이템을 여기로 끌어 놓기"
-          aria-disabled={!editable}
-        >
-          🗑
+        <div>
+          <h2>아이템</h2>
+          <small>
+            {loose.length}개 보관 · 총 {run.inventory.length}개
+          </small>
         </div>
         <button
-          aria-label="버린 아이템 되돌리기"
-          disabled={!(run as any).discardedItem || !editable}
-          onClick={actions.undoDiscard}
+          class={styles.toggle}
+          aria-expanded={open}
+          aria-label={`아이템 패널 ${open ? '접기' : '펼치기'}`}
+          onClick={actions.toggleInventory}
         >
-          ↶
+          {open ? '⌃' : '⌄'}
         </button>
+      </header>
+      <div class={styles.body} aria-hidden={!open} inert={!open}>
+        <div class={styles.bodyInner}>
+          <div class={styles.special} aria-label="특수 아이템 예약 칸">
+            <div class={styles.specialSlot} aria-disabled="true" title="특수 아이템 칸(준비 중)" />
+            <div class={styles.specialSlot} aria-disabled="true" title="특수 아이템 칸(준비 중)" />
+          </div>
+          <div class={styles.grid} data-item-drop="inventory" data-over={over === 'inventory'}>
+            {Array.from({ length: slots }, (_, i) =>
+              loose[i] ? (
+                <ItemSlot key={loose[i].uid} item={loose[i]} {...props} />
+              ) : (
+                <div key={'empty' + i} class={styles.empty} aria-label="빈 보관함 칸" />
+              ),
+            )}
+          </div>
+          <p class={styles.hint}>아이템 클릭 → 능력치 · 아군에게 드래그 → 장착</p>
+          <div class={styles.tools}>
+            <div
+              class={styles.trash}
+              data-item-drop="trash"
+              data-over={over === 'trash'}
+              aria-label="버리기: 아이템을 여기로 끌어 놓기"
+              title="아이템 버리기 · 여기로 끌어 놓기"
+              aria-disabled={!editable}
+            >
+              <TrashIcon />
+            </div>
+            <button
+              class={styles.undo}
+              aria-label="버린 아이템 되돌리기"
+              title="마지막으로 버린 아이템 되돌리기"
+              disabled={!(run as any).discardedItem || !editable}
+              onClick={actions.undoDiscard}
+            >
+              <UndoIcon />
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -82,7 +137,7 @@ export function ItemDetail({ ui, actions }: GameProps) {
   const def = itemDef(item.id);
   const owner = run.units.find((u) => u.uid === item.equippedTo);
   return (
-    <aside class={styles.detail} role="dialog" aria-label={`${def.name} 상세`}>
+    <aside class={styles.detail} role="dialog" aria-label={`${def.name} 상세`} data-popup="item">
       <div class={styles.identity}>
         <span class={styles.bigIcon} dangerouslySetInnerHTML={{ __html: itemIconSvg(item.id) }} />
         <div>

@@ -74,6 +74,14 @@ export interface UiState {
   overlay: Overlay | null;
   /** HUD 메뉴의 작은 창 */
   popover: 'settings' | 'more' | null;
+  /** 유대·선택 증강 상세(마우스를 올리면 미리보기, 누르면 고정) */
+  peek: { kind: 'bond' | 'augment'; id: string; pinned: boolean } | null;
+  /** 전투 중 상세 창을 연 전투 유닛 uid(전투는 멈추지 않음) */
+  inspected: number | null;
+  /** 캐릭터 상세 창을 띄울 기준 위치(누른 곳의 화면 좌표) */
+  anchor: { x: number; y: number } | null;
+  /** 아이템 보관함 펼침 */
+  inventoryOpen: boolean;
   /** 설정의 임시 규칙(v0.15.18 설정 창 체크박스) */
   quickMana: boolean;
   experimental: boolean;
@@ -110,6 +118,17 @@ export type Cue =
       parts: { id: string; star: number; drop: string }[];
     };
 type CueInput = Cue extends infer C ? (C extends Cue ? Omit<C, 'key'> : never) : never;
+
+/** 바깥 클릭·Esc로 닫을 수 있는 팝업(DOM의 data-popup 값과 같다) */
+export type PopupName =
+  | 'overlay'
+  | 'settings'
+  | 'more'
+  | 'shop'
+  | 'peek'
+  | 'item'
+  | 'inspect'
+  | 'unit';
 
 /** 화면 가운데 창 */
 export type Modal = 'supply' | 'augment' | 'result' | 'deploy' | 'summary' | null;
@@ -149,6 +168,10 @@ export function createStore(env: StoreEnv) {
     speed: 1,
     overlay: null,
     popover: null,
+    peek: null,
+    inspected: null,
+    anchor: null,
+    inventoryOpen: true,
     quickMana: false,
     experimental: true,
     cues: [],
@@ -296,6 +319,7 @@ export function createStore(env: StoreEnv) {
       lastBattle: null,
       selected: null,
       selectedItem: null,
+      inspected: null,
       shopOpen: false,
       modal: null,
     });
@@ -326,9 +350,16 @@ export function createStore(env: StoreEnv) {
     });
     (r as RunState & { lastDamageRows?: unknown }).lastDamageRows = receipt.damageRows;
     env.combat?.warm();
-    if (!env.presentation) changed({ battle: null, lastBattle: battle, modal: 'result' });
+    if (!env.presentation)
+      changed({ battle: null, lastBattle: battle, modal: 'result', inspected: null });
     else {
-      changed({ battle: null, lastBattle: battle, finishing: battle, modal: null });
+      changed({
+        battle: null,
+        lastBattle: battle,
+        finishing: battle,
+        modal: null,
+        inspected: null,
+      });
       const reduced = env.presentation.reduced();
       clearTimer(finishTimer);
       finishTimer = setTimer(
@@ -407,7 +438,15 @@ export function createStore(env: StoreEnv) {
     showHome() {
       // 전투 중이면 멈춰 두고, 이어하기로 돌아오면 다시 진행한다
       if (state.battle) env.combat?.pause();
-      publish({ view: 'home', shopOpen: false, selected: null, modal: null });
+      publish({
+        view: 'home',
+        shopOpen: false,
+        selected: null,
+        modal: null,
+        inspected: null,
+        peek: null,
+        popover: null,
+      });
     },
     chooseDifficulty: (difficulty: number) => publish({ difficulty }),
     /** 고른 난이도로 새 원정 시작(저장된 원정은 교체). */
@@ -420,7 +459,14 @@ export function createStore(env: StoreEnv) {
       nextUid += created.units.length;
       state = { ...state, run: created };
       prepareFormation();
-      changed({ view: 'game', selected: null, shopOpen: false });
+      changed({
+        view: 'game',
+        selected: null,
+        shopOpen: false,
+        peek: null,
+        inspected: null,
+        selectedItem: null,
+      });
     },
     continueRun() {
       if (!state.run) return;
@@ -430,9 +476,56 @@ export function createStore(env: StoreEnv) {
       if (state.battle) env.combat?.resume();
       if (pending) notify(pending.id, pending.text);
     },
-    select(uid: number | null) {
+    /** 준비 단계 캐릭터 선택. x, y는 누른 곳(상세 창을 그 옆에 띄움) */
+    select(uid: number | null, x?: number, y?: number) {
       if (!editable() || clock() < clickGuardUntil) return;
-      publish({ selected: state.selected === uid ? null : uid });
+      const next = state.selected === uid ? null : uid;
+      publish({ selected: next, anchor: next !== null && x !== undefined ? { x, y: y! } : null });
+    },
+    /** 전투 중 유닛 상세(아군·적군). 같은 유닛을 다시 누르면 닫는다. 전투는 계속 진행된다 */
+    inspect(uid: number | null, x?: number, y?: number) {
+      if (!state.battle) return publish({ inspected: null });
+      const next = state.inspected === uid ? null : uid;
+      publish({ inspected: next, anchor: next !== null && x !== undefined ? { x, y: y! } : null });
+    },
+    /** 유대·증강 상세: 마우스를 올리면 미리보기(pinned=false), 누르면 고정. 고정된 것이 있으면 미리보기는 무시 */
+    setPeek(kind: 'bond' | 'augment', id: string, pinned: boolean) {
+      const cur = state.peek;
+      if (!pinned && cur?.pinned) return;
+      if (pinned && cur?.pinned && cur.kind === kind && cur.id === id)
+        return publish({ peek: null });
+      publish({ peek: { kind, id, pinned } });
+    },
+    /** 미리보기만 닫는다(고정된 상세는 그대로) */
+    endPreview() {
+      if (state.peek && !state.peek.pinned) publish({ peek: null });
+    },
+    clearPeek: () => publish({ peek: null }),
+    toggleInventory: () => publish({ inventoryOpen: !state.inventoryOpen }),
+    /** 맨 위에 열린 닫을 수 있는 팝업 이름(보급·증강·결과 같은 확인 창은 바깥 클릭·Esc로 닫지 않음) */
+    topPopup(): PopupName | null {
+      if (state.overlay) return 'overlay';
+      if (state.modal) return null;
+      if (state.popover) return state.popover;
+      if (state.shopOpen) return 'shop';
+      if (state.peek) return 'peek';
+      if (state.selectedItem) return 'item';
+      if (state.inspected !== null) return 'inspect';
+      if (state.selected !== null) return 'unit';
+      return null;
+    },
+    /** 맨 위 팝업 하나만 닫는다(바깥 클릭·Esc). 닫았으면 true */
+    dismissTop(): boolean {
+      const top = actions.topPopup();
+      if (!top) return false;
+      if (top === 'overlay') publish({ overlay: null });
+      else if (top === 'settings' || top === 'more') publish({ popover: null });
+      else if (top === 'shop') publish({ shopOpen: false });
+      else if (top === 'peek') publish({ peek: null });
+      else if (top === 'item') publish({ selectedItem: null });
+      else if (top === 'inspect') publish({ inspected: null });
+      else publish({ selected: null });
+      return true;
     },
     setShopOpen: (open: boolean) => publish({ shopOpen: open }),
     /** 누르기: DRAG_THRESHOLD px 움직이면 드래그가 된다. */

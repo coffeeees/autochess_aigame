@@ -17,14 +17,23 @@ export function Shell({
   children,
   onClose,
   label,
+  popup,
 }: {
   children: ComponentChildren;
   onClose?: () => void;
   label: string;
+  /** 바깥 클릭·Esc로 닫는 창이면 팝업 이름(usePopupDismiss) */
+  popup?: string;
 }) {
   return (
     <div class={styles.backdrop}>
-      <section class={styles.dialog} role="dialog" aria-modal="true" aria-label={label}>
+      <section
+        class={styles.dialog}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        data-popup={popup}
+      >
         {onClose && (
           <button class={styles.close} aria-label="닫기" onClick={onClose}>
             ×

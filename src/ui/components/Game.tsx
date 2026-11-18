@@ -12,6 +12,7 @@ import { InventoryPanel, ItemDetail } from './Items.tsx';
 import { UnitDetail } from './UnitDetail.tsx';
 import { Modals } from './Modals.tsx';
 import { ScreenCues } from './ScreenCues.tsx';
+import { AugmentRack } from './AugmentRack.tsx';
 import { HealthCounter } from './VitalEffects.tsx';
 import { SpeedButton, LiveDamage } from './CombatControls.tsx';
 import W from '../../core/encounters.js';
@@ -34,7 +35,7 @@ export function Game({ ui, actions }: GameProps) {
       </aside>
       <main class={styles.stage}>
         <Board ui={ui} actions={actions} />
-        <UnitDetail ui={ui} actions={actions} />
+        <AugmentRack ui={ui} actions={actions} />
         <SpeedButton ui={ui} actions={actions} />
         {ui.shopOpen && <ShopPopover ui={ui} actions={actions} />}
         <NoticeToast notice={ui.notice} />
@@ -46,6 +47,7 @@ export function Game({ ui, actions }: GameProps) {
       </aside>
       <ReserveBar ui={ui} actions={actions} />
       <DragLayer ui={ui} actions={actions} kind={ui.drag?.kind} />
+      <UnitDetail ui={ui} actions={actions} />
       <Modals ui={ui} actions={actions} />
       <ScreenCues ui={ui} actions={actions} />
     </div>

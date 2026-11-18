@@ -552,6 +552,27 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
         app.render();
       } else app.ticker.start();
     },
+    /** 화면 좌표(clientX/Y) 아래의 살아 있는 전투 유닛 uid(전투 중 상세 창용). 없으면 null */
+    unitAt(clientX: number, clientY: number): number | null {
+      const r = host.getBoundingClientRect();
+      const x = clientX - r.left;
+      const y = clientY - r.top;
+      let best: number | null = null;
+      let bestDist = Infinity;
+      for (const [uid, v] of views) {
+        if (!v.root.visible || v.unit.dead || v.unit.hp <= 0) continue;
+        const c = cell(v.unit.pos);
+        if (!c) continue;
+        const half = (Math.min(c.w, c.h) * 0.86) / 2 + 4;
+        const dx = Math.abs(x - v.root.x);
+        const dy = Math.abs(y - v.root.y);
+        if (dx <= half && dy <= half + 10 && dx + dy < bestDist) {
+          best = uid;
+          bestDist = dx + dy;
+        }
+      }
+      return best;
+    },
     destroy() {
       observer.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
