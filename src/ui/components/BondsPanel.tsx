@@ -1,6 +1,10 @@
 // 왼쪽 유대(조합) 패널: 전장 배치 기준 유대 목록(발동 중인 것 먼저), 추천 표시,
 // 누르면 상세(단계별 효과, 소속 동료, 추천 켜기/끄기).
-import { useState } from 'preact/hooks';
+// 상세 창은 문서 최상위(body)에 포털로 그린다. 왼쪽 칸은 세로 스크롤 영역이라(overflow) 그 안에 두면
+// 잘리고 가로 스크롤바가 생기기 때문(v0.16.0 지시서 2).
+import { useLayoutEffect, useRef, useState } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
+import type { ComponentChildren } from 'preact';
 import D from '../../core/data/units.js';
 import { roster, shownBonds, type BondView } from '../data.ts';
 import type { GameProps } from './Game.tsx';
@@ -54,6 +58,7 @@ export function BondsPanel({ ui, actions }: GameProps) {
                 class={styles.bond}
                 data-active={b.tier > 0}
                 aria-expanded={peek === b.id}
+                data-bond-row={b.id}
                 data-popup-trigger="peek"
                 onClick={() => actions.setPeek('bond', b.id, true)}
               >
@@ -62,53 +67,75 @@ export function BondsPanel({ ui, actions }: GameProps) {
                 <span class={styles.count}>
                   {b.count} / {b.thresholds.find((t) => t > b.count) ?? b.thresholds.at(-1)}
                 </span>
-                <span class={styles.tiers} aria-hidden="true">
-                  {b.thresholds.map((t) => (b.count >= t ? '★' : '☆')).join('')}
-                </span>
               </button>
             </li>
           ))}
         </ul>
       )}
-      {detail && (
-        <aside
-          class={styles.peek}
-          role="dialog"
-          aria-label={`유대 ${detail.name} 상세`}
-          data-popup="peek"
-        >
-          <div class={styles.peekHead}>
-            <h3>유대 {detail.name}</h3>
-            <button aria-label="조합 상세 닫기" onClick={actions.clearPeek}>
-              ×
-            </button>
-          </div>
-          <p>{detail.concept}</p>
-          <button
-            aria-pressed={recommended.includes(detail.id)}
-            onClick={() => actions.toggleRecommendation(detail.id)}
-          >
-            {recommended.includes(detail.id) ? '★ 추천 해제' : '☆ 이 조합 추천'} ·{' '}
-            {recommended.length} / 3
-          </button>
-          <ol class={styles.effects}>
-            {detail.thresholds.map((t, i) => (
-              <li key={t} data-achieved={detail.count >= t}>
-                <b>{t}명</b> {detail.effects[i]}
-              </li>
-            ))}
-          </ol>
-          <p class={styles.members}>
-            {roster()
-              .filter((u) => u.bonds.includes(detail.name))
-              .map((u) => (
-                <span key={u.id} data-owned={run.units.some((x) => x.id === u.id)}>
-                  {u.name}
-                </span>
-              ))}
-          </p>
-        </aside>
-      )}
+      {detail &&
+        createPortal(
+          <BondPeek id={detail.id}>
+            <aside
+              class={styles.peek}
+              role="dialog"
+              aria-label={`유대 ${detail.name} 상세`}
+              data-popup="peek"
+            >
+              <div class={styles.peekHead}>
+                <h3>유대 {detail.name}</h3>
+                <button aria-label="조합 상세 닫기" onClick={actions.clearPeek}>
+                  ×
+                </button>
+              </div>
+              <p>{detail.concept}</p>
+              <button
+                aria-pressed={recommended.includes(detail.id)}
+                onClick={() => actions.toggleRecommendation(detail.id)}
+              >
+                {recommended.includes(detail.id) ? '★ 추천 해제' : '☆ 이 조합 추천'} ·{' '}
+                {recommended.length} / 3
+              </button>
+              <ol class={styles.effects}>
+                {detail.thresholds.map((t, i) => (
+                  <li key={t} data-achieved={detail.count >= t}>
+                    <b>{t}명</b> {detail.effects[i]}
+                  </li>
+                ))}
+              </ol>
+              <p class={styles.members}>
+                {roster()
+                  .filter((u) => u.bonds.includes(detail.name))
+                  .map((u) => (
+                    <span key={u.id} data-owned={run.units.some((x) => x.id === u.id)}>
+                      {u.name}
+                    </span>
+                  ))}
+              </p>
+            </aside>
+          </BondPeek>,
+          document.body,
+        )}
     </section>
+  );
+}
+
+/** 누른 조합 줄 오른쪽에 상세 창을 띄우고 화면 안으로 보정한다(자리가 없으면 왼쪽). */
+function BondPeek({ id, children }: { id: string; children: ComponentChildren }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const box = ref.current;
+    const row = document.querySelector(`[data-bond-row="${CSS.escape(id)}"]`);
+    if (!box || !row) return;
+    const r = row.getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    const right = r.right + 10;
+    const x = right + b.width <= innerWidth - 8 ? right : r.left - b.width - 10;
+    box.style.left = Math.max(8, Math.min(innerWidth - b.width - 8, x)) + 'px';
+    box.style.top = Math.max(8, Math.min(innerHeight - b.height - 8, r.top - 8)) + 'px';
+  });
+  return (
+    <div ref={ref} class={styles.peekLayer}>
+      {children}
+    </div>
   );
 }

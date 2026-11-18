@@ -17,9 +17,17 @@
 .speed span[data-lit='true'] {
   color: #9cc8ff;
 }
+/* 전투 중 아군 딜량: 전장 영역 오른쪽 위, 아이템 보관함 바로 왼쪽의 독립 영역(v0.16.0 지시서 1).
+   폭은 보드 그림의 칸 영역 오른쪽에 남는 자리에 맞추고(전장 칸을 가리지 않게) 130~220px로 제한한다.
+   보드 그림 폭 = min(100cqw, 100cqh × 1659/948), 칸 오른쪽 끝 = 그림의 1375.5/1659 지점 */
 .panel {
-  flex: none;
-  margin-top: var(--space-3);
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  width: clamp(130px, calc(50cqw - min(100cqw, 100cqh * 1659 / 948) * 0.3291 - 10px), 220px);
+  max-height: calc(100% - 56px);
+  overflow-y: auto;
   padding: var(--space-3);
   background: var(--panel-bg);
   border: 1px solid var(--panel-edge);
