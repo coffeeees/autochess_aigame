@@ -62,7 +62,7 @@ test('deployment warning counts empty/partial/full with P12 and suppression pers
   a(V.deploymentStatus(s).shouldWarn);
   s.units = [{ location: 'board' }, { location: 'board' }, { location: 'board' }];
   a(!V.deploymentStatus(s).shouldWarn);
-  s.augments = ['P12'];
+  s.augments = ['P13']; // v0.16.0: 배치 한도 +1은 P13(이전 P12는 LP12)
   a.equal(V.deploymentStatus(s).missing, 1);
   a(V.deploymentStatus(s).shouldWarn);
   s.skipDeploymentWarning = true;

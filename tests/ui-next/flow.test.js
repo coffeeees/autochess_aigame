@@ -280,3 +280,29 @@ test('밸런스 테스트 기록: 증강 후보 54종 판정이 모두 있고, �
   a(md.includes('## 54종 판정'));
   a(md.includes('미실행'));
 });
+
+test('밸런스 테스트 2차 기록: 구현 상태·기능 테스트·시뮬레이션을 증강마다 적고, 실행 방법을 구분한다', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const A = (await import('../../src/core/augments.js')).default;
+  const t = B.stage2;
+  a.deepEqual(
+    t.candidates.map((c) => c.id),
+    A.augments.map((x) => x.id),
+    '증강 데이터와 같은 54종',
+  );
+  for (const c of t.candidates) {
+    a(t.statuses.includes(c.status), c.id);
+    a.equal(c.status === '보류', !!A.byId(c.id).hold, `${c.id} 보류 여부는 데이터와 같음`);
+    if (c.status === '보류') a(c.test.startsWith('미실행'), '보류는 테스트하지 않음');
+    else a(c.test.startsWith('통과') && c.sim.includes('1-3') && c.sim.includes('5-3'), c.id);
+  }
+  const kinds = new Set(t.runs.map((r) => r.kind));
+  for (const k of ['기능 테스트', '자동 시뮬레이션', '브라우저 자동 조작']) a(kinds.has(k), k);
+  a(
+    t.notRun.some((x) => x.includes('사람이 직접')),
+    '사람 플레이를 하지 않았음을 적음',
+  );
+  for (const x of t.issues) a(x.repro.length > 5 && x.status, x.title);
+  const md = B.toMarkdown();
+  a(md.includes('## 증강별 결과') && md.includes('## 54종 판정'), '1차·2차 기록 모두 내보냄');
+});

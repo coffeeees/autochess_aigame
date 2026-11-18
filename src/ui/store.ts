@@ -217,6 +217,8 @@ export function createStore(env: StoreEnv) {
     }
   }
   const changed = (patch: Partial<UiState> = {}) => {
+    // 증강이 동료를 지급하면 core가 uid를 붙이므로, 다음 번호가 겹치지 않게 맞춘다
+    if (state.run) nextUid = Math.max(nextUid, ...state.run.units.map((u) => u.uid));
     save();
     publish(patch);
   };
@@ -347,6 +349,10 @@ export function createStore(env: StoreEnv) {
       survivingEnemies: b.alive('enemy').filter((u) => !u.summon).length,
       skillUses: { ...b.skillUses },
       damageRows: V.damageRows(battle),
+      // 완벽한 승리(S11): 쓰러진 아군 수(소환수·분신 제외)
+      allyLosses: (
+        battle as unknown as { units: { team: string; summon?: boolean; dead?: boolean }[] }
+      ).units.filter((u) => u.team === 'ally' && !u.summon && u.dead).length,
     });
     (r as RunState & { lastDamageRows?: unknown }).lastDamageRows = receipt.damageRows;
     env.combat?.warm();
@@ -502,6 +508,13 @@ export function createStore(env: StoreEnv) {
     },
     clearPeek: () => publish({ peek: null }),
     toggleInventory: () => publish({ inventoryOpen: !state.inventoryOpen }),
+    /** 전술 복제(G18) 분신 대상 지정·해제(원정 캐릭터 uid) */
+    setCloneTarget(uid: number | null) {
+      if (!state.run) return;
+      const r = (state.run.augmentRun ||= {} as NonNullable<RunState['augmentRun']>);
+      r.cloneTarget = r.cloneTarget === uid ? null : uid;
+      changed();
+    },
     /** 맨 위에 열린 닫을 수 있는 팝업 이름(보급·증강·결과 같은 확인 창은 바깥 클릭·Esc로 닫지 않음) */
     topPopup(): PopupName | null {
       if (state.overlay) return 'overlay';

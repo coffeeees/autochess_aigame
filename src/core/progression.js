@@ -2,6 +2,7 @@ import B from './board.js';
 import D from './data/units.js';
 import A from './augments.js';
 import I from './items.js';
+import R from './augment-run.js';
 import { runRng, nextSeed } from './rng.ts';
 
 const config = {
@@ -60,13 +61,13 @@ const label = (s) => `${s.stage}-${s.round}`,
 const roundType = (stage, round) =>
   (stage === 1 ? config.firstStage : config.laterStages)[round - 1];
 const itemById = I.byId,
-  augmentById = (id) =>
-    augments.find((a) => a.id === id) || legacyAugments.find((a) => a.id === id);
+  // 후보 54종 + 이전 36종(L) + 그보다 오래된 증강(training 등)
+  augmentById = (id) => A.byId(id) || legacyAugments.find((a) => a.id === id);
 function initialize(state) {
   state.shopLocked = false;
   state.shopCarry = null;
   state.completionChoice = null;
-  state.version = 2;
+  state.version = 3;
   state.boardColumns = B.config.columns;
   state.stage = 1;
   state.round = 1;
@@ -78,6 +79,8 @@ function initialize(state) {
   state.augments = [];
   state.augmentSelections = {};
   state.augmentState = { version: 1, completedPicks: [], skippedPicks: [], pendingPick: null };
+  state.augmentRun = null;
+  R.normalize(state);
   state.completedRounds = {};
   state.roundPhase = 'prepare';
   state.lastResult = null;
@@ -103,8 +106,21 @@ function normalizeRunFeatures(state) {
           : null;
   return state;
 }
+/** 저장 버전 2 → 3: v0.15.18 증강 ID(S01 등)를 이전 증강 ID(LS01 등)로 바꾼다(효과는 그대로). */
+function migrateAugmentIds(state) {
+  const map = (ids) => (Array.isArray(ids) ? ids.map(A.legacyId) : ids);
+  state.augments = map(state.augments);
+  for (const node of Object.keys(state.augmentSelections || {}))
+    state.augmentSelections[node] = A.legacyId(state.augmentSelections[node]);
+  const pending = state.augmentState?.pendingPick;
+  if (pending?.optionIds) pending.optionIds = map(pending.optionIds);
+}
 function migrate(state) {
   if (state.version === 2) {
+    migrateAugmentIds(state);
+    state.version = 3;
+  }
+  if (state.version === 3) {
     normalizeRunFeatures(state);
     B.migrate(state);
     state.recommendedBond = state.recommendedBond || null;
@@ -147,6 +163,9 @@ function addXp(state, amount) {
     state.level++;
   }
   if (state.level === config.level.max) state.xp = 0;
+  // 성장의 보상(G12): 오른 레벨만큼 동료 지급
+  if (state.level > before && A.hasEffect(state.augments, 'levelUnits'))
+    R.onLevelUp(state, state.level - before);
   return state.level - before;
 }
 function buyXp(state) {
@@ -175,6 +194,7 @@ function normalizeAugments(state) {
     augmentById(id),
   );
   state.augmentSelections = state.augmentSelections || {};
+  R.normalize(state);
   if (!state.augmentState || state.augmentState.version !== 1) {
     state.augmentState = {
       version: 1,
@@ -228,7 +248,8 @@ function chooseAugment(state, id, rng = runRng(state)) {
     data.completedPicks.includes(pending.node) ||
     state.augments.includes(id) ||
     !pending.optionIds.includes(id) ||
-    data.completedPicks.length >= A.config.maxPicks
+    data.completedPicks.length >= A.config.maxPicks ||
+    R.chooseBlock(state, id)
   )
     return false;
   const choice = A.byId(id);
@@ -242,17 +263,22 @@ function chooseAugment(state, id, rng = runRng(state)) {
   next.gold += e.gold || 0;
   if (e.xp) addXp(next, e.xp);
   if (e.items) for (let i = 0; i < e.items.count; i++) addItem(next, I.drawTier(e.items.tier, rng));
+  R.applyChoice(next, choice, pending.node, rng);
   [next.stage, next.round] = pending.node.split('-').map(Number);
   next.wave = ordinal(next);
   next.lastResult = null;
   next.roundPhase = 'prepare';
   Object.assign(state, next);
+  R.onRoundStart(state, rng);
   return true;
 }
+/** 선택할 수 없는 증강이면 이유(화면 표시용). 고를 수 있으면 null */
+function augmentBlock(state, id) {
+  return R.chooseBlock(state, id);
+}
+/** 새로고침 비용(증강의 reroll 값, 무료 새로고침이 있으면 0) */
 function rerollCost(state) {
-  return state.augments?.includes('S11')
-    ? A.byId('S11').effect.reroll
-    : D.prototypeConfig.economy.rerollCost;
+  return R.rerollCost(state);
 }
 function equip(state, itemUid, unitUid) {
   if (state.done || state.roundPhase !== 'prepare') return false;
@@ -287,6 +313,7 @@ function allyModifiers(state) {
     adMultiplier: state.augments.includes('training') ? 1.1 : 1,
     startManaFlat: state.augments.includes('mana') ? 20 : 0,
     augmentIds: state.augments.filter((id) => A.byId(id)),
+    cloneTarget: state.augmentRun?.cloneTarget ?? null,
   };
 }
 function previewStats(state, u) {
@@ -387,7 +414,7 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
   const interestEligible = type !== 'SUPPLY' || config.rewards.supplyInterest,
     interestBasis = config.rewards.interestBasis === 'after-base' ? before + base : before,
     interest = interestEligible
-      ? Math.min(D.prototypeConfig.economy.maxInterest, Math.floor(interestBasis / 10))
+      ? Math.min(R.interestCap(state), Math.floor(interestBasis / 10))
       : 0;
   let extra = null,
     bonusGold = 0,
@@ -420,7 +447,14 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
       : 0;
   const monsterLoot = state.bonusLootLedger?.[key] || null,
     monsterGold = monsterLoot?.kind === 'gold' ? monsterLoot.amount : 0;
-  const augmentGold = type !== 'SUPPLY' && win ? A.aggregate(state.augments).winGold : 0;
+  const fight = type !== 'SUPPLY';
+  const augmentRun = R.settle(state, {
+    fight,
+    win,
+    before,
+    allyLosses: outcome.allyLosses ?? null,
+  });
+  const augmentGold = (fight && win ? A.aggregate(state.augments).winGold : 0) + augmentRun.total;
   const survivors = outcome.survivingEnemies || 0,
     legacyDamage =
       D.prototypeConfig.run.lossBase + ordinal(state) * D.prototypeConfig.run.lossPerWave,
@@ -443,7 +477,9 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
   state.gold += total;
   state.health = healthAfterWin === null ? state.health - loss : healthAfterWin;
   const levelBefore = state.level,
-    xpGained = config.level.roundXp;
+    stageXp =
+      state.round === 5 ? A.effects(state.augments, 'stageXp').reduce((n, v) => n + v, 0) : 0,
+    xpGained = config.level.roundXp + stageXp;
   addXp(state, xpGained);
   state.done = state.health <= 0;
   state.roundPhase = state.done ? 'gameover' : 'result';
@@ -461,6 +497,7 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
     bonusGold,
     streakBonus,
     augmentGold,
+    augmentParts: augmentRun.parts,
     winStreak: state.winStreak || 0,
     monsterLoot,
     bossItem,
@@ -506,6 +543,7 @@ function advanceRound(state, rng = runRng(state)) {
   state.wave = ordinal(state);
   state.lastResult = null;
   state.roundPhase = 'prepare';
+  R.onRoundStart(state, rng);
   return true;
 }
 function chooseCompletion(state, choice) {
@@ -547,6 +585,9 @@ const api = {
   normalizeAugments,
   requestAugment,
   rerollCost,
+  useReroll: (state) => R.useReroll(state),
+  guaranteeShop: (state, rng) => R.guaranteeShop(state, rng),
+  augmentBlock,
   capacity,
   addXp,
   buyXp,

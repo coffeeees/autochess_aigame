@@ -89,15 +89,19 @@ test('아이템이 Item과 맞다(ItemStats는 AS 대신 ASPercent)', () => {
 });
 
 test('증강이 Augment와 맞다', () => {
-  for (const aug of A.augments)
-    fields(aug, {
-      id: (v) => /^[SGP]\d\d$/.test(v),
-      name: str,
-      text: str,
-      tier: (v) => ['silver', 'gold', 'prism'].includes(v),
-      icon: str,
-      effect: (v) => v && typeof v === 'object' && !Array.isArray(v),
-    });
+  for (const aug of [...A.augments, ...A.legacy])
+    fields(
+      aug,
+      {
+        id: (v) => /^L?[SGP]\d\d$/.test(v),
+        name: str,
+        text: str,
+        tier: (v) => ['silver', 'gold', 'prism'].includes(v),
+        icon: str,
+        effect: (v) => v && typeof v === 'object' && !Array.isArray(v),
+      },
+      { hold: (v) => typeof v === 'boolean', legacy: (v) => v === true },
+    );
 });
 
 test('새 원정 상태에 RunState 필드가 있다', () => {

@@ -63,18 +63,18 @@ test('augment gates at 1-3,3-3,5-3 and old stage starts are inactive', () => {
 test('three unique candidates each time, chosen excluded, immediate reward once', () => {
   const s = at(1, 3, 19);
   P.ensureAugment(s, () => 0);
-  s.augmentState.pendingPick.optionIds = ['S09', 'S10', 'S11'];
+  s.augmentState.pendingPick.optionIds = ['S07', 'S08', 'S09']; // v0.16.0 후보: S07 즉시 8G
   assert.equal(P.availableAugments(s).length, 3);
-  assert(P.chooseAugment(s, 'S09'));
-  assert.equal(s.gold, 25);
+  assert(P.chooseAugment(s, 'S07'));
+  assert.equal(s.gold, 27);
   assert.equal(s.xp, 0);
   assert.equal(P.label(s), '1-3');
   assert.equal(Object.keys(s.completedRounds).length, 0);
-  assert(!P.chooseAugment(s, 'S09'));
+  assert(!P.chooseAugment(s, 'S07'));
   s.stage = 3;
   P.ensureAugment(s, () => 0);
   assert.equal(P.availableAugments(s).length, 3);
-  assert(!P.availableAugments(s).some((a) => a.id === 'S09'));
+  assert(!P.availableAugments(s).some((a) => a.id === 'S07'));
   assert(P.chooseAugment(s, 'S01'));
   s.stage = 5;
   P.ensureAugment(s, () => 0);

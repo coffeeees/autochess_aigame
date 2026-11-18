@@ -76,12 +76,14 @@ export type AugmentTier = 'silver' | 'gold' | 'prism';
 
 /** 증강(augments.js `augments`). `effect`에 조정 가능한 수치가 있다. */
 export interface Augment {
-  id: string; // S01.., G01.., P01..
+  id: string; // 후보 S01..S18, G01..G18, P01..P18 / 이전 증강 LS01..LP12
   name: string;
   text: string;
   tier: AugmentTier;
   icon: string;
   effect: Record<string, unknown>;
+  hold?: boolean; // 보류: 후보로 나오지 않음(G13)
+  legacy?: boolean; // v0.15.18까지의 확정 증강(예전 저장 전용)
 }
 
 /** 원정에서 보유한 캐릭터. */
@@ -144,4 +146,19 @@ export interface RunState {
   bonusLootLedger?: Record<string, unknown>;
   /** 원정 난수 상태(rng.ts). 재구축 이전 저장에는 없다. */
   rngState?: number;
+  /** 증강의 원정 진행 상태(저장 버전 3, augment-run.js) */
+  augmentRun?: AugmentRun | null;
+}
+
+/** 증강 원정 상태: 늦게 받는 보상, 맡긴 골드, 무료 새로고침, 가치 투자 동료, 분신 지정 */
+export interface AugmentRun {
+  delayed: { id: string; left: number; gold: number }[];
+  invest: { amount: number; left: number; multiplier: number }[];
+  freeRerolls: number;
+  freeStageUsed: number;
+  valueUnitId: string | null;
+  valuePickNode: string | null;
+  cloneTarget: number | null;
+  lastRoundStart: string | null;
+  log: string[];
 }

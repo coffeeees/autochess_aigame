@@ -141,7 +141,14 @@ function Augment({ ui, actions }: GameProps) {
               <strong>{a.icon}</strong>
               <h3>{a.name}</h3>
               <p>{a.text}</p>
-              <button onClick={() => actions.chooseAugment(a.id)}>선택 확정</button>
+              {/* 고를 수 없는 후보(예: S18 HP 부족)는 이유를 보여 주고 버튼을 막는다 */}
+              {P.augmentBlock(run, a.id) && <p class={styles.hint}>{P.augmentBlock(run, a.id)}</p>}
+              <button
+                disabled={!!P.augmentBlock(run, a.id)}
+                onClick={() => actions.chooseAugment(a.id)}
+              >
+                선택 확정
+              </button>
             </article>
           ))}
         </div>

@@ -313,3 +313,15 @@
 .kindTag[data-verdict='미확인'] {
   color: #9aa0ad;
 }
+.kindTag[data-verdict='구현됨'] {
+  color: #8dd5ac;
+}
+.kindTag[data-verdict='부분 구현'] {
+  color: #e8c96f;
+}
+.kindTag[data-verdict='미구현'] {
+  color: #ee8a9b;
+}
+.kindTag[data-verdict='보류'] {
+  color: #9aa0ad;
+}

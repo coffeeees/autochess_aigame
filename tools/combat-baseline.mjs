@@ -137,10 +137,13 @@ function scenarios() {
   }
 
   // 4) 증강: 고정 편성에 증강을 하나씩 적용.
-  A.augments.forEach((aug, k) => {
+  // 기준선은 v0.15.18의 36종이다. v0.16.0부터 이 36종은 이전 증강(ID 앞에 L)으로 남았으므로
+  // 같은 이름(augment-S01 등)·같은 시드로 이전 증강을 돌려 결과가 그대로인지 확인한다.
+  // 새 후보 54종은 tests/augments/의 테스트가 확인한다.
+  (A.legacy ?? A.augments).forEach((aug, k) => {
     out.push(
       run(
-        `augment-${aug.id}`,
+        `augment-${aug.id.replace(/^L/, '')}`,
         4000 + k,
         ['C01', 'C03', 'C05', 'C09'].map((id, i) => ({ id, pos: allyCells[i + 3] })),
         [

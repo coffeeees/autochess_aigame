@@ -9,7 +9,7 @@
 //
 // 현재 순서(각 모듈의 `extension` 참고):
 //   around  item-effects 10 -> augment-effects 20 -> vfx-events 90 (outermost)
-//   start   bond-effects 10 -> item-effects 20 -> augment-effects 30
+//   start   augment-setup 5(희생·조합 단계 올림) -> bond-effects 10 -> item-effects 20 -> augment-effects 30
 //   update  item-effects 10 -> augment-effects 20 -> bond-effects 30
 
 export const AROUND = ['stats', 'heal', 'summon', 'kill', 'cast', 'deal', 'log'] as const;

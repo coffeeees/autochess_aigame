@@ -6,6 +6,7 @@
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import D from '../../core/data/units.js';
 import P from '../../core/progression.js';
+import A from '../../core/augments.js';
 import W from '../../core/encounters.js';
 import type { Stats, SkillDef } from '../../core/types.ts';
 import { unitDef, type BondView } from '../data.ts';
@@ -116,6 +117,19 @@ function PrepareUnitDetail(props: GameProps) {
       </section>
       <SkillText skill={skill} />
       <BondLine names={def.bonds} bonds={bonds} />
+      {(A.effects(run.augments, 'clone') as { pick: string }[]).some(
+        (e) => e.pick === 'designated',
+      ) && (
+        <button
+          class={styles.cloneButton}
+          aria-pressed={run.augmentRun?.cloneTarget === unit.uid}
+          onClick={() => actions.setCloneTarget(unit.uid)}
+        >
+          {run.augmentRun?.cloneTarget === unit.uid
+            ? '✓ 전술 복제 분신 대상(누르면 해제)'
+            : '전술 복제 분신 대상으로 지정'}
+        </button>
+      )}
     </aside>
   );
 }
