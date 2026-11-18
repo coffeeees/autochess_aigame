@@ -1,0 +1,181 @@
+// 메타 레벨(원정 사이에 이어지는 영구 성장). 인게임 레벨·XP와 완전히 분리된다.
+// 기준: AUTOCHESS 메타 레벨 1~100 구현 및 테스트 요청서(v0.17.2). 최대 레벨 100은 확정,
+// 필요 XP 곡선과 원정 보상 수치는 테스트용 임시값(사용자 승인 없이 바꾸지 않는다).
+// 레벨업 보상·영구 강화는 아직 없다(growthEnabled: false).
+// 프로필은 원정 저장과 다른 키(META_KEY)에 저장한다. 저장소 읽기·쓰기는 UI가 한다.
+import type { RunState } from './types.ts';
+import data from './data/meta.js';
+
+export const META_KEY = 'autochess-meta-v1';
+
+/** 수치는 data/meta.js(임시값). 원정 보상: 5 + 정규 구간 완료 스테이지 × 2 + 6-5 클리어 시 15(최대 80) */
+export const config = {
+  maxLevel: data.maxLevel,
+  baseXp: data.reward.base,
+  perStageXp: data.reward.perStage,
+  clearBonusXp: data.reward.clearBonus,
+  regularStages: data.reward.regularStages, // 1-1 ~ 6-5
+  roundsPerStage: 5,
+  keepPayments: 20, // 중복 지급 방지용으로 기억하는 최근 원정 수
+};
+
+/** 레벨 L에서 L+1로 오르는 데 필요한 XP. 최대 레벨이면 0 */
+export function requiredXp(level: number): number {
+  if (level >= config.maxLevel) return 0;
+  const seg = data.curve.find((c) => level >= c.from && level <= c.to);
+  if (!seg) throw Error('메타 레벨 범위 밖: ' + level);
+  return seg.start + seg.step * (level - seg.from);
+}
+
+/** Lv.1·0 XP에서 그 레벨에 도달하는 데 필요한 누적 XP */
+export function cumulativeXp(level: number): number {
+  let total = 0;
+  for (let l = 1; l < Math.min(level, config.maxLevel); l++) total += requiredXp(l);
+  return total;
+}
+
+export interface MetaPayment {
+  runId: string;
+  xp: number;
+  stages: number; // 정규 구간 완료 스테이지 수(0~30)
+  cleared: boolean; // 6-5 완료(승리)
+  before: { level: number; xp: number };
+  after: { level: number; xp: number };
+}
+
+export interface MetaProfile {
+  version: 1;
+  metaLevel: number;
+  metaXp: number; // 현재 레벨에서 쌓은 XP
+  totalXp: number; // 지금까지 실제로 반영된 메타 XP 합(최대 레벨 뒤로는 늘지 않음)
+  growthEnabled: false; // 레벨업 보상·영구 강화(미구현)
+  payments: MetaPayment[]; // 최근 지급 기록(원정 ID로 중복 지급 방지)
+}
+
+export function newProfile(): MetaProfile {
+  return { version: 1, metaLevel: 1, metaXp: 0, totalXp: 0, growthEnabled: false, payments: [] };
+}
+
+/** 저장에서 읽은 값을 정리한다. 이상한 값은 새 프로필 기준으로 되돌린다. */
+export function normalizeProfile(raw: unknown): MetaProfile {
+  const p = newProfile();
+  if (!raw || typeof raw !== 'object') return p;
+  const r = raw as Record<string, unknown>;
+  const int = (v: unknown, min: number, max: number) =>
+    Number.isInteger(v) && (v as number) >= min && (v as number) <= max ? (v as number) : null;
+  p.metaLevel = int(r.metaLevel, 1, config.maxLevel) ?? 1;
+  p.metaXp =
+    p.metaLevel >= config.maxLevel
+      ? 0
+      : Math.min(int(r.metaXp, 0, Infinity) ?? 0, requiredXp(p.metaLevel) - 1);
+  p.totalXp = Math.max(
+    int(r.totalXp, 0, Infinity) ?? 0,
+    cumulativeXp(p.metaLevel) + p.metaXp, // 예전 프로필(누적 없음)도 레벨에 맞춘다
+  );
+  if (Array.isArray(r.payments))
+    p.payments = (r.payments as MetaPayment[])
+      .filter((x) => x && typeof x.runId === 'string' && Number.isInteger(x.xp))
+      .slice(-config.keepPayments);
+  return p;
+}
+
+/** XP를 더한다: 남는 XP는 다음 레벨로 이월, 여러 레벨 한 번에 가능, Lv.100에서는 더 쌓지 않는다. */
+export function addXp(profile: MetaProfile, amount: number) {
+  const before = { level: profile.metaLevel, xp: profile.metaXp };
+  let left = Math.max(0, Math.floor(amount));
+  while (left > 0 && profile.metaLevel < config.maxLevel) {
+    const need = requiredXp(profile.metaLevel) - profile.metaXp;
+    const used = Math.min(need, left);
+    profile.metaXp += used;
+    profile.totalXp += used;
+    left -= used;
+    if (profile.metaXp >= requiredXp(profile.metaLevel)) {
+      profile.metaLevel++;
+      profile.metaXp = 0;
+    }
+  }
+  if (profile.metaLevel >= config.maxLevel) profile.metaXp = 0;
+  return { before, after: { level: profile.metaLevel, xp: profile.metaXp } };
+}
+
+const ordinalOf = (r: { stage?: number; round?: number }) =>
+  ((r.stage ?? 0) - 1) * config.roundsPerStage + (r.round ?? 0);
+
+/**
+ * 정규 구간(1-1 ~ 6-5)에서 완료한 스테이지 수. 보급은 완료했으면 포함, 패배한 전투는 제외.
+ * 7-1 이후(무한 라운드)는 세지 않는다.
+ */
+export function completedStages(run: Pick<RunState, 'completedRounds'>): number {
+  return Object.values(run.completedRounds || {}).filter((raw) => {
+    const r = raw as { stage?: number; round?: number; type?: string; win?: boolean };
+    const n = ordinalOf(r);
+    return n >= 1 && n <= config.regularStages && (r.type === 'SUPPLY' || r.win === true);
+  }).length;
+}
+
+/** 6-5를 이겨서 정규 구간을 클리어했는지 */
+export function regularCleared(run: Pick<RunState, 'completedRounds'>): boolean {
+  const r = (run.completedRounds || {})['6-5'] as { win?: boolean } | undefined;
+  return r?.win === true;
+}
+
+/** 원정 하나의 메타 XP(정규 구간만, 최대 80) */
+export function runReward(run: Pick<RunState, 'completedRounds'>) {
+  const stages = completedStages(run);
+  const cleared = regularCleared(run);
+  const stageXp = stages * config.perStageXp;
+  const clearXp = cleared ? config.clearBonusXp : 0;
+  return {
+    stages,
+    cleared,
+    base: config.baseXp,
+    stageXp,
+    clearXp,
+    xp: config.baseXp + stageXp + clearXp,
+  };
+}
+
+/** 화면 표기: "2 / 20 XP", Lv.100은 "MAX"(분모 0을 쓰지 않는다) */
+export function progressLabel(level: number, xp: number): string {
+  return level >= config.maxLevel ? 'MAX' : `${xp} / ${requiredXp(level)} XP`;
+}
+
+export function paymentFor(profile: MetaProfile, runId: string | undefined): MetaPayment | null {
+  return (runId && profile.payments.find((p) => p.runId === runId)) || null;
+}
+
+/**
+ * 원정이 끝났으면(HP 0 게임 오버, 6-5 뒤 "게임 종료", 무한 라운드 게임 오버) 메타 XP를 한 번 지급한다.
+ * 이미 지급한 원정(같은 runId)이거나 끝나지 않았거나 runId가 없으면 아무것도 하지 않고 null.
+ */
+export function settleRun(profile: MetaProfile, run: RunState): MetaPayment | null {
+  if (!run.done || !run.runId || paymentFor(profile, run.runId)) return null;
+  const reward = runReward(run);
+  const { before, after } = addXp(profile, reward.xp);
+  const payment: MetaPayment = {
+    runId: run.runId,
+    xp: reward.xp,
+    stages: reward.stages,
+    cleared: reward.cleared,
+    before,
+    after,
+  };
+  profile.payments = [...profile.payments, payment].slice(-config.keepPayments);
+  return payment;
+}
+
+export default {
+  META_KEY,
+  config,
+  requiredXp,
+  cumulativeXp,
+  newProfile,
+  normalizeProfile,
+  addXp,
+  completedStages,
+  regularCleared,
+  runReward,
+  progressLabel,
+  paymentFor,
+  settleRun,
+};

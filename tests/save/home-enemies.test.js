@@ -36,5 +36,13 @@ test('migration preserves existing HP and units; meta profile is separate', () =
   a.deepEqual(s.units, units);
   const profile = W.newProfile();
   settle(s);
-  a.deepEqual(profile, { version: 1, metaLevel: 1, metaXp: 0, growthEnabled: false });
+  // v0.17.2: 메타 프로필은 meta.ts(누적 XP·지급 기록 추가). 원정 정산은 프로필을 건드리지 않는다
+  a.deepEqual(profile, {
+    version: 1,
+    metaLevel: 1,
+    metaXp: 0,
+    totalXp: 0,
+    growthEnabled: false,
+    payments: [],
+  });
 });

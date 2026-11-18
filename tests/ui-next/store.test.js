@@ -190,3 +190,11 @@ test('정상 저장은 알림이나 저장 쓰기 없이 불러온다', () => {
   a.equal(data.size, 1, '백업 없음');
   a.deepEqual(s().run.augments, ['S07']);
 });
+
+test('게임 오버(HP 0) 원정을 이어하기로 열면 결과 창("원정 종료")이 뜬다(v0.17.2 수정)', () => {
+  const save = Object.assign(currentSave(), { health: 0, done: true, roundPhase: 'gameover' });
+  save.lastResult = { key: '1-4', type: 'BATTLE', win: false, done: true };
+  const { store, s } = setup({ [KEY]: JSON.stringify(save) });
+  store.actions.continueRun();
+  a.equal(s().modal, 'result');
+});

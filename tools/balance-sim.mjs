@@ -22,6 +22,7 @@ const Engine = await load('combat/battle.js');
 const { newRun, battleSetup } = await import(new URL('run.ts', root));
 const { buyUnit, sellUnit } = await import(new URL('shop.ts', root));
 const { createRng } = await import(new URL('rng.ts', root));
+const M = (await import(new URL('meta.ts', root))).default;
 
 const args = Object.fromEntries(
   process.argv
@@ -108,6 +109,7 @@ function playRun({ seed, forced = null, record = false }) {
     reached: rounds.at(-1)?.key,
     forcedPicked: forced ? s.augments.includes(forced.id) : null,
     cleared: s.health > 0 && rounds.at(-1)?.key === '6-5',
+    metaXp: M.runReward(s).xp, // 이 원정이 끝났을 때 받는 메타 XP(v0.17.2)
     health: s.health,
     wins: fights.filter((r) => r.win).length,
     fights: fights.length,

@@ -7,6 +7,7 @@ import P from '../../core/progression.js';
 import V from '../../core/preparation.js';
 import I from '../../core/items.js';
 import A from '../../core/augments.js';
+import M from '../../core/meta.ts';
 import { itemIconSvg } from '../art/items.js';
 import { itemDef } from './Items.tsx';
 import { DamageChart } from './DamageChart.tsx';
@@ -195,6 +196,45 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: stri
   );
 }
 
+/** 원정 종료 결과의 메타 XP(지급 기록을 읽기만 한다. 지급은 저장소가 원정이 끝날 때 한 번 한다) */
+function MetaReward({ ui }: GameProps) {
+  const run = ui.run!;
+  const pay = M.paymentFor(ui.meta, run.runId);
+  if (!pay)
+    return (
+      <div class={styles.meta} data-paid="false">
+        <span class={styles.eyebrow}>메타 레벨</span>
+        <p>이 원정은 메타 XP 지급 대상이 아닙니다(메타 레벨 도입 전에 끝난 원정).</p>
+      </div>
+    );
+  const reward = M.runReward(run);
+  const up = pay.after.level > pay.before.level;
+  return (
+    <div class={styles.meta} data-paid="true" aria-label="메타 레벨 결과">
+      <div class={styles.metaHead}>
+        <span class={styles.eyebrow}>메타 레벨 · 원정 종료 보상</span>
+        <b>+{pay.xp} 메타 XP</b>
+      </div>
+      <Row label="기본" value={`+${reward.base}`} />
+      <Row
+        label={`완료 스테이지 ${pay.stages} / ${M.config.regularStages} × ${M.config.perStageXp}`}
+        value={`+${reward.stageXp}`}
+      />
+      <Row
+        label="정규 구간(6-5) 클리어 보너스"
+        value={pay.cleared ? `+${reward.clearXp}` : '—'}
+        tone={pay.cleared ? 'gold' : undefined}
+      />
+      <div class={styles.metaLevel} data-up={up}>
+        <strong>
+          Lv.{pay.before.level} → Lv.{pay.after.level}
+        </strong>
+        <span>{M.progressLabel(pay.after.level, pay.after.xp)}</span>
+      </div>
+    </div>
+  );
+}
+
 function Result({ ui, actions }: GameProps) {
   const run = ui.run!;
   const r = run.lastResult as unknown as Receipt | null;
@@ -283,6 +323,7 @@ function Result({ ui, actions }: GameProps) {
             {pending && <CompletionChoice actions={actions} />}
           </section>
         )}
+        {r.done && <MetaReward ui={ui} actions={actions} />}
         {!pending && (
           <button class={styles.next} data-variant="primary" onClick={actions.continueRound}>
             {r.done ? '결과 확인' : '다음 라운드 →'}
@@ -302,7 +343,8 @@ function CompletionChoice({ actions }: Pick<GameProps, 'actions'>) {
         6-5 전투와 보상 정산이 끝났습니다. 여기서 종료하거나 현재 상태로 7-1부터 계속할 수 있습니다.
       </p>
       <p class={styles.hint}>
-        7라운드부터는 메타레벨(전체레벨) 경험치를 받지 않으며, 기록용으로만 플레이합니다.
+        메타 XP는 정규 구간(1-1~6-5) 기준 최대 80이며, 원정이 끝날 때 한 번 받습니다. 7라운드부터는
+        추가 메타 XP가 없고 기록용으로만 플레이합니다.
       </p>
       <div class={styles.buttons}>
         <button onClick={() => actions.chooseCompletion('end')}>게임 종료</button>
@@ -369,6 +411,7 @@ function Summary({ ui, actions }: GameProps) {
       <Row label="남은 체력" value={`♥ ${run.health}`} />
       <Row label="보유 골드" value={`${run.gold} G`} />
       <Row label="완료 노드" value={String(Object.keys(run.completedRounds).length)} />
+      <MetaReward ui={ui} actions={actions} />
       <p>동료·장비·증강과 정산 기록은 이 원정에 보존됩니다.</p>
       <button data-variant="primary" onClick={actions.showHome}>
         시작 화면

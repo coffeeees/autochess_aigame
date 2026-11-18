@@ -35,6 +35,8 @@
 - 증강: `augments.js`의 54종(`hold`면 추첨 제외, 지금은 없음). v0.15.18의 36종은 v0.17.0에서 지웠다. G13 쌍둥이 전술이 있으면 같은 캐릭터 전장 2명(`sameUnitLimit`).
   효과는 ID가 아니라 `effect` 필드로 판정한다(`combat/augment-effects.js`). 원정 중 상태(지연 보상·투자·무료 새로고침·분신 지정)는 `augment-run.js`와 `state.augmentRun`.
   밸런스 자동 시뮬레이션: `node tools/balance-sim.mjs --seeds 8 --part base|S|G|P --out x.json`(고정 규칙 봇, 브라우저 플레이와 구분해 기록).
+- 메타 레벨(v0.17.2): `meta.ts`(곡선·원정 보상·레벨업·중복 방지), 수치는 `data/meta.js`(임시값). 프로필 저장 키 `autochess-meta-v1`은 원정 저장과 별도이고,
+  저장소(`store.ts`의 `settleMeta`)가 원정이 끝날 때(`run.done`) 원정 ID(`runId`)마다 한 번 지급한다. 원정 저장 버전은 4 그대로(올리면 기존 저장이 지워짐).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
 - 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).

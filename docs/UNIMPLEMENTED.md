@@ -1,6 +1,6 @@
 # AUTOCHESS 미구현·임시 구현·확인 필요 목록
 
-기준 버전: **0.17.1**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.17.2**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -14,8 +14,8 @@
 | --- | --- | --- | --- | --- |
 | U01 | 구현완료 | 4/5코스트12명해금 | 승인한임시스킬판정·상점·합성·유대·전투연결.정식밸런스확정별도. | [src/core/data/units.js:76](../src/core/data/units.js#L76) · `playable:true` |
 | U02 | 임시 구현 | 16종 새 유대 임시 밸런스 v1 | 요청된 모든 단계 효과 적용. 정식 밸런스 확정은 별도. 4~5코스트도 해금하여6인단계활성가능. | [src/core/data/units.js:258](../src/core/data/units.js#L258) · `experimentalSynergyEffects:` |
-| U03 | 미구현 | 메타경험치/성장/전체능력치메뉴 | newProfile의growthEnabled:false.능력치버튼disabled.원정정산지급없음. | [src/core/encounters.js:132](../src/core/encounters.js#L132) · `function newProfile` |
-| U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [src/ui/components/Home.tsx:51](../src/ui/components/Home.tsx#L51) · `<b>뽑기</b>` |
+| U03 | 일부 구현 | 메타경험치/성장/전체능력치메뉴 | v0.17.2: 메타 레벨 1~100과 원정 종료 메타 XP(정규 구간 최대 80)는 구현(수치 임시값). 레벨업 보상·영구 강화(growthEnabled:false)·능력치 메뉴는 미구현. 원정 포기 시 지급 여부는 결정 필요. | [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY` |
+| U04 | 미구현 | 뽑기/캐릭터장기성장 | 시작화면뽑기버튼disabled.구매확률/재화/서버구조미정. | [src/ui/components/Home.tsx:53](../src/ui/components/Home.tsx#L53) · `<b>뽑기</b>` |
 | U05 | 미구현 | 특수아이템2칸 | 새UI(6단계)에는예약칸을그리지않음.일반아이템을넣는로직없음. | [src/ui/components/Items.tsx:64](../src/ui/components/Items.tsx#L64) · `function InventoryPanel` |
 | U06 | 미구현/향후계획 | 도트64×64·프레임기반캐릭터 | 전장은도트스프라이트등록표(D6)를먼저찾고,그림이없으면SVG간소화아바타.도트그림은아직없음. | [src/ui/art/characters.ts:52](../src/ui/art/characters.ts#L52) · `spriteOf` |
 | U07 | 범위밖/계획확인필요 | 픽셀자유이동/전투격자제거 | 0.15.9요청에서철회/보류.현재구현완료해야할결함으로분류하지않음. | [docs/AUTOCHESS_v0.15.9_Codex_수정지시서.md:55](archive/requests/AUTOCHESS_v0.15.9_Codex_수정지시서.md#L55) · `## 7.` |
@@ -23,14 +23,14 @@
 | U09 | 임시 | 성급배율·적스케일·패배HP공식 | 실제실행됨.생존적수방식과현재legacy-round차이별도D04. | [src/core/data/units.js:251](../src/core/data/units.js#L251) · `run:` |
 | U10 | 임시 | 레벨요구XP/라운드자동XP | 구매4G/4XP와레벨구조는구현,roundXpProvisional:true. | [src/core/progression.js:21](../src/core/progression.js#L21) · `roundXpProvisional:true` |
 | U11 | 임시 | 소환수세부값/주변범위/돌진규칙 | plague/fire설정및lightning인라인값,반경/경로테스트가정. | [src/core/combat/battle.js:445](../src/core/combat/battle.js#L445) · `summon(owner,kind)` |
-| U12 | 확인필요 | 보스고유전투설계 | boss 플래그와보상분기는있지만별도스킬/통계보정없음.정규보스콘텐츠범위미정. | [src/core/encounters.js:98](../src/core/encounters.js#L98) · `boss:P.roundType` |
+| U12 | 확인필요 | 보스고유전투설계 | boss 플래그와보상분기는있지만별도스킬/통계보정없음.정규보스콘텐츠범위미정. | [src/core/encounters.js:99](../src/core/encounters.js#L99) · `boss:P.roundType` |
 | U13 | 확인필요 | 치유감소와실험regen상호작용 | regen이heal공식우회.D14참조.요청외수정하지않음. | [src/core/combat/battle.js:598](../src/core/combat/battle.js#L598) · `if(u.regen&&u.hp>0)` |
 | U14 | 확인필요 | I28치명피해방지의출처예외 | ITEM_PROC/아이템파생피해에서는I28생존가드가제외됨.문구의포괄범위와최종의도확인필요.D09참조. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
 | U15 | 확인필요 | I38회피타중첩/I28파생피해예외 | 현재코드가회피판정전에연속기본공격중첩진행.고유효과의문구와세부조건검토필요. | [src/core/combat/item-effects.js:154](../src/core/combat/item-effects.js#L154) · `if(has(source,'I38'))` |
 | U16 | 결정·구현 | 전투중재접속복원정책 | D4 결정(a): 준비 단계로 되돌리고 취소된 전투의 보너스 보상(골드/아이템)을 회수, 장부에서 삭제. 중간 전투 상태는 저장하지 않음. T44 알림. | [src/core/save.ts:139](../src/core/save.ts#L139) · `function revertInterruptedBattle` |
 | U17 | 구현 | 저장실패표시/손상세이브복구 | 저장 실패 T42 알림. 손상·검증 실패 저장은 `starlight-onecost-v1-backup-<시각>`에 백업 후 새 원정, T43 알림(시작 화면 표시). 클라우드 백업은 없음. | [src/core/save.ts:177](../src/core/save.ts#L177) · `function loadSave` |
-| U18 | 기획확인필요 | 정규기록/순위/최종클리어영구보상 | 6-5선택과로컬영수증있음.전역최고기록·온라인순위·완료보상규칙은구현확인안됨.새기획필요. | [src/ui/components/Modals.tsx:362](../src/ui/components/Modals.tsx#L362) · `function Summary` |
-| U19 | 임시 | 7+구간무한밸런스 | 기존구간패턴반복,적scale상한없음/성급3상한,보상fallback유지.의도된장기수치밸런스미확정. | [src/core/encounters.js:86](../src/core/encounters.js#L86) · `const wave=` |
+| U18 | 기획확인필요 | 정규기록/순위/최종클리어영구보상 | 6-5선택과로컬영수증있음.전역최고기록·온라인순위·완료보상규칙은구현확인안됨.새기획필요. | [src/ui/components/Modals.tsx:404](../src/ui/components/Modals.tsx#L404) · `function Summary` |
+| U19 | 임시 | 7+구간무한밸런스 | 기존구간패턴반복,적scale상한없음/성급3상한,보상fallback유지.의도된장기수치밸런스미확정. | [src/core/encounters.js:87](../src/core/encounters.js#L87) · `const wave=` |
 | U20 | 범위밖/계획확인필요 | 온라인대전/서버저장/가챠운영 | 싱글로컬프로토타입에서관련경로확인안됨.요청없이기능을추정하지않음. | [src/core/save.ts:11](../src/core/save.ts#L11) · `SAVE_KEY = 'starlight-onecost-v1'` |
 
 
@@ -83,7 +83,7 @@
 
 1. 새 유대16종의최종밸런스.
 2. C34~45는승인된임시판정구현.정식밸런스확정별도.
-3. 메타XP획득·상한·성장/가챠기획과1~6구간보상정책(현재지급없음).
+3. 메타 레벨업 보상·영구 강화·가챠 기획, 원정 포기 시 메타 XP 지급 여부(메타 XP 곡선·원정 보상은 v0.17.2 임시값으로 구현).
 4. 피해·마나·소환·상태중첩·적스케일·7+밸런스의최종확정.
 5. 확인필요U13~U18의현재코드가의도와일치하는지.
 

@@ -1,5 +1,6 @@
 import D from './data/units.js';
 import P from './progression.js';
+import M from './meta.ts';
 import { runRng } from './rng.ts';
 
 const config = {
@@ -129,9 +130,8 @@ function claimBonusLoot(state, unit, rng = runRng(state)) {
   state.bonusLootLedger[key] = loot;
   return loot;
 }
-function newProfile() {
-  return { version: 1, metaLevel: 1, metaXp: 0, growthEnabled: false };
-}
+// 메타 프로필은 v0.17.2부터 meta.ts가 맡는다(같은 함수를 이어서 내보낸다)
+const newProfile = M.newProfile;
 const api = {
   config,
   difficulties,

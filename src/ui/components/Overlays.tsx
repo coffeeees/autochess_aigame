@@ -399,8 +399,26 @@ interface BalanceApi {
   };
   /** 2차: 구현 후 기능 테스트·자동 시뮬레이션·브라우저 자동 조작 */
   stage2: BalanceStage2;
+  /** 메타 레벨(v0.17.2) */
+  meta: BalanceMeta;
   counts<T>(list: T[], key: keyof T & string): Record<string, number>;
   toMarkdown(): string;
+}
+interface BalanceMeta {
+  title: string;
+  date: string;
+  version: string;
+  method: string;
+  environment: string;
+  scope: string;
+  runs: { kind: string; name: string; how: string; result: string; evidence: string }[];
+  cases: [string, string, string, string][];
+  growth: string[];
+  notRun: string[];
+  issues: { title: string; detail: string; repro: string; status: string }[];
+  decisions: string[];
+  files: string[];
+  conflicts: string[];
 }
 interface BalanceStage2 {
   title: string;
@@ -782,7 +800,7 @@ function ResetConfirm({ actions }: Props) {
 
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
-  const [record, setRecord] = useState<'stage2' | 'stage1'>('stage2');
+  const [record, setRecord] = useState<'meta' | 'stage2' | 'stage1'>('meta');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -792,6 +810,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'meta'} onClick={() => setRecord('meta')}>
+          메타 레벨 · v0.17.2
+        </button>
         <button aria-pressed={record === 'stage2'} onClick={() => setRecord('stage2')}>
           2차 · 구현 후 테스트
         </button>
@@ -806,11 +827,103 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'stage2' ? (
+      {record === 'meta' ? (
+        <BalanceMetaView t={balance.meta} />
+      ) : record === 'stage2' ? (
         <BalanceStage2View t={balance.stage2} counts={balance.counts} />
       ) : (
         <BalanceStage1 balance={balance} />
       )}
+    </>
+  );
+}
+
+function BalanceMetaView({ t }: { t: BalanceMeta }) {
+  const list = (title: string, items: string[], open = false) => (
+    <details open={open}>
+      <summary>
+        {title} {items.length}
+      </summary>
+      <ul>
+        {items.map((x) => (
+          <li key={x}>{x}</li>
+        ))}
+      </ul>
+    </details>
+  );
+  return (
+    <>
+      <h3>{t.title}</h3>
+      <dl class={styles.balanceMeta}>
+        <dt>버전</dt>
+        <dd>
+          {t.version} · {t.date}
+        </dd>
+        <dt>테스트 방법</dt>
+        <dd>{t.method}</dd>
+        <dt>실행 환경</dt>
+        <dd>{t.environment}</dd>
+        <dt>범위</dt>
+        <dd>{t.scope}</dd>
+      </dl>
+      <details open>
+        <summary>실행한 테스트 {t.runs.length}</summary>
+        <ul>
+          {t.runs.map((r) => (
+            <li key={r.name}>
+              <b>[{r.kind}]</b> {r.name} — {r.how}
+              <br />
+              결과: {r.result} <small>({r.evidence})</small>
+            </li>
+          ))}
+        </ul>
+      </details>
+      <div class={styles.balanceTable}>
+        <table>
+          <thead>
+            <tr>
+              <th>사례</th>
+              <th>예상</th>
+              <th>실제</th>
+              <th>판정</th>
+            </tr>
+          </thead>
+          <tbody>
+            {t.cases.map(([c, want, got, verdict]) => (
+              <tr key={c}>
+                <td>{c}</td>
+                <td>{want}</td>
+                <td>{got}</td>
+                <td>{verdict}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {list('성장 속도', t.growth, true)}
+      {list('실행하지 않았거나 확인하지 못한 항목', t.notRun, true)}
+      <details open>
+        <summary>발견한 문제 {t.issues.length}</summary>
+        <ul>
+          {t.issues.map((x) => (
+            <li key={x.title}>
+              <b>{x.title}</b> [{x.status}] — {x.detail}
+              <br />
+              <small>재현: {x.repro}</small>
+            </li>
+          ))}
+        </ul>
+      </details>
+      <details open>
+        <summary>결정이 필요한 사항 {t.decisions.length}</summary>
+        <ol>
+          {t.decisions.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ol>
+      </details>
+      {list('수정한 파일', t.files)}
+      {list('기존 시스템과의 관계', t.conflicts)}
     </>
   );
 }
