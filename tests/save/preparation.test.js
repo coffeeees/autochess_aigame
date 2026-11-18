@@ -35,7 +35,7 @@ test('legacy duplicate deployment repaired without losing units or gear, even fu
   s.units[3].pos = 37;
   for (let i = 0; i < 11; i++)
     s.units.push({ uid: 6 + i, id: 'C04', star: 1, location: 'bench', pos: -1 });
-  const item = P.addItem(s, 'sword');
+  const item = P.addItem(s, 'I01');
   item.equippedTo = 4;
   const n = s.units.length;
   a.equal(V.repairDeployment(s), 1);

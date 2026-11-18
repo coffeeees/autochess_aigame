@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:272](../src/core/preparation.js#L272) · `function startingRoster`.
+[src/core/run.ts:20](../src/core/run.ts#L20) · `function newRun`, [src/core/preparation.js:274](../src/core/preparation.js#L274) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 6-5 정산후HP>0이면 종료/계속 선택.종료는complete 상태로기록보존,계속은7-1. HP0은gameover가우선. 이미7+구간인기존세이브는소급팝업없음.7+는동일패턴기록용이며 메타XP미지급을안내하지만 실제메타XP지급은1~6을포함해모두비활성입니다.
 
-[src/core/progression.js:498](../src/core/progression.js#L498) · `function advanceRound`, [src/core/progression.js:521](../src/core/progression.js#L521) · `function chooseCompletion`.
+[src/core/progression.js:495](../src/core/progression.js#L495) · `function advanceRound`, [src/core/progression.js:518](../src/core/progression.js#L518) · `function chooseCompletion`.
 
 ## 3. 난이도·플레이어 체력
 
@@ -62,7 +62,7 @@
 
 적피해배율은적의기본/스킬/DOT/소환공격에적용되며 플레이어패배HP손실배율은아닙니다. 난이도는시작HP가낮아져도최대HP100을유지합니다.
 
-[src/core/encounters.js:12](../src/core/encounters.js#L12) · `const difficulties=`, [src/core/progression.js:431](../src/core/progression.js#L431) · `legacyDamage=`.
+[src/core/encounters.js:12](../src/core/encounters.js#L12) · `const difficulties=`, [src/core/progression.js:428](../src/core/progression.js#L428) · `legacyDamage=`.
 
 ## 4. 전장·준비 조작
 
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:72](../src/core/preparation.js#L72) · `function moveUnit`, [src/ui/store.ts:304](../src/ui/store.ts#L304) · `function beginBattle`.
+[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:74](../src/core/preparation.js#L74) · `function moveUnit`, [src/ui/store.ts:304](../src/ui/store.ts#L304) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외,판매후복귀.1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:369](../src/core/progression.js#L369) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:193](../src/core/preparation.js#L193) · `function enterShop`.
+[src/core/progression.js:366](../src/core/progression.js#L366) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:195](../src/core/preparation.js#L195) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -119,7 +119,7 @@
 | 10 | 5 | 10 | 20 | 40 | 25 | 5 | 10 | 20 |
 
 
-[src/core/preparation.js:158](../src/core/preparation.js#L158) · `const baseOdds=`.
+[src/core/preparation.js:160](../src/core/preparation.js#L160) · `const baseOdds=`.
 
 ## 6. 인게임 레벨·메타 레벨
 
@@ -150,12 +150,12 @@
 - 기본공격은AD물리,소환수의fire/lightning은마법예외.공격쿨다운=1/max(0.1,현재AS).기본공격만일반회피/치명타.
 - 스킬은충분한MP및사거리또는globalSkill/돌진예외로시전.MP는0으로초기화,시전중0.25초행동제한.최대MP감소는시전필요량도줄입니다.
 - MP는공격시12,피격시6,마법사/사제/주술사/소환사계열1.5배,manaGain보정.실제HP피해0의완전흡수타도피격MP를얻지만회피는반환되어못얻음.
-- 시작MP0.QuickMana테스트는100%,P07은최종최대MP50%,legacy mana는+20flat(최대MP상한).
+- 시작MP0.QuickMana테스트는100%,S03·P02는최종최대MP의20%·50%로시작(여러개면큰값하나).
 
 ### 계산 순서
 
 1. 기본HP/AD/AP에성급배율×적scale 적용.
-2. 장비고정스탯가산,장비AS%는합산후곱.legacy training이면AD×1.1.
+2. 장비고정스탯가산,장비AS%는합산후곱.
 3. 증강flat가산,증강AS합산곱,최대MP감소율합산(최소1).
 4. 상태이상stat/mult와아이템중첩,증강전투시간버프등현재stats조회.
 5. raw=공격계수×적난이도배율(적만)×치명배율(발생시CTH/100)×skillPower(스킬/DOT만).
@@ -167,7 +167,7 @@
 
 DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시간갱신(일부amount갱신),다른시전자DOT중첩.시전자사망후에도units에남아있어기존DOT는지속할수있습니다. harmful상태하나정화는배열의첫항목.
 
-[src/core/combat/battle.js:575](../src/core/combat/battle.js#L575) · `tick(dt=`, [src/core/combat/battle.js:247](../src/core/combat/battle.js#L247) · `deal(source,target`, [src/core/combat/battle.js:216](../src/core/combat/battle.js#L216) · `heal(target,amount`, [src/core/items.js:602](../src/core/items.js#L602) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
+[src/core/combat/battle.js:568](../src/core/combat/battle.js#L568) · `tick(dt=`, [src/core/combat/battle.js:241](../src/core/combat/battle.js#L241) · `deal(source,target`, [src/core/combat/battle.js:210](../src/core/combat/battle.js#L210) · `heal(target,amount`, [src/core/items.js:561](../src/core/items.js#L561) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
 
 ### 전투 공통 임시 설정 원문값
 
@@ -1138,16 +1138,7 @@ T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성�
 
 모든아이템고유효과는비소환수장착자만(has가summon제외).피해출처ITEM_PROC와itemProcDepth가다른고유효과연쇄재귀를차단합니다. 세부확정여부는원문아이템명세의가정과구분해테스트해야합니다.
 
-[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:306](../src/core/progression.js#L306) · `function beginSupply`.
-
-### 이전세이브장비
-
-| ID | 이름 | 수치 | 상태 |
-| --- | --- | --- | --- |
-| sword | 강철 검 | AD +10 | 호환조회/기존장착가능,새드롭풀제외 |
-| armor | 수호 갑옷 | GD +10 | 호환조회/기존장착가능,새드롭풀제외 |
-| crystal | 마력 수정 | AP +10 | 호환조회/기존장착가능,새드롭풀제외 |
-
+[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:303](../src/core/progression.js#L303) · `function beginSupply`.
 
 ## 12. 증강 — 54종(1차 후보안, 임시값)
 

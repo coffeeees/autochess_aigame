@@ -282,8 +282,6 @@ function unitItemIds(state, uid) {
 }
 function allyModifiers(state) {
   return {
-    adMultiplier: state.augments.includes('training') ? 1.1 : 1,
-    startManaFlat: state.augments.includes('mana') ? 20 : 0,
     augmentIds: state.augments.filter((id) => A.byId(id)),
     cloneTarget: state.augmentRun?.cloneTarget ?? null,
   };
@@ -294,7 +292,6 @@ function previewStats(state, u) {
       D.byId(u.id).stats,
       unitBonuses(state, u.uid),
       D.prototypeConfig.economy.starMultiplier ** ((u.star || 1) - 1),
-      allyModifiers(state).adMultiplier,
     ),
     state.augments,
   );

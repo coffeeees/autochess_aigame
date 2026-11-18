@@ -31,20 +31,22 @@ function state() {
 }
 test('three equipment slots apply all stats; fourth and duplicate type blocked', () => {
   const s = state();
-  for (const id of ['sword', 'armor', 'crystal']) {
+  // v0.17.0: 이전 장비(sword·armor·crystal) 대신 같은 성격의 1티어 장비 I01·I02·I03
+  const plus = { AD: 12, GD: 12, AP: 15 };
+  for (const id of ['I01', 'I02', 'I03']) {
     const item = P.addItem(s, id);
     a(P.equip(s, item.uid, 1));
   }
   a.equal(s.inventory.filter((i) => i.equippedTo === 1).length, 3);
-  a.deepEqual(P.unitBonuses(s, 1), { AD: 10, GD: 10, AP: 10 });
-  const fourth = P.addItem(s, 'sword');
+  a.deepEqual(P.unitBonuses(s, 1), plus);
+  const fourth = P.addItem(s, 'I01');
   a(!P.equip(s, fourth.uid, 1));
   a(!V.transferItem(s, fourth.uid, 1).ok);
   const stats = P.previewStats(s, s.units[0]);
-  for (const k of ['AD', 'GD', 'AP']) a.equal(stats[k], D.byId('C03').stats[k] + 10);
+  for (const k of ['AD', 'GD', 'AP']) a.equal(stats[k], D.byId('C03').stats[k] + plus[k]);
   a(V.transferItem(s, s.inventory[0].uid, 2).ok);
   a.equal(P.previewStats(s, s.units[0]).AD, D.byId('C03').stats.AD);
-  a.equal(P.previewStats(s, s.units[1]).AD, D.byId('C05').stats.AD + 10);
+  a.equal(P.previewStats(s, s.units[1]).AD, D.byId('C05').stats.AD + plus.AD);
   a(V.transferItem(s, s.inventory[0].uid, 2).ok);
 });
 test('equipment transfer failure atomic, return to storage, phase guards preserved', () => {

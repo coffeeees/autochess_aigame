@@ -85,12 +85,7 @@ class Battle {
       star = entry.star || 1,
       mult = this.config.economy.starMultiplier ** (star - 1),
       scale = entry.scale || 1;
-    const equipmentStats = I.applyStats(
-        spec.stats,
-        entry.bonuses || {},
-        mult * scale,
-        team === 'ally' ? this.allyModifiers.adMultiplier || 1 : 1,
-      ),
+    const equipmentStats = I.applyStats(spec.stats, entry.bonuses || {}, mult * scale),
       stats = team === 'ally' ? A.applyStats(equipmentStats, this.augmentIds) : equipmentStats;
     const startMana = Math.min(
       stats.MP,
@@ -98,8 +93,7 @@ class Battle {
         Math.max(
           this.config.combat.startMana,
           team === 'ally' ? A.aggregate(this.augmentIds).startMana : 0,
-        ) +
-        (team === 'ally' ? this.allyModifiers.startManaFlat || 0 : 0),
+        ),
     );
     return {
       uid: ++this.nextUid,
@@ -522,7 +516,6 @@ class Battle {
     unit.expires = this.time + (kind === 'specter' ? 10 : 8);
     unit.explosionDamage = ap;
     unit.poisonDamage = ap * this.config.summons.plague.poisonApRatio;
-    if (owner.team === 'ally') unit.stats.AD *= this.allyModifiers.adMultiplier || 1;
     this.units.push(unit);
     this.statsTotal.summons++;
     this.log('summon', `${owner.name} → ${unit.name} 소환 (8초)`, {

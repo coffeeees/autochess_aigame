@@ -50,10 +50,12 @@ function benchSlots(s) {
 }
 function repairDeployment(s) {
   normalize(s);
-  const seen = new Set();
+  // 같은 캐릭터가 한도(기본 1명, G13이면 2명)를 넘으면 넘는 만큼 대기석으로
+  const seen = new Map(),
+    limit = A.sameUnitLimit(s.augments);
   let moved = 0;
   for (const u of s.units.filter((u) => u.location === 'board')) {
-    if (seen.has(u.id)) {
+    if ((seen.get(u.id) || 0) >= limit) {
       const used = new Set(s.units.filter((x) => x.location === 'bench').map((x) => x.benchSlot));
       let i = 0;
       while (used.has(i)) i++;
@@ -61,7 +63,7 @@ function repairDeployment(s) {
       u.pos = -1;
       u.benchSlot = i;
       moved++;
-    } else seen.add(u.id);
+    } else seen.set(u.id, (seen.get(u.id) || 0) + 1);
   }
   return moved;
 }
