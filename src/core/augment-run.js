@@ -30,7 +30,8 @@ function normalize(state) {
   r.log = Array.isArray(r.log) ? r.log.slice(-30) : [];
   return r;
 }
-const note = (state, text) => normalize(state).log.push(`${P.label(state)} ${text}`);
+/** 기록 한 줄. 증강을 고를 때는 아직 이전 라운드라 선택 시점(node)을 key로 넘긴다 */
+const note = (state, text, key = P.label(state)) => normalize(state).log.push(`${key} ${text}`);
 
 /** 고를 수 없는 증강이면 이유(지금은 S18: 플레이어 HP 부족) */
 function chooseBlock(state, id) {
@@ -41,14 +42,14 @@ function chooseBlock(state, id) {
 }
 
 /** 동료 1명 지급. 대기석이 가득 차고 합성도 안 되면 판매가만큼 골드 */
-function grantUnit(state, id, star = 1) {
+function grantUnit(state, id, star = 1, key = P.label(state)) {
   const benchFull = state.units.filter((u) => u.location === 'bench').length >= C.board.benchSize;
   const canMerge =
     star < 3 && state.units.filter((u) => u.id === id && u.star === star).length >= 2;
   if (benchFull && !canMerge) {
     const gold = salePrice(id, star);
     state.gold += gold;
-    note(state, `대기석이 가득 차 ${D.byId(id).name} ${star}성 대신 ${gold}G`);
+    note(state, `대기석이 가득 차 ${D.byId(id).name} ${star}성 대신 ${gold}G`, key);
     return { ok: false, gold };
   }
   const uid = Math.max(0, ...state.units.map((u) => u.uid)) + 1;
@@ -56,7 +57,7 @@ function grantUnit(state, id, star = 1) {
   V.normalize(state);
   mergeAll(state);
   V.normalize(state);
-  note(state, `${D.byId(id).name} ${star}성 획득`);
+  note(state, `${D.byId(id).name} ${star}성 획득`, key);
   return { ok: true, uid };
 }
 /** 해당 코스트 무작위 캐릭터(3성 보유 캐릭터 제외). 없으면 null */
@@ -76,14 +77,14 @@ function applyChoice(next, choice, node, rng) {
   for (const g of e.units || [])
     for (let i = 0; i < g.count; i++) {
       const id = randomOfCost(next, g.cost, rng);
-      if (id) grantUnit(next, id, 1);
+      if (id) grantUnit(next, id, 1, node);
     }
   if (e.valueInvest) {
     const id = randomOfCost(next, e.valueInvest.cost, rng);
     if (id) {
       r.valueUnitId = id;
       r.valuePickNode = node;
-      grantUnit(next, id, e.valueInvest.star);
+      grantUnit(next, id, e.valueInvest.star, node);
     }
   }
   if (e.delayed) r.delayed.push({ id: choice.id, left: e.delayed.battles, gold: e.delayed.gold });
@@ -91,7 +92,7 @@ function applyChoice(next, choice, node, rng) {
     const amount = Math.floor(next.gold * e.invest.ratio);
     next.gold -= amount;
     r.invest.push({ amount, left: e.invest.battles, multiplier: e.invest.multiplier });
-    note(next, `${amount}G 맡김`);
+    note(next, `${amount}G 맡김`, node);
   }
 }
 
@@ -106,8 +107,14 @@ function onRoundStart(state, rng = runRng(state)) {
       state.gold += g;
       note(state, `황금의 흐름 +${g}G`);
     }
-  if (r.valueUnitId && r.valuePickNode !== key && A.hasEffect(state.augments, 'valueInvest'))
-    grantUnit(state, r.valueUnitId, 1);
+  if (r.valueUnitId && r.valuePickNode !== key && A.hasEffect(state.augments, 'valueInvest')) {
+    // 이미 3성이면 더 받아도 쓸 수 없으므로 1성 판매가만큼 골드(대기석 만석 규칙과 같은 방식)
+    if (state.units.some((u) => u.id === r.valueUnitId && u.star >= 3)) {
+      const gold = salePrice(r.valueUnitId, 1);
+      state.gold += gold;
+      note(state, `가치 투자 동료가 이미 3성이라 ${gold}G`);
+    } else grantUnit(state, r.valueUnitId, 1);
+  }
 }
 
 /** 레벨이 오른 만큼(G12) 동료 지급 */

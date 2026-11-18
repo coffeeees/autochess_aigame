@@ -113,6 +113,47 @@ test('G16 선택받은 영웅·P16 왕의 친위대: 코스트 최고 1명 HP �
   a.equal(ally(k, 'C03').augmentState.king, undefined);
 });
 
+test('G14 전장의 지휘관: 전방 2줄(행 4·5) 1명당 후방 2줄(행 6·7) 피해량 +5%, 최대 25%', () => {
+  const two = [
+    { id: 'C03', pos: 30 }, // 행 4
+    { id: 'C05', pos: 37 }, // 행 5
+    { id: 'C01', pos: 45 }, // 행 6
+    { id: 'C02', pos: 52 }, // 행 7
+  ];
+  const [, g] = pair(['G14'], two);
+  near(ally(g, 'C01').augmentState.damage, 0.1);
+  near(ally(g, 'C02').augmentState.damage, 0.1);
+  a(!ally(g, 'C03').augmentState.damage, '전방은 받지 않음');
+  const six = ['C03', 'C05', 'C06', 'C07', 'C08', 'C09'].map((id, i) => ({ id, pos: 28 + i }));
+  const [, h] = pair(['G14'], [...six, { id: 'C01', pos: 45 }]);
+  near(ally(h, 'C01').augmentState.damage, 0.25, '6명이어도 최대 25%');
+});
+
+test('경계 조건: 동률은 코스트 → 성급 → 작은 칸 번호, 아군 1명이면 P18 희생 없음', () => {
+  const foe = [{ id: 'E01', pos: 3 }];
+  const star = fight(
+    ['G16'],
+    [
+      { id: 'C03', pos: 38 },
+      { id: 'C05', pos: 45, star: 2 },
+    ],
+    { enemies: foe },
+  );
+  near(ally(star, 'C05').augmentState.damage, 0.2, '같은 코스트면 성급 높은 쪽');
+  const cell = fight(
+    ['G16'],
+    [
+      { id: 'C05', pos: 45 },
+      { id: 'C03', pos: 38 },
+    ],
+    { enemies: foe },
+  );
+  near(ally(cell, 'C03').augmentState.damage, 0.2, '성급도 같으면 작은 칸 번호');
+  const solo = fight(['P18'], [{ id: 'C03', pos: 38 }], { enemies: foe });
+  a(ally(solo, 'C03'), '혼자면 희생하지 않음');
+  a.equal(solo.augment.sacrifice, null);
+});
+
 test('S13·G15 활성 조합 수만큼, P17 활성 조합 4개 이상일 때만', () => {
   const allies = [
     { id: 'C01', pos: 38 },
@@ -481,6 +522,7 @@ test('대기석이 가득 차면 지급 동료 대신 판매가만큼 골드', (
 test('G09 가치 투자: 2코스트 2성 1명, 이후 라운드 시작마다 같은 동료(선택한 라운드 제외)', () => {
   const s = run({ stage: 1, round: 3 });
   a(choose(s, 'G09'));
+  a(s.augmentRun.log[0].startsWith('1-3 '), '기록은 선택 시점 표기');
   const id = s.augmentRun.valueUnitId;
   a.equal(cost(id), 2);
   a(s.units.some((u) => u.id === id && u.star === 2));
@@ -701,4 +743,18 @@ test('54종 각각·무작위 3개 조합으로 실제 전투가 끝까지 오�
     a(b.result, ids.join());
     for (const u of b.units) a(Number.isFinite(u.hp), ids.join());
   }
+});
+
+test('G09 가치 투자: 같은 동료가 이미 3성이면 1성 판매가만큼 골드', () => {
+  const s = run({ stage: 1, round: 3 });
+  choose(s, 'G09');
+  const id = s.augmentRun.valueUnitId;
+  s.units = s.units.filter((u) => u.id !== id);
+  s.units.push({ uid: 50, id, location: 'bench', pos: -1, star: 3, benchSlot: 5 });
+  settle(s, 'ally');
+  const gold = s.gold;
+  P.advanceRound(s);
+  a.equal(s.gold, gold + cost(id), '1성 판매가 = 코스트');
+  a(s.augmentRun.log.some((l) => l.includes('이미 3성')));
+  a.equal(s.units.filter((u) => u.id === id).length, 1);
 });
