@@ -41,6 +41,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* 전장 위의 말: 칸 높이에 맞춘 정사각형, 이름은 그림 아래쪽에 겹친다 */
+.pawn[data-context='field'] {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+}
+.pawn[data-context='field'] .name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 10px;
+  line-height: 1.2;
+}
 button.pawn {
   cursor: grab;
   touch-action: none;
