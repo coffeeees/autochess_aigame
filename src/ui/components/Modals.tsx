@@ -225,6 +225,11 @@ function MetaReward({ ui }: GameProps) {
         value={pay.cleared ? `+${reward.clearXp}` : '—'}
         tone={pay.cleared ? 'gold' : undefined}
       />
+      {pay.reason === 'continue' && (
+        <p>
+          6-5 뒤 계속 진행을 고를 때 정규 구간 보상으로 확정해 이미 받았습니다(무한 라운드 추가 0).
+        </p>
+      )}
       <div class={styles.metaLevel} data-up={up}>
         <strong>
           Lv.{pay.before.level} → Lv.{pay.after.level}

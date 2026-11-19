@@ -41,7 +41,7 @@ function setup(initial = {}) {
   return { store, storage, data, timers, s: () => store.getState() };
 }
 
-test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 T42~T45만 보인다', () => {
+test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 T42~T46만 보인다', () => {
   // v0.15.18 notice-policy.js의 목록(기존 화면을 지우며 값으로 고정)
   const retained = [
     'T02',
@@ -61,12 +61,12 @@ test('알림 정책: v0.15.7 조사에서 남긴 12개 + T28 + 재구축 추가 
     const id = 'T' + String(i).padStart(2, '0');
     a.equal(
       allows(id),
-      retained.includes(id) || id === 'T28' || ['T42', 'T43', 'T44', 'T45'].includes(id),
+      retained.includes(id) || id === 'T28' || ['T42', 'T43', 'T44', 'T45', 'T46'].includes(id),
       id,
     );
   }
   a.deepEqual([...RETAINED], retained);
-  a.deepEqual([...ADDED], ['T42', 'T43', 'T44', 'T45']);
+  a.deepEqual([...ADDED], ['T42', 'T43', 'T44', 'T45', 'T46']);
   a.deepEqual([...APPROVED], ['T28']);
 });
 

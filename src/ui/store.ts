@@ -10,7 +10,7 @@ import { newRun, battleSetup } from '../core/run.ts';
 import Engine from '../core/combat/battle.js';
 import type { CombatRunner, LiveBattle } from './combat/runner.ts';
 import W from '../core/encounters.js';
-import M, { type MetaProfile } from '../core/meta.ts';
+import M, { type MetaProfile, type MetaReason } from '../core/meta.ts';
 import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
@@ -222,6 +222,11 @@ export function createStore(env: StoreEnv) {
     settleMeta();
   }
 
+  /** 메타 XP 알림 문구: "이전 원정을 포기해 메타 XP +13 · Lv.2 (5 / 10 XP)" */
+  function metaText(prefix: string, p: { xp: number; after: { level: number; xp: number } }) {
+    return `${prefix} 메타 XP +${p.xp} · Lv.${p.after.level} (${M.progressLabel(p.after.level, p.after.xp)})`;
+  }
+
   /** 메타 프로필을 읽는다. 읽을 수 없거나 잘못된 값이면 새 프로필(저장은 지우지 않음). */
   function loadMeta(): MetaProfile {
     try {
@@ -244,13 +249,19 @@ export function createStore(env: StoreEnv) {
    * 원정이 끝났으면(게임 오버·6-5 뒤 게임 종료·무한 라운드 게임 오버) 메타 XP를 한 번 준다.
    * 같은 원정 ID는 다시 주지 않으므로 새로고침·이어하기·결과 창을 다시 열어도 중복되지 않는다.
    */
-  function settleMeta() {
+  function settleMeta(reason: MetaReason = 'end') {
     const r = state.run;
-    if (!r?.done || !r.runId || M.paymentFor(state.meta, r.runId)) return;
+    if (!r?.runId || M.paymentFor(state.meta, r.runId)) return null;
+    // 무한 라운드(6-5 뒤 계속 진행)는 정규 구간 보상을 이미 확정했으므로 진행 중에도 다시 확인할 필요 없다
+    const why: MetaReason =
+      reason === 'end' && !r.done && r.completionChoice === 'continue' ? 'continue' : reason;
+    if (why === 'end' && !r.done) return null;
     const meta = M.normalizeProfile(JSON.parse(JSON.stringify(state.meta)));
-    if (!M.settleRun(meta, r)) return;
+    const payment = M.settleRun(meta, r, why);
+    if (!payment) return null;
     state = { ...state, meta };
     saveMeta();
+    return payment;
   }
   const changed = (patch: Partial<UiState> = {}) => {
     // 증강이 동료를 지급하면 core가 uid를 붙이므로, 다음 번호가 겹치지 않게 맞춘다
@@ -510,6 +521,8 @@ export function createStore(env: StoreEnv) {
     chooseDifficulty: (difficulty: number) => publish({ difficulty }),
     /** 고른 난이도로 새 원정 시작(저장된 원정은 교체). */
     startRun() {
+      // 끝내지 않은 원정을 새 원정으로 바꾸면 그때까지의 메타 XP를 준다(사용자 결정 2026-11-19)
+      const abandoned = state.run && !state.run.done ? settleMeta('abandon') : null;
       const seed = env.newSeed();
       const created = newRun({
         seed,
@@ -528,6 +541,7 @@ export function createStore(env: StoreEnv) {
         inspected: null,
         selectedItem: null,
       });
+      if (abandoned) notify('T46', metaText('이전 원정을 포기해', abandoned));
     },
     continueRun() {
       if (!state.run) return;
@@ -757,9 +771,12 @@ export function createStore(env: StoreEnv) {
     /** 6-5 이후: 'end'(종료) 또는 'continue'(7-1부터 계속) */
     chooseCompletion(choice: 'end' | 'continue') {
       if (!state.run || !P.chooseCompletion(run(), choice)) return;
-      save();
-      if (choice === 'continue') continueRound();
-      else publish({ modal: 'summary' });
+      save(); // 계속 진행이면 여기서 정규 구간 메타 XP(최대 80)를 확정해 지급한다
+      if (choice === 'continue') {
+        const paid = M.paymentFor(state.meta, run().runId);
+        continueRound();
+        if (paid?.reason === 'continue') notify('T46', metaText('정규 구간을 마쳐', paid));
+      } else publish({ modal: 'summary' });
     },
     cycleSpeed() {
       const speed = state.speed === 1 ? 2 : state.speed === 2 ? 4 : 1;

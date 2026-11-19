@@ -306,6 +306,16 @@ rows.push(
     repeat: '이전 저장을 지운 뒤 처음 열 때 1회. 지운 뒤에는 다시 나오지 않음.',
     status: '추가 · v0.17.0',
   },
+  {
+    id: 'T46',
+    condition:
+      '결과 창 없이 메타 XP를 받을 때: 끝내지 않은 원정을 새 원정으로 바꿈(포기), 6-5 뒤 계속 진행(정규 구간 보상 확정)',
+    message:
+      '이전 원정을 포기해 메타 XP +N · Lv.L (x / y XP) / 정규 구간을 마쳐 메타 XP +N · Lv.L (x / y XP)',
+    source: 'store.ts: startRun · chooseCompletion → core/meta.ts: settleRun',
+    repeat: '원정마다 한 번(같은 원정 ID로는 다시 지급·표시하지 않음).',
+    status: '추가 · v0.17.3',
+  },
 );
 rows.find((r) => r.id === 'T38').repeat =
   '이번부터 아군0명은 시작을 차단하며 기존 즉시 패배 경로/알림은 실행하지 않음.';
@@ -331,7 +341,7 @@ function toHTML() {
     escape(behavior) +
     '</p><p>총 ' +
     rows.length +
-    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가4(T42~T45). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
+    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가5(T42~T46). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
     ['조건 / 사용자 행동', '화면 문구', '관련 코드', '중복·연속 발생 가능성', '현재 상태']
       .map((x) => '<th scope="col">' + x + '</th>')
       .join('') +

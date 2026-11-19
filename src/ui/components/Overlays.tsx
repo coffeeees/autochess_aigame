@@ -787,7 +787,10 @@ function ResetConfirm({ actions }: Props) {
   return (
     <section>
       <h2>새 원정을 시작할까요?</h2>
-      <p>현재 진행·장비·증강·레벨을 새 원정으로 교체합니다. 다음 화면에서 난이도를 고릅니다.</p>
+      <p>
+        현재 진행·장비·증강·레벨을 새 원정으로 교체합니다. 다음 화면에서 난이도를 고릅니다. 끝내지
+        않은 원정은 새 원정을 시작할 때 그때까지 완료한 스테이지로 메타 XP를 받습니다.
+      </p>
       <div class={styles.cardButtons}>
         <button onClick={actions.closeOverlay}>취소</button>
         <button data-variant="primary" onClick={actions.confirmNewRun}>
@@ -915,7 +918,7 @@ function BalanceMetaView({ t }: { t: BalanceMeta }) {
         </ul>
       </details>
       <details open>
-        <summary>결정이 필요한 사항 {t.decisions.length}</summary>
+        <summary>결정 사항(결정 결과와 새로 결정할 것) {t.decisions.length}</summary>
         <ol>
           {t.decisions.map((x) => (
             <li key={x}>{x}</li>
