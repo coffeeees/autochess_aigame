@@ -207,7 +207,7 @@ function MetaReward({ ui }: GameProps) {
         <p>이 원정은 메타 XP 지급 대상이 아닙니다(메타 레벨 도입 전에 끝난 원정).</p>
       </div>
     );
-  const reward = M.runReward(run);
+  const reward = M.runReward(run, pay.reason);
   const up = pay.after.level > pay.before.level;
   return (
     <div class={styles.meta} data-paid="true" aria-label="메타 레벨 결과">
