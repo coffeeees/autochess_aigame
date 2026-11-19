@@ -541,7 +541,7 @@ export function createStore(env: StoreEnv) {
         inspected: null,
         selectedItem: null,
       });
-      if (abandoned) notify('T46', metaText('이전 원정을 포기해', abandoned));
+      if (abandoned?.xp) notify('T46', metaText('이전 원정을 포기해', abandoned));
     },
     continueRun() {
       if (!state.run) return;

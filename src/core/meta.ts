@@ -124,18 +124,20 @@ export function regularCleared(run: Pick<RunState, 'completedRounds'>): boolean 
 }
 
 /** 원정 하나의 메타 XP(정규 구간만, 최대 80) */
-export function runReward(run: Pick<RunState, 'completedRounds'>) {
+export function runReward(run: Pick<RunState, 'completedRounds'>, reason: MetaReason = 'end') {
   const stages = completedStages(run);
   const cleared = regularCleared(run);
   const stageXp = stages * config.perStageXp;
   const clearXp = cleared ? config.clearBonusXp : 0;
+  // 원정 포기는 기본 XP 없이 완료 스테이지만(사용자 결정 2026-11-19 (나): 새 원정 반복으로 쌓지 못하게)
+  const base = reason === 'abandon' ? 0 : config.baseXp;
   return {
     stages,
     cleared,
-    base: config.baseXp,
+    base,
     stageXp,
     clearXp,
-    xp: config.baseXp + stageXp + clearXp,
+    xp: base + stageXp + clearXp,
   };
 }
 
@@ -162,7 +164,7 @@ export function settleRun(
   if (!run.runId || paymentFor(profile, run.runId)) return null;
   if (reason === 'end' && !run.done) return null;
   if (reason === 'continue' && run.completionChoice !== 'continue') return null;
-  const reward = runReward(run);
+  const reward = runReward(run, reason);
   const { before, after } = addXp(profile, reward.xp);
   const payment: MetaPayment = {
     runId: run.runId,

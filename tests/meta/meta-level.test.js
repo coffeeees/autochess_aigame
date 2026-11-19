@@ -266,17 +266,18 @@ test('계속 진행: 6-5 뒤 계속 진행을 고른 순간 80 XP 확정, 무한
   a.equal(M.settleRun(p, endless, 'abandon'), null);
 });
 
-test('원정 포기: 끝내지 않은 원정은 그때까지 완료한 스테이지로 지급', () => {
+test('원정 포기: 끝내지 않은 원정은 그때까지 완료한 스테이지 × 2(기본 5 없음)', () => {
   const s = play({ stop: '2-4' }); // 1-1 ~ 2-3 완료(8스테이지)
   a(!s.done);
-  a.equal(M.runReward(s).xp, 5 + 8 * 2);
+  a.equal(M.runReward(s).xp, 5 + 8 * 2, '끝났을 때 기준');
+  a.equal(M.runReward(s, 'abandon').xp, 8 * 2, '포기는 기본 5 없이(사용자 결정 (나))');
   const p = M.newProfile();
   a.equal(M.settleRun(p, s), null, '원정 종료(end)로는 주지 않음');
   const pay = M.settleRun(p, s, 'abandon');
-  a.deepEqual([pay.xp, pay.reason, pay.after.level, pay.after.xp], [21, 'abandon', 3, 3]);
+  a.deepEqual([pay.xp, pay.reason, pay.after.level, pay.after.xp], [16, 'abandon', 2, 8]);
   a.equal(M.settleRun(p, s, 'abandon'), null, '한 번만');
   const fresh = newRun({ seed: 2, difficulty: 1, runId: 'run-fresh' });
-  a.equal(M.settleRun(M.newProfile(), fresh, 'abandon').xp, 5, '아무것도 안 하고 포기해도 기본 5');
+  a.equal(M.settleRun(M.newProfile(), fresh, 'abandon').xp, 0, '아무것도 안 하고 포기하면 0');
 });
 
 test('저장소: 새 원정으로 바꾸면 포기 지급(T46), 계속 진행은 그 순간 지급(T46), 결과 창 없이도 한 번만', () => {
@@ -284,12 +285,14 @@ test('저장소: 새 원정으로 바꾸면 포기 지급(T46), 계속 진행은
   going.runId = 'run-abandon';
   const a1 = store(new Map([['starlight-onecost-v1', JSON.stringify(going)]]));
   a1.st.actions.startRun();
-  a.deepEqual([a1.s().meta.metaLevel, a1.s().meta.metaXp], [3, 3], '+21');
+  a.deepEqual([a1.s().meta.metaLevel, a1.s().meta.metaXp], [2, 8], '+16');
   a.equal(a1.s().notice?.id, 'T46');
-  a(a1.s().notice.text.startsWith('이전 원정을 포기해 메타 XP +21'));
-  // 새로 시작한 원정을 곧바로 다시 바꿔도(포기) 기본 5만, 끝난 원정을 바꾸면 추가 없음
+  a(a1.s().notice.text.startsWith('이전 원정을 포기해 메타 XP +16'));
+  // 새로 시작한 원정을 곧바로 다시 바꾸면 0 XP(반복으로 쌓을 수 없음), 알림도 없음
+  const key = a1.s().notice.key;
   a1.st.actions.startRun();
-  a.equal(a1.s().meta.totalXp, 26);
+  a.equal(a1.s().meta.totalXp, 16);
+  a.equal(a1.s().notice.key, key, '0 XP면 새 알림 없음');
   // 6-5 결과 창에서 계속 진행
   const at65 = play({ completion: null });
   at65.runId = 'run-continue';
