@@ -229,12 +229,12 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.17.2');
+  a.equal(notes.current, '0.17.3');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
     audit.rows.filter((r) => r.status.startsWith('추가')).map((r) => r.id),
-    ['T42', 'T43', 'T44', 'T45'],
+    ['T42', 'T43', 'T44', 'T45', 'T46'],
   );
 });
 

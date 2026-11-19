@@ -109,8 +109,8 @@ function DifficultyPicker({ ui, actions }: Props) {
         </button>
       </div>
       <p class={styles.newRunNote}>
-        현재 원정이 있다면 새 원정으로 교체됩니다. 시작 화면에서 ‘이어하기’를 누르면 기존 진행을
-        유지합니다.
+        현재 원정이 있다면 새 원정으로 교체됩니다(끝내지 않은 원정은 그때까지의 메타 XP를 받습니다).
+        시작 화면에서 ‘이어하기’를 누르면 기존 진행을 유지합니다.
       </p>
     </section>
   );

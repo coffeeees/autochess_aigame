@@ -39,9 +39,13 @@ export interface MetaPayment {
   xp: number;
   stages: number; // 정규 구간 완료 스테이지 수(0~30)
   cleared: boolean; // 6-5 완료(승리)
+  /** 지급 시점: end 원정 종료, continue 6-5 뒤 계속 진행(정규 구간 확정), abandon 끝내지 않은 원정 포기 */
+  reason?: MetaReason;
   before: { level: number; xp: number };
   after: { level: number; xp: number };
 }
+
+export type MetaReason = 'end' | 'continue' | 'abandon';
 
 export interface MetaProfile {
   version: 1;
@@ -145,11 +149,19 @@ export function paymentFor(profile: MetaProfile, runId: string | undefined): Met
 }
 
 /**
- * 원정이 끝났으면(HP 0 게임 오버, 6-5 뒤 "게임 종료", 무한 라운드 게임 오버) 메타 XP를 한 번 지급한다.
- * 이미 지급한 원정(같은 runId)이거나 끝나지 않았거나 runId가 없으면 아무것도 하지 않고 null.
+ * 원정 하나의 메타 XP를 한 번 지급한다(같은 runId는 다시 주지 않음, runId가 없으면 null). 지급 시점(사용자 결정 2026-11-19):
+ * - end: 원정이 끝남(HP 0 게임 오버, 6-5 뒤 "게임 종료", 무한 라운드 게임 오버). run.done이어야 한다
+ * - continue: 6-5 뒤 "계속 진행"을 고른 순간 정규 구간 보상(최대 80)을 확정. 무한 라운드에서 끝나도 더 주지 않는다
+ * - abandon: 끝내지 않은 원정을 새 원정으로 바꿀 때 그때까지의 XP
  */
-export function settleRun(profile: MetaProfile, run: RunState): MetaPayment | null {
-  if (!run.done || !run.runId || paymentFor(profile, run.runId)) return null;
+export function settleRun(
+  profile: MetaProfile,
+  run: RunState,
+  reason: MetaReason = 'end',
+): MetaPayment | null {
+  if (!run.runId || paymentFor(profile, run.runId)) return null;
+  if (reason === 'end' && !run.done) return null;
+  if (reason === 'continue' && run.completionChoice !== 'continue') return null;
   const reward = runReward(run);
   const { before, after } = addXp(profile, reward.xp);
   const payment: MetaPayment = {
@@ -157,6 +169,7 @@ export function settleRun(profile: MetaProfile, run: RunState): MetaPayment | nu
     xp: reward.xp,
     stages: reward.stages,
     cleared: reward.cleared,
+    reason,
     before,
     after,
   };
