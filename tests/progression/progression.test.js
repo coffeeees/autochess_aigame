@@ -17,8 +17,8 @@ function state() {
     health: 100,
     gold: 12,
     units: [
-      { uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 },
-      { uid: 2, id: 'C05', location: 'board', pos: 53, star: 1 },
+      { uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 },
+      { uid: 2, id: 'C05', location: 'board', pos: 32, star: 1 },
     ],
     shop: D.playableIds.slice(0, 5),
   });
@@ -98,12 +98,12 @@ test('미리보기와 전투 능력치가 같고, 명단·적은 바뀌지 않�
   assert.equal(mods.startManaFlat, undefined);
   const b = new Battle(
     s.units.map((u) => ({ ...u, bonuses: P.unitBonuses(s, u.uid) })),
-    [{ id: 'C10', pos: 17 }],
+    [{ id: 'C10', pos: 29 }],
     { allyModifiers: mods },
   );
   near(b.units[0].stats.AD, D.byId('C03').stats.AD + 12);
   assert.equal(b.units[0].mp, 0);
-  const quick = new Battle(s.units, [{ id: 'C10', pos: 17 }], {
+  const quick = new Battle(s.units, [{ id: 'C10', pos: 29 }], {
     quickMana: true,
     allyModifiers: mods,
   });

@@ -14,7 +14,7 @@ $bondEffects.init = (b) => {
 let passed = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 const basicBattle = (id = 'C01', enemy = 'C03') =>
-  new Battle([{ id, pos: 31 }], [{ id: enemy, pos: 24 }], { rng: () => 0.99 });
+  new Battle([{ id, pos: 27 }], [{ id: enemy, pos: 28 }], { rng: () => 0.99 });
 test('45 roster / cost distribution / exact one of each attribute / all 16 bonds', () => {
   assert.equal(D.roster.length, 45);
   assert.equal(D.synergies.length, 16);

@@ -16,7 +16,7 @@ const a = require('node:assert/strict'),
   V = $preparation;
 test('duplicateT3 three-slot limit, migration and bonuses survive round-trip; T24 disabled', () => {
   const s = P.initialize({
-    units: [{ uid: 1, id: 'C01', star: 1, location: 'board', pos: 31 }],
+    units: [{ uid: 1, id: 'C01', star: 1, location: 'board', pos: 27 }],
     health: 100,
     gold: 7,
     shop: [],

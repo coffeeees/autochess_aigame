@@ -25,8 +25,8 @@ function state(stage = 1, round = 1) {
     health: 100,
     gold: 12,
     units: [
-      { id: 'C03', uid: 1, star: 1, pos: 31, location: 'board' },
-      { id: 'C05', uid: 2, star: 1, pos: 32, location: 'board' },
+      { id: 'C03', uid: 1, star: 1, pos: 27, location: 'board' },
+      { id: 'C05', uid: 2, star: 1, pos: 35, location: 'board' },
     ],
     shop: [],
   });
@@ -37,13 +37,13 @@ function state(stage = 1, round = 1) {
 function battle(ids = [], id = 'C03', options = {}) {
   return new Battle(
     [
-      { id, uid: 1, pos: 31, itemIds: ids, bonuses: I.bonuses(ids) },
-      { id: id === 'C05' ? 'C03' : 'C05', uid: 2, pos: 32 },
+      { id, uid: 1, pos: 27, itemIds: ids, bonuses: I.bonuses(ids) },
+      { id: id === 'C05' ? 'C03' : 'C05', uid: 2, pos: 35 },
     ],
     [
-      { id: 'E06', pos: 24 },
-      { id: 'E03', pos: 23 },
-      { id: 'E01', pos: 17 },
+      { id: 'E06', pos: 28 },
+      { id: 'E03', pos: 20 },
+      { id: 'E01', pos: 29 },
     ],
     { rng: () => 0.99, ...options },
   );
@@ -64,8 +64,8 @@ test('patch notes include v0.1..0.15.11 current rules40items and original histor
     N.history.some((h) => h.version === '0.15.18'),
     '원본 마지막 버전 기록 보존',
   );
-  a.equal(N.history.at(-1).version, '0.17.4');
-  a.equal(N.current, '0.17.4');
+  a.equal(N.history.at(-1).version, '0.18.0');
+  a.equal(N.current, '0.18.0');
   const text = N.toMarkdown();
   a(text.includes('미구현'));
   a(text.includes('시작7G'));

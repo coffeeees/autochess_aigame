@@ -19,7 +19,7 @@ let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
   const b = new E.Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     positions.map((pos) => ({ id: 'E01', pos })),
     { rng: () => 0.99 },
   );
@@ -48,8 +48,8 @@ test('45 playable/unmodified draft stats, raw original odds every level, real co
       .map((u) => u.id);
     a.equal(D.evaluateSynergies(ids).find((b) => b.name === bond.name).threshold, 6);
     const b = new E.Battle(
-      ids.map((id, i) => ({ id, pos: 35 + i })),
-      [{ id: 'E01', pos: 0 }],
+      ids.map((id, i) => ({ id, pos: 2 + 8 * i })),
+      [{ id: 'E01', pos: 7 }],
       { rng: () => 0.99 },
     );
     a.equal(b.synergySnapshot.ally.find((e) => e.name === bond.name).threshold, 6);

@@ -111,8 +111,8 @@ test('core는 Math.random을 쓰지 않는다: 원정 시작·보급·상점·�
   V.enterShop(s);
   const enemies = W.encounter({ ...clone(s), stage: 2, round: 1, roundPhase: 'prepare' });
   const b = new Engine.Battle(
-    [{ id: 'C01', pos: 38 }],
-    enemies.length ? enemies : [{ id: 'E01', pos: 3 }],
+    [{ id: 'C01', pos: 26 }],
+    enemies.length ? enemies : [{ id: 'E01', pos: 31 }],
     {
       seed: P.battleSeed(s),
     },
@@ -136,8 +136,8 @@ test('core는 Math.random을 쓰지 않는다: 원정 시작·보급·상점·�
 test('시드 전투는 똑같이 반복되고, Worker로 넘긴 뒤에도 똑같이 이어진다', () => {
   const make = () =>
     new Engine.Battle(
-      ['C01', 'C04', 'C07', 'C25'].map((id, i) => ({ id, pos: 37 + i })),
-      ['E03', 'E06', 'E01'].map((id, i) => ({ id, pos: 16 + i, star: 2 })),
+      ['C01', 'C04', 'C07', 'C25'].map((id, i) => ({ id, pos: 18 + 8 * i })),
+      ['E03', 'E06', 'E01'].map((id, i) => ({ id, pos: 21 + 8 * i, star: 2 })),
       { seed: 123456 },
     );
   const direct = make();

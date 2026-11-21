@@ -1,9 +1,9 @@
-// 전투 중 전장을 PixiJS 캔버스에 그린다(결정 D1).
-// 칸 위치는 보드 그림에서 잰 격자선(art/board.ts)을 따르고, 보드 그림 자체는 DOM <img>가 아래에 깔린다.
+// 전투 중 전장을 PixiJS로 그린다(결정 D1). v0.18.0부터 게임 화면 장면(render/stage.ts)의 유닛·연출 레이어에 그린다.
+// 칸 위치는 장면이 보드 그림에 맞춰 계산한 칸 중심(art/board.ts의 tileOnScreen)을 쓴다.
+// 좌우 대치: 아군은 오른쪽(+x), 적은 왼쪽(−x)을 본다(그림을 좌우 반전).
 // 캐릭터: 도트 스프라이트(art/characters.ts) → 없으면 일러스트 썸네일 → 없으면 SVG 아바타.
 // 연출은 Worker가 보낸 이벤트로만 만들고(timeline.ts), 전투 상태는 읽기만 한다.
 import {
-  Application,
   Container,
   Graphics,
   Rectangle,
@@ -12,16 +12,13 @@ import {
   Texture,
   type TextStyleOptions,
 } from 'pixi.js';
-import D from '../../core/data/units.js';
-import { boardArt } from '../art/board.ts';
+import type { Scene } from './stage.ts';
 import { avatarSvg as avatarJs } from '../art/avatar.js';
 import { portraitOf, spriteOf } from '../art/characters.ts';
 import { combatant, costColor } from '../data.ts';
 import { plan, type CombatEvent, type PlanUnit } from './plan.ts';
 import { createTimeline, type Frame, type Point } from './timeline.ts';
 
-const COLUMNS = D.prototypeConfig.board.columns as number;
-const ROWS = D.prototypeConfig.board.rows as number;
 const FONT = 'Pretendard, system-ui, sans-serif';
 
 /** 캔버스가 읽는 전투 유닛 필드 */
@@ -51,23 +48,6 @@ const toneStyle: Record<string, { fill: string; size: number }> = {
   shielding: { fill: '#a3d5ff', size: 12 },
   evade: { fill: '#ded7e8', size: 12 },
 };
-
-/** 그림 기준 칸 중심(그림 픽셀). 캔버스 크기에 맞춰 배율만 곱하면 된다. */
-export function cellCenters() {
-  const { columns, rows } = boardArt;
-  const out: { x: number; y: number; w: number; h: number }[] = [];
-  for (let pos = 0; pos < COLUMNS * ROWS; pos++) {
-    const c = pos % COLUMNS;
-    const r = Math.floor(pos / COLUMNS);
-    out.push({
-      x: (columns[c] + columns[c + 1]) / 2,
-      y: (rows[r] + rows[r + 1]) / 2,
-      w: columns[c + 1] - columns[c],
-      h: rows[r + 1] - rows[r],
-    });
-  }
-  return out;
-}
 
 const avatarSvg = avatarJs as (id: string, summonKind?: string | null) => string;
 
@@ -229,6 +209,8 @@ class UnitView {
     const artSize = size - 4;
     this.art.width = artSize;
     this.art.height = artSize;
+    // 아군은 오른쪽, 적은 왼쪽을 본다(정면 그림은 좌우 반전으로 방향만 표시)
+    if (this.unit.team === 'enemy') this.art.scale.x = -Math.abs(this.art.scale.x);
     this.stars.position.set(-half + 3, -half + 1);
     this.label.style.fontSize = Math.max(9, Math.round(size * 0.14));
     this.label.position.set(0, half - this.label.height - 1);
@@ -259,31 +241,11 @@ export interface BattlefieldOptions {
   reduced: () => boolean;
 }
 
-/** 전장 캔버스를 만든다. WebGL·Canvas를 둘 다 못 쓰면 예외를 던진다(호출 쪽이 DOM 전장으로 대신 그림). */
-export async function createBattlefield(host: HTMLElement, options: BattlefieldOptions) {
-  const app = new Application();
-  await app.init({
-    backgroundAlpha: 0,
-    antialias: true,
-    autoDensity: true,
-    resolution: Math.min(2, window.devicePixelRatio || 1),
-    width: Math.max(1, host.clientWidth),
-    height: Math.max(1, host.clientHeight),
-    preference: 'webgl',
-  });
-  const canvas = app.canvas as HTMLCanvasElement;
-  canvas.setAttribute('aria-hidden', 'true');
-  canvas.style.position = 'absolute';
-  canvas.style.inset = '0';
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.pointerEvents = 'none';
-  host.appendChild(canvas);
-
-  const centers = cellCenters();
-  let scale = 1;
-  let width = host.clientWidth;
-  let height = host.clientHeight;
+/** 장면(render/stage.ts) 위에 전투를 그린다. 장면을 못 만든 환경에서는 호출 쪽이 DOM 전장으로 대신 그림. */
+export async function createBattlefield(scene: Scene, options: BattlefieldOptions) {
+  const app = scene.app;
+  let width = window.innerWidth;
+  let height = window.innerHeight;
   let speed = 1;
   let paused = false;
   let battleRef: FieldBattle | null = null;
@@ -299,7 +261,9 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
   const over = new Graphics();
   const lightLayer = new Container();
   const textLayer = new Container();
-  app.stage.addChild(under, unitsLayer, lightLayer, over, textLayer);
+  scene.layers.vfxUnder.addChild(under);
+  scene.layers.units.addChild(unitsLayer);
+  scene.layers.vfx.addChild(lightLayer, over, textLayer);
 
   // 부드러운 빛: 흰 원형 그라데이션 하나를 색만 바꿔 여러 번 쓴다
   const glowCanvas = document.createElement('canvas');
@@ -316,31 +280,26 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
   const lights: Sprite[] = [];
   const texts: { tag: Text; value: Text; box: Container }[] = [];
 
-  const cell = (pos: number | undefined): Point | undefined => {
-    if (pos === undefined || !centers[pos]) return undefined;
-    const c = centers[pos];
-    return { x: c.x * scale, y: c.y * scale, w: c.w * scale, h: c.h * scale };
-  };
+  const cell = (pos: number | undefined): Point | undefined =>
+    pos === undefined ? undefined : (scene.tile(pos) ?? undefined);
   const point = (uid: number | undefined, pos: number | undefined): Point => {
     const view = uid === undefined ? undefined : views.get(uid);
     const base = cell(view?.unit.pos ?? pos) ?? { x: width / 2, y: height / 2, w: 60, h: 60 };
     return view?.placed ? { ...base, x: view.root.x, y: view.root.y } : base;
   };
 
+  // 창 크기·보드 위치가 바뀌면 칸 위치를 다시 잡는다(장면이 알려 줌)
   function resize() {
-    width = host.clientWidth;
-    height = host.clientHeight;
-    if (!width || !height) return;
-    app.renderer.resize(width, height);
-    scale = width / boardArt.source.width;
+    width = window.innerWidth;
+    height = window.innerHeight;
     timeline.clear();
     for (const v of views.values()) {
-      v.layout(cell(v.unit.pos)!);
+      const c = cell(v.unit.pos);
+      if (c) v.layout(c);
       v.placed = false;
     }
   }
-  const observer = new ResizeObserver(resize);
-  observer.observe(host);
+  const offLayout = scene.onLayout(resize);
   resize();
 
   function sync(battle: FieldBattle) {
@@ -356,13 +315,16 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
       let v = views.get(u.uid);
       if (!v) {
         if (u.dead || u.hp <= 0) continue;
+        const c = cell(u.pos);
+        if (!c) continue;
         v = new UnitView(u);
         views.set(u.uid, v);
         unitsLayer.addChild(v.root);
-        v.layout(cell(u.pos)!);
+        v.layout(c);
       }
       v.unit = u;
-      const target = cell(u.pos)!;
+      const target = cell(u.pos);
+      if (!target) continue;
       if (!v.placed) {
         v.from = v.to = { x: target.x, y: target.y };
         v.root.position.set(target.x, target.y);
@@ -422,7 +384,8 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
       v.bars.visible = dying === 0;
       if (v.frames && v.frames.length > 1)
         v.art.texture = v.frames[Math.floor((now / 1000) * v.fps) % v.frames.length];
-      v.drawBars(cell(v.unit.pos)!);
+      const c = cell(v.unit.pos);
+      if (c) v.drawBars(c);
     }
 
     under.clear();
@@ -554,9 +517,9 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
     },
     /** 화면 좌표(clientX/Y) 아래의 살아 있는 전투 유닛 uid(전투 중 상세 창용). 없으면 null */
     unitAt(clientX: number, clientY: number): number | null {
-      const r = host.getBoundingClientRect();
-      const x = clientX - r.left;
-      const y = clientY - r.top;
+      // 장면 캔버스가 화면 (0,0)에 꽉 차 있어 장면 좌표 = 화면 좌표
+      const x = clientX;
+      const y = clientY;
       let best: number | null = null;
       let bestDist = Infinity;
       for (const [uid, v] of views) {
@@ -574,10 +537,15 @@ export async function createBattlefield(host: HTMLElement, options: BattlefieldO
       return best;
     },
     destroy() {
-      observer.disconnect();
+      offLayout();
       document.removeEventListener('visibilitychange', onVisibility);
       app.ticker.remove(tick);
-      app.destroy({ removeView: true }, { children: true });
+      if (paused) app.ticker.start();
+      // 이 전투가 장면에 붙인 것만 뗀다(배경·보드는 장면 것)
+      for (const c of [under, unitsLayer, lightLayer, over, textLayer]) {
+        c.removeFromParent();
+        c.destroy({ children: true });
+      }
     },
     /** 테스트·진단용: 지금 그리고 있는 연출 수 */
     get busy() {

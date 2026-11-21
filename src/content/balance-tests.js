@@ -1449,6 +1449,138 @@ const meta = {
   ],
 };
 
+/** 좌우 대치 전장(v0.18.0, AUTOCHESS_BATTLEFIELD_IMPLEMENTATION_V2) 구현·테스트 기록. 밸런스 측정이 아니라 전장 변경 검증 */
+const battlefield = {
+  title: '좌우 대치 전장(8열 × 7행) · 구현과 테스트',
+  date: '2026-11-21',
+  version: 'v0.18.0',
+  method:
+    '세 가지로 확인했습니다. ① 단위 테스트(Vitest): 좌표 회전·진영·앞뒤 열·저장 이관·그림 격자 계산. ② 전투 기준선: 시드 전투 45건을 새 좌표로 돌려 예전 결과와 비교(칸 번호만 되돌려 비교). ③ 브라우저 조작(Playwright Chromium이 실제 화면을 드래그·클릭): 배치·전투·합성·저장 이관·창 크기 변경. 사람이 직접 판단한 플레이는 없습니다.',
+  environment:
+    'feat/side-battlefield 브랜치(v0.18.0). PixiJS 8.22.0, Node 22, Vitest 3, Chromium(Playwright, 배율 1), vite 개발 서버. 창 크기 1761×832 · 1761×990(F11 전체 화면 흉내) · 1920×1080 · 1600×900 · 1366×768 · 1280×720.',
+  scope:
+    '중앙 전장만: 배경(cover)·보드(contain) PixiJS 레이어, 8열 × 7행 좌표, 아군 왼쪽 4열·적 오른쪽 4열, 마주 보는 방향, 배치·이동·길 찾기·스킬·증강의 앞뒤 판정, 저장 이관. 상단 진행 바·좌우 패널·하단 대기석·버튼·밸런스는 범위 밖(바꾸지 않음).',
+  runs: [
+    {
+      kind: '단위 테스트',
+      name: '전장 좌표·저장 이관·그림 격자',
+      how: 'tests/board/board.test.js(8×7, 회전 공식, 진영, 배치 거절 문구), tests/save/*(v4 → v5 회전 이관, 중복 회전 없음), tests/ui-next/effects.test.js(보정값 JSON으로 56칸 중심·fitBoard·cover·pointerToPos 왕복), 기존 테스트의 칸 번호는 회전 공식으로 바꿈',
+      result: '68개 파일 389개 모두 통과',
+      evidence: 'npm test',
+    },
+    {
+      kind: '전투 기준선',
+      name: '시드 전투 45건 새 좌표로 재실행',
+      how: '아군·적 시작 칸을 rotateOldPos로 옮겨 실행하고, 로그의 칸 번호만 예전 번호로 되돌려 해시 비교',
+      result:
+        '45건 모두 같음(승패·시간·피해·로그). 길 찾기 이웃 순서를 회전에 맞춰 바꿔 동률 처리도 같음',
+      evidence: 'npm run baseline:check',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '56칸 정합과 드래그 배치',
+      how: '입력 칸 중심과 보드 그림 격자 계산 중심 비교, 대기석 → 0·3·48·51(경계) 배치, 4(적 진영) 거절, 전장 유닛 → 31(적 진영) 거절',
+      result: '오차 최대 0.04px, 아군 28칸·적 28칸, 배치 6건 모두 예상대로, 콘솔 오류 0',
+      evidence: '1600×900 · 1366×768',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '1-3 전투(1배속)',
+      how: '1-1·1-2 보급, 1-3 증강 뒤 아군 3명을 27·26·33에 배치하고 전투, 0.6·2.5·5초 캡처. 한 번은 5초에 창을 1366×768로 줄임',
+      result:
+        '유닛이 칸 중심에 서고 아군은 왼쪽·적은 오른쪽에서 맞붙음, 적 그림 좌우 반전, 창을 줄여도 유닛이 칸에 맞게 다시 배치, 승리(29초·35.3초), 콘솔 오류 0',
+      evidence: 'scratchpad side-combat.cjs',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '합성 중 레이아웃(6가지)',
+      how: '대기석·전장·교차 1→2성, 2→3성 합성 저장(v4 형식, 불러올 때 이관)에서 상점 구매 → 2.2초 동안 100ms마다 전장·대기석·패널 사각형 측정',
+      result: '6건 모두 합성 중 변화 0, 합성 결과 별 수 맞음',
+      evidence: 'scratchpad merge-layout.cjs',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '이전 버전 저장 이관',
+      how: '배치한 원정 저장을 v4(7열) 형식으로 되돌려 넣고 새로고침 → 이어하기 → 유닛 한 칸 이동',
+      result:
+        '화면의 칸이 원래 칸(27·50)으로 복원, 적 편성 칸도 같음, 첫 저장부터 버전 5·8열로 기록',
+      evidence: 'scratchpad side-save.cjs',
+    },
+  ],
+  casesTitle: '창 크기별 실제 보드 크기',
+  cases: [
+    [
+      '1761×832',
+      '세로 기준 contain, 비율 1.5',
+      '보드 837×558 (462, 106), 칸 83.2×63.6, 오차 0.04px',
+      '통과',
+    ],
+    [
+      '1761×990 (F11)',
+      '창 크기 변화를 따라 다시 맞춤',
+      '보드 1074×716 (343.5, 106), 칸 106.8×81.6',
+      '통과',
+    ],
+    ['1920×1080', '비율 1.5', '보드 1209×806 (355.5, 106), 칸 120.2×91.9', '통과'],
+    ['1600×900', '비율 1.5', '보드 939×626 (330.5, 106), 칸 93.4×71.3', '통과'],
+    ['1366×768', '비율 1.5', '보드 786×524 (290, 96), 칸 78.2×59.7', '통과'],
+    ['1280×720', '비율 1.5', '보드 714×476 (283, 96), 칸 71×54.3', '통과'],
+    ['캔버스', '창 전체(CSS px = 장면 좌표)', '모든 크기에서 창 크기와 같음', '통과'],
+    ['전투 기준선', '45건 같음', '45건 같음', '통과'],
+  ],
+  growthTitle: '좌표계',
+  growth: [
+    '보드 그림 원본 1536×1024, 칸 영역(그림 px) 왼쪽 157 · 위 86.5 · 오른쪽 1379 · 아래 903.5, 칸 152.75×116.71(docs/specs/BOARD_SIDE_8X7_CALIBRATION.json).',
+    '배경 원본 1672×941, 배율 = max(화면 가로/1672, 화면 세로/941)(cover). 보드 배율 = min(사용 영역 가로/1536, 세로/1024)(contain), 안쪽 여백 12px.',
+    '칸 번호 pos = 행 × 8 + 열(0~55). 아군 열 0~3, 적 열 4~7. 앞쪽 정도 depth: 아군 = 열, 적 = 7 − 열(3이 전열, 0이 후열).',
+    '예전 칸 → 새 칸: 새 행 = 예전 열, 새 열 = 7 − 예전 행(저장 이관 때 한 번만).',
+  ],
+  notRun: [
+    '사람이 직접 판단하며 하는 플레이: 하지 않음.',
+    '실제 F11 키 전체 화면: 헤드리스 브라우저라 누를 수 없어 창 높이를 990으로 늘려 흉내 냄.',
+    '증강 앞뒤 판정·G13 같은 캐릭터 2명 배치를 브라우저 화면에서 고른 판: 하지 않음(단위 테스트로만 확인).',
+    '고해상도 화면(devicePixelRatio 2)과 모바일 화면: 확인하지 않음.',
+  ],
+  issues: [
+    {
+      title: '가로로 긴 화면에서 보드 좌우가 빔',
+      status: '관찰 · 명세대로',
+      detail:
+        '보드 그림 비율이 1.5:1이라 1761×832처럼 세로가 짧은 창은 높이에 맞추고 좌우에 배경이 남는다(보드 837×558). 그림을 늘이지 않는다는 요구를 따른 결과.',
+      repro: '1761×832 창에서 준비 화면.',
+    },
+    {
+      title: '맨 윗줄 칸 위쪽이 프레임에 약 8px 가려짐',
+      status: '관찰 · 미수정',
+      detail:
+        '그림 자체의 프레임 테두리가 맨 윗줄 칸의 위 끝(그림 px 86.5~94)을 덮는다. 칸 중심과 입력에는 영향 없음.',
+      repro: '?grid 주소로 격자 겹쳐 보기.',
+    },
+    {
+      title: '옆모습 그림 없음',
+      status: '관찰 · 미수정',
+      detail:
+        '전장 그림이 정면 아바타·초상이라 방향은 적 그림을 좌우 반전해 나타낸다. 옆모습 스프라이트가 생기면 바꾸면 된다.',
+      repro: '전투 화면.',
+    },
+  ],
+  decisions: [
+    '동률 때 "칸 번호가 작은 유닛"은 명세대로 새 칸 번호를 쓴다. 같은 동률에서 고르는 유닛이 예전과 달라질 수 있다(예: 증강 테스트에서 C05가 뽑힘).',
+    '길 찾기 이웃 순서를 [오른쪽, 왼쪽, 위, 아래]로 바꿨다(예전 [위, 아래, 왼쪽, 오른쪽]을 회전한 것). 전투 결과를 예전과 똑같이 유지하려는 것으로, 요청 범위 밖의 동작 변화는 없다.',
+    'PixiJS 장면을 전투 때만이 아니라 게임 화면을 열 때 만든다(배경·보드가 캔버스 레이어라서). WebGL을 못 쓰면 예전처럼 CSS 배경·DOM 보드 그림으로 그린다.',
+    '이전 저장은 지우지 않고 회전 이관한다(저장 버전 5, 버전 4 허용).',
+  ],
+  files: [
+    'src/core/board.js(새 좌표계·회전·이관), combat/battle.js(이웃 순서), combat/augment-effects.js(앞뒤 열), preparation.js(배치 판정·문구), encounters.js(적 배치 칸), progression.js·save.ts(저장 버전 5 이관)',
+    'src/ui/art/board.ts(좌표 변환), src/ui/render/stage.ts(새 파일: 배경·보드 장면), render/battlefield.ts(장면 위에 전투), components/Game.tsx·SceneContext.ts·Board.tsx와 CSS',
+    'public/assets/board-side-8x7.webp·battlefield-bg-fog.webp(새 그림, 예전 board-7x8·battlefield-bg 배포본 삭제), docs/specs/BOARD_SIDE_8X7_CALIBRATION.json',
+    'tools/combat-baseline.mjs·balance-sim.mjs(새 좌표), 테스트 칸 번호',
+  ],
+  conflicts: [
+    'GAME_DESIGN 등 문서의 "7×8 보드, 아군 아래 4줄"은 v0.18.0부터 "8×7, 아군 왼쪽 4열"로 바뀐다. v0.15.18 규칙 원문 기록은 역사 기록이라 그대로 둔다.',
+  ],
+};
+
 function counts(list, key) {
   const out = {};
   for (const c of list) out[c[key]] = (out[c[key]] || 0) + 1;
@@ -1508,8 +1640,7 @@ function stage2Markdown() {
   ].join('\n');
 }
 
-function metaMarkdown() {
-  const t = meta;
+function recordMarkdown(t) {
   return [
     `# 밸런스 테스트 — ${t.title} (${t.version})`,
     '',
@@ -1523,13 +1654,13 @@ function metaMarkdown() {
       (r) => `- [${r.kind}] ${r.name} — ${r.how}\n  - 결과: ${r.result} (${r.evidence})`,
     ),
     '',
-    '## XP 사례별 예상값과 실제값',
+    `## ${t.casesTitle || 'XP 사례별 예상값과 실제값'}`,
     '',
     '| 사례 | 예상 | 실제 | 판정 |',
     '|---|---|---|---|',
     ...t.cases.map((c) => `| ${c.join(' | ')} |`),
     '',
-    '## 성장 속도',
+    `## ${t.growthTitle || '성장 속도'}`,
     ...t.growth.map((x) => `- ${x}`),
     '',
     '## 실행하지 않았거나 확인하지 못한 항목',
@@ -1551,7 +1682,15 @@ function metaMarkdown() {
 }
 
 function toMarkdown() {
-  return metaMarkdown() + '\n---\n\n' + stage2Markdown() + '\n---\n\n' + stage1Markdown();
+  return (
+    recordMarkdown(battlefield) +
+    '\n---\n\n' +
+    recordMarkdown(meta) +
+    '\n---\n\n' +
+    stage2Markdown() +
+    '\n---\n\n' +
+    stage1Markdown()
+  );
 }
 
 function stage1Markdown() {
@@ -1598,4 +1737,4 @@ function stage1Markdown() {
   return lines.join('\n');
 }
 
-export default { augment54, stage2, meta, counts, toMarkdown };
+export default { augment54, stage2, meta, battlefield, counts, toMarkdown };

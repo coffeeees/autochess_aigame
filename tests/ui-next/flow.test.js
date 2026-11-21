@@ -76,7 +76,7 @@ test('1-1·1-2 보급 → 1-3 증강 → 배치 확인 → 전투 → 결과 →
   a.equal(s().battle, null);
   // 1명 배치(정원 3) → 배치 부족 확인 창
   const unit = s().run.units[0];
-  V.moveUnit(s().run, unit.uid, { location: 'board', pos: 38 });
+  V.moveUnit(s().run, unit.uid, { location: 'board', pos: 26 });
   store.actions.primary();
   a.equal(s().modal, 'deploy');
   store.actions.confirmDeployment(true);
@@ -166,7 +166,7 @@ function fakeWorkerEnv() {
 
 test('전투 실행기: Worker 프로토콜로 끝까지 진행하고, 결과가 메인 스레드 계산과 같다', () => {
   const make = () =>
-    new Engine.Battle([{ id: 'C07', pos: 38 }], [{ id: 'E01', pos: 17 }], { seed: 77 });
+    new Engine.Battle([{ id: 'C07', pos: 26 }], [{ id: 'E01', pos: 29 }], { seed: 77 });
   const direct = make();
   let r = null;
   for (let i = 0; i < 20000 && !r; i++) r = direct.tick();
@@ -196,7 +196,7 @@ test('전투 실행기: Worker를 못 만들면 메인 스레드에서 계산', 
     setInterval: (fn) => ((interval = fn), 1),
     clearInterval: () => {},
   });
-  const battle = new Engine.Battle([{ id: 'C01', pos: 38 }], [{ id: 'E01', pos: 17 }], { seed: 3 });
+  const battle = new Engine.Battle([{ id: 'C01', pos: 26 }], [{ id: 'E01', pos: 29 }], { seed: 3 });
   let ended = null;
   runner.start(battle, { onUpdate() {}, onEnd: (x) => (ended = x) }, 2);
   for (let i = 0; i < 5000 && !ended; i++) {
@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.17.4');
+  a.equal(notes.current, '0.18.0');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -314,5 +314,20 @@ test('밸런스 테스트 메타 레벨 기록: 실행 방법을 구분하고 �
   for (const k of ['단위 테스트', '자동 시뮬레이션', '브라우저 조작']) a(kinds.has(k), k);
   for (const c of t.cases) a.equal(c.length, 4, c[0]);
   a(t.notRun.some((x) => x.includes('사람이 직접')));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 메타 레벨'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 메타 레벨'));
+});
+
+test('좌우 대치 전장 기록: 브라우저 확인·기준선·창 크기별 크기와 실행하지 않은 항목을 적는다', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.battlefield;
+  const kinds = new Set(t.runs.map((r) => r.kind));
+  for (const k of ['단위 테스트', '전투 기준선', '브라우저 조작']) a(kinds.has(k), k);
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  for (const size of ['1761×832', '1920×1080', '1366×768'])
+    a(
+      t.cases.some((c) => c[0] === size),
+      size,
+    );
+  a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 좌우 대치 전장'));
 });

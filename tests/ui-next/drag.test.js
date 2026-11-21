@@ -33,7 +33,7 @@ function setup() {
 }
 
 test('놓을 곳 해석, 드래그 알림 ID가 기존 정책과 같다', () => {
-  a.deepEqual(parseDrop('board:38'), { kind: 'board', pos: 38 });
+  a.deepEqual(parseDrop('board:26'), { kind: 'board', pos: 26 });
   a.deepEqual(parseDrop('bench:2'), { kind: 'bench', slot: 2 });
   a.deepEqual(parseDrop('sell:left'), { kind: 'sell', side: 'left' });
   a.equal(parseDrop('sell:up'), null);
@@ -77,11 +77,11 @@ test('7px 미만은 클릭: 드래그·판매 영역 없음, 선택은 됨', () 
 test('전장 칸에 놓으면 배치·저장, 적 진영 칸은 거절', () => {
   const { s, unit, drag } = setup();
   const uid = unit().uid;
-  drag(uid, 'board:38');
+  drag(uid, 'board:26');
   a.equal(s().run.units.find((u) => u.uid === uid).location, 'board');
-  a.equal(s().run.units.find((u) => u.uid === uid).pos, 38);
-  drag(uid, 'board:3');
-  a.equal(s().run.units.find((u) => u.uid === uid).pos, 38, 'stays');
+  a.equal(s().run.units.find((u) => u.uid === uid).pos, 26);
+  drag(uid, 'board:31');
+  a.equal(s().run.units.find((u) => u.uid === uid).pos, 26, '적 진영(col 7)은 거절, 그대로');
   a.equal(s().notice, null, 'T14 is silent in the policy');
   // 다시 대기석으로
   drag(uid, 'bench:5');

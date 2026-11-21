@@ -43,12 +43,12 @@ function pending(id, node = '1-3') {
 function battle(ids = [], id = 'C03', gear = []) {
   return new Battle(
     [
-      { id, pos: 38, itemIds: gear, bonuses: I.bonuses(gear) },
-      { id: id === 'C05' ? 'C03' : 'C05', pos: 53 },
+      { id, pos: 26, itemIds: gear, bonuses: I.bonuses(gear) },
+      { id: id === 'C05' ? 'C03' : 'C05', pos: 32 },
     ],
     [
-      { id: 'E06', pos: 31 },
-      { id: 'E01', pos: 3 },
+      { id: 'E06', pos: 27 },
+      { id: 'E01', pos: 31 },
     ],
     { rng: () => 0.99, allyModifiers: { augmentIds: ids } },
   );

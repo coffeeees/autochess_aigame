@@ -401,6 +401,8 @@ interface BalanceApi {
   stage2: BalanceStage2;
   /** 메타 레벨(v0.17.2) */
   meta: BalanceMeta;
+  /** 좌우 대치 전장(v0.18.0) */
+  battlefield: BalanceMeta;
   counts<T>(list: T[], key: keyof T & string): Record<string, number>;
   toMarkdown(): string;
 }
@@ -414,6 +416,9 @@ interface BalanceMeta {
   runs: { kind: string; name: string; how: string; result: string; evidence: string }[];
   cases: [string, string, string, string][];
   growth: string[];
+  /** 표·목록 제목(없으면 메타 레벨 기록의 제목) */
+  casesTitle?: string;
+  growthTitle?: string;
   notRun: string[];
   issues: { title: string; detail: string; repro: string; status: string }[];
   decisions: string[];
@@ -803,7 +808,7 @@ function ResetConfirm({ actions }: Props) {
 
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
-  const [record, setRecord] = useState<'meta' | 'stage2' | 'stage1'>('meta');
+  const [record, setRecord] = useState<'battlefield' | 'meta' | 'stage2' | 'stage1'>('battlefield');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -813,6 +818,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'battlefield'} onClick={() => setRecord('battlefield')}>
+          좌우 전장 · v0.18.0
+        </button>
         <button aria-pressed={record === 'meta'} onClick={() => setRecord('meta')}>
           메타 레벨 · v0.17.2
         </button>
@@ -830,7 +838,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'meta' ? (
+      {record === 'battlefield' ? (
+        <BalanceMetaView t={balance.battlefield} />
+      ) : record === 'meta' ? (
         <BalanceMetaView t={balance.meta} />
       ) : record === 'stage2' ? (
         <BalanceStage2View t={balance.stage2} counts={balance.counts} />
@@ -881,6 +891,7 @@ function BalanceMetaView({ t }: { t: BalanceMeta }) {
           ))}
         </ul>
       </details>
+      {t.casesTitle && <h4>{t.casesTitle}</h4>}
       <div class={styles.balanceTable}>
         <table>
           <thead>
@@ -903,7 +914,7 @@ function BalanceMetaView({ t }: { t: BalanceMeta }) {
           </tbody>
         </table>
       </div>
-      {list('성장 속도', t.growth, true)}
+      {list(t.growthTitle ?? '성장 속도', t.growth, true)}
       {list('실행하지 않았거나 확인하지 못한 항목', t.notRun, true)}
       <details open>
         <summary>발견한 문제 {t.issues.length}</summary>

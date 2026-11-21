@@ -19,9 +19,9 @@ function state() {
       health: 100,
       gold: 12,
       units: [
-        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 38 },
-        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 53 },
-        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 52 },
+        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 26 },
+        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 32 },
+        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 24 },
         { uid: 4, id: 'C03', star: 1, location: 'bench', pos: -1 },
         { uid: 5, id: 'C02', star: 1, location: 'bench', pos: -1 },
       ],
@@ -32,7 +32,7 @@ function state() {
 test('legacy duplicate deployment repaired without losing units or gear, even full bench', () => {
   const s = state();
   s.units[3].location = 'board';
-  s.units[3].pos = 37;
+  s.units[3].pos = 18;
   for (let i = 0; i < 11; i++)
     s.units.push({ uid: 6 + i, id: 'C04', star: 1, location: 'bench', pos: -1 });
   const item = P.addItem(s, 'I01');
@@ -65,10 +65,10 @@ test('legacy12 reserve units and equipment survive, overflow compacts as units l
   a.equal(s.units.length, 12);
   a.equal(new Set(s.units.map((u) => u.benchSlot)).size, 12);
   a.equal(s.units.filter((u) => u.benchSlot >= 10).length, 2);
-  a(V.moveUnit(s, 11, { location: 'board', pos: 31 }).ok);
+  a(V.moveUnit(s, 11, { location: 'board', pos: 27 }).ok);
   V.normalize(s);
   a.equal(s.units.filter((u) => u.location === 'bench' && u.benchSlot >= 10).length, 1);
-  a(V.moveUnit(s, 12, { location: 'board', pos: 32 }).ok);
+  a(V.moveUnit(s, 12, { location: 'board', pos: 35 }).ok);
   V.normalize(s);
   a.equal(V.benchSlots(s), 10);
   a.equal(s.units.filter((u) => u.location === 'bench').length, 10);

@@ -32,6 +32,10 @@
   flex: 1;
   min-height: 0;
 }
+/* 좌우 대치 전장(v0.18.0): 아군은 오른쪽, 적은 왼쪽을 본다(정면 그림은 좌우 반전으로 방향만 표시) */
+.pawn[data-context='field'][data-enemy='true'] .image {
+  transform: scaleX(-1);
+}
 .name {
   font-size: var(--text-xs);
   text-align: center;

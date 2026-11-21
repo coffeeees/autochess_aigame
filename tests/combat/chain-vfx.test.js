@@ -26,10 +26,10 @@ test('multi-tick Worker pump preserves early C07 events at4x without extra simul
   });
   installCombatWorker(ctx);
   const b = new Battle(
-    [{ id: 'C07', pos: 35 }],
+    [{ id: 'C07', pos: 2 }],
     [
-      { id: 'E01', pos: 28 },
-      { id: 'E02', pos: 27 },
+      { id: 'E01', pos: 3 },
+      { id: 'E02', pos: 52 },
     ],
     { rng: () => 0.99, quickMana: true },
   );

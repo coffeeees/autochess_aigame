@@ -17,6 +17,16 @@
   background-size: cover;
   background-position: center;
 }
+.screen[data-scene='pixi'] {
+  background-image: none;
+}
+/* PixiJS 장면 캔버스(배경·보드·전투). 화면 격자에 끼지 않게 fixed, UI보다 아래(z-index −1), 입력은 받지 않는다 */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
 .left {
   grid-area: left;
   min-height: 0;

@@ -42,18 +42,18 @@ const NOW = new Date('2026-11-17T08:30:00.123Z');
 function currentSave() {
   const s = newRun({ seed: 7, difficulty: 1 });
   const bench = s.units.filter((u) => u.location === 'bench');
-  a(V.moveUnit(s, bench[0].uid, { location: 'board', pos: 38 }).ok);
-  a(V.moveUnit(s, bench[1].uid, { location: 'board', pos: 45 }).ok);
+  a(V.moveUnit(s, bench[0].uid, { location: 'board', pos: 26 }).ok);
+  a(V.moveUnit(s, bench[1].uid, { location: 'board', pos: 25 }).ok);
   s.augments = ['S09'];
   return s;
 }
 
-// v0.15.18 load()의 한 줄 조건에서 버전(4만)과 배치 한도(P13 배치 한도 증강)만 바꾼 조건.
+// v0.15.18 load()의 한 줄 조건에서 버전(4·5), 배치 한도(P13), 전장 칸(7열 아래 4행 / 8열 왼쪽 4열, v0.18.0)만 바꾼 조건.
 // 나눈 검사가 정확히 같은 저장을 받아들이는지 증명하는 데 쓴다.
 function originalCheck(s) {
   const occupied = new Set();
   return (
-    s?.version === 4 &&
+    (s?.version === 4 || s?.version === 5) &&
     (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
     Array.isArray(s.units) &&
     s.units.every((u) => {
@@ -66,10 +66,10 @@ function originalCheck(s) {
       )
         return false;
       if (u.location === 'board') {
+        const seven = (s.boardColumns || 8) === 7;
         if (
           !Number.isInteger(u.pos) ||
-          u.pos < (s.boardColumns || 8) * 4 ||
-          u.pos >= (s.boardColumns || 8) * 8 ||
+          (seven ? u.pos < 28 || u.pos >= 56 : u.pos < 0 || u.pos >= 56 || u.pos % 8 >= 4) ||
           occupied.has(u.pos)
         )
           return false;
@@ -151,9 +151,13 @@ test('검증을 이름 붙은 검사로 나누었고 원래 조건과 같다', (
     unitFields: (s) => (s.units[0].id = 'E01'),
     boardCells: (s) => (s.units.find((u) => u.uid === board[1].uid).pos = board[0].pos),
     boardCount: (s) => {
-      s.units = D.playableIds
-        .slice(0, 11)
-        .map((id, i) => ({ uid: i + 1, id, location: 'board', pos: 28 + i, star: 1 }));
+      s.units = D.playableIds.slice(0, 11).map((id, i) => ({
+        uid: i + 1,
+        id,
+        location: 'board',
+        pos: (i % 7) * 8 + 3 - Math.floor(i / 7),
+        star: 1,
+      }));
     },
     benchCount: (s) => {
       s.units = Array.from({ length: 23 }, (_, i) => ({
@@ -293,8 +297,37 @@ test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보�
   a.equal(revertInterruptedBattle(currentSave()), null);
 });
 
-test('저장 버전 4, 이관 목록 없음(이전 저장은 지움)', () => {
-  a.equal(S.SAVE_VERSION, 4);
-  a.deepEqual(S.MIGRATIONS, []);
-  a.equal(currentSave().version, 4);
+test('저장 버전 5, 이관 4 → 5(좌우 대치 전장 회전), 1~3은 지움', () => {
+  a.equal(S.SAVE_VERSION, 5);
+  a.deepEqual(
+    S.MIGRATIONS.map((m) => [m.from, m.to]),
+    [[4, 5]],
+  );
+  a.equal(currentSave().version, 5);
+});
+
+test('v0.17.x 저장(버전 4, 7열 상하 대치)은 지우지 않고 전장 칸을 회전해 버전 5로 불러온다', () => {
+  const save = currentSave();
+  // 버전 4 모양으로 되돌린다: 7열, 아군·적 편성 칸은 예전 좌표
+  Object.assign(save, { version: 4, boardColumns: 7 });
+  const board = save.units.filter((u) => u.location === 'board');
+  const oldPos = [38, 45];
+  board.forEach((u, i) => (u.pos = oldPos[i]));
+  save.enemyEncounter = { key: '1-1', units: [{ id: 'E01', pos: 17 }] };
+  a.deepEqual(validateSave(save), []);
+  const storage = memoryStorage({ [SAVE_KEY]: JSON.stringify(save) });
+  const result = loadSave(storage, NOW);
+  a.equal(result.status, 'loaded');
+  a.equal(result.state.version, 5);
+  a.equal(result.state.boardColumns, 8);
+  a.deepEqual(
+    result.state.units.filter((u) => u.location === 'board').map((u) => u.pos),
+    [26, 25],
+    '38 → 26, 45 → 25',
+  );
+  a.deepEqual(
+    result.state.enemyEncounter.units.map((u) => u.pos),
+    [29],
+  );
+  a(storage.data.has(SAVE_KEY), '지우지 않음');
 });

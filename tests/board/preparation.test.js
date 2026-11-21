@@ -19,9 +19,9 @@ function state() {
       health: 100,
       gold: 12,
       units: [
-        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 38 },
-        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 53 },
-        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 52 },
+        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 26 },
+        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 32 },
+        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 24 },
         { uid: 4, id: 'C03', star: 1, location: 'bench', pos: -1 },
         { uid: 5, id: 'C02', star: 1, location: 'bench', pos: -1 },
       ],
@@ -33,12 +33,12 @@ test('board move, same-cell and swaps preserve UID and equipment', () => {
   const s = state(),
     item = P.addItem(s, 'I02');
   P.equip(s, item.uid, 1);
-  a(V.moveUnit(s, 1, { location: 'board', pos: 37 }).ok);
-  a.equal(s.units[0].pos, 37);
-  a(V.moveUnit(s, 1, { location: 'board', pos: 37 }).ok);
-  a(V.moveUnit(s, 1, { location: 'board', pos: 53 }).ok);
-  a.equal(s.units[0].pos, 53);
-  a.equal(s.units[1].pos, 37);
+  a(V.moveUnit(s, 1, { location: 'board', pos: 18 }).ok);
+  a.equal(s.units[0].pos, 18);
+  a(V.moveUnit(s, 1, { location: 'board', pos: 18 }).ok);
+  a(V.moveUnit(s, 1, { location: 'board', pos: 32 }).ok);
+  a.equal(s.units[0].pos, 32);
+  a.equal(s.units[1].pos, 18);
   a.equal(item.equippedTo, 1);
 });
 test('duplicate character rejected independent of star and without mutation', () => {
@@ -46,27 +46,27 @@ test('duplicate character rejected independent of star and without mutation', ()
   s.level = 10;
   s.units[3].star = 2;
   const before = clone(s);
-  a(!V.moveUnit(s, 4, { location: 'board', pos: 37 }).ok);
+  a(!V.moveUnit(s, 4, { location: 'board', pos: 18 }).ok);
   a.deepEqual(s, before);
-  a(!V.moveUnit(s, 4, { location: 'board', pos: 53 }).ok);
+  a(!V.moveUnit(s, 4, { location: 'board', pos: 32 }).ok);
   a.deepEqual(s, before);
 });
 test('same-ID replacement of existing character is legal; different ID swap too', () => {
   const s = state();
-  a(V.moveUnit(s, 4, { location: 'board', pos: 38 }).ok);
+  a(V.moveUnit(s, 4, { location: 'board', pos: 26 }).ok);
   a.equal(s.units[0].location, 'bench');
   a.equal(s.units[3].location, 'board');
-  a(V.moveUnit(s, 5, { location: 'board', pos: 53 }).ok);
+  a(V.moveUnit(s, 5, { location: 'board', pos: 32 }).ok);
   a.equal(s.units[1].location, 'bench');
-  a.equal(s.units[4].pos, 53);
+  a.equal(s.units[4].pos, 32);
 });
 test('capacity restriction allows replacements and bench transfer frees capacity', () => {
   const s = state();
-  a(!V.moveUnit(s, 5, { location: 'board', pos: 37 }).ok);
+  a(!V.moveUnit(s, 5, { location: 'board', pos: 18 }).ok);
   a(V.moveUnit(s, 1, { location: 'bench', slot: 4 }).ok);
   a.equal(s.units[0].benchSlot, 4);
-  a(V.moveUnit(s, 5, { location: 'board', pos: 37 }).ok);
-  a.equal(s.units[4].pos, 37);
+  a(V.moveUnit(s, 5, { location: 'board', pos: 18 }).ok);
+  a.equal(s.units[4].pos, 18);
 });
 test('bench-to-bench swaps exact slots; full bench board transfer cannot add unit', () => {
   const s = state();
@@ -81,7 +81,7 @@ test('bench-to-bench swaps exact slots; full bench board transfer cannot add uni
 });
 test('enemy positions, missing targets, invalid slots and nonprepare moves fail atomically', () => {
   for (const target of [
-    { location: 'board', pos: 3 },
+    { location: 'board', pos: 31 },
     { location: 'board', pos: 56 },
     { location: 'bench', slot: 99 },
     null,
@@ -95,7 +95,7 @@ test('enemy positions, missing targets, invalid slots and nonprepare moves fail 
     const s = state();
     s.roundPhase = phase;
     const before = clone(s);
-    a(!V.moveUnit(s, 1, { location: 'board', pos: 37 }).ok);
+    a(!V.moveUnit(s, 1, { location: 'board', pos: 18 }).ok);
     a.deepEqual(s, before);
   }
 });
@@ -104,17 +104,17 @@ test('engine rejects repeated allied IDs while independent enemy repeats remain 
     () =>
       new Battle(
         [
-          { id: 'C03', pos: 35 },
-          { id: 'C03', pos: 36 },
+          { id: 'C03', pos: 2 },
+          { id: 'C03', pos: 10 },
         ],
-        [{ id: 'E01', pos: 3 }],
+        [{ id: 'E01', pos: 31 }],
       ),
   );
   new Battle(
-    [{ id: 'C03', pos: 35 }],
+    [{ id: 'C03', pos: 2 }],
     [
-      { id: 'E01', pos: 3 },
-      { id: 'E01', pos: 4 },
+      { id: 'E01', pos: 31 },
+      { id: 'E01', pos: 39 },
     ],
   );
 });
@@ -132,7 +132,7 @@ test('ten-slot reserve fills at10, rejects11th slot and keeps same-slot replacem
       benchSlot: i,
     })),
   });
-  s.units.push({ uid: 11, id: 'C15', star: 1, location: 'board', pos: 31 });
+  s.units.push({ uid: 11, id: 'C15', star: 1, location: 'board', pos: 27 });
   a.equal(D.prototypeConfig.board.benchSize, 10);
   a.equal(V.benchSlots(s), 10);
   a(!V.moveUnit(s, 11, { location: 'bench', slot: 10 }).ok);

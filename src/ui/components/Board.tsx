@@ -1,18 +1,16 @@
-// 전장(준비 화면). 7×8 칸은 보드 그림에서 잰 선 위치를 따른다. 위쪽은 적,
-// 아래쪽은 아군. 아군은 끌어서 옮기고(DragLayer), 모든 칸이 놓을 곳이며
-// 가능 여부는 core/preparation이 정한다.
-import D from '../../core/data/units.js';
+// 전장. v0.18.0 좌우 대치: 8열 × 7행, 왼쪽 4열 아군 / 오른쪽 4열 적.
+// 배경·보드 그림은 PixiJS 장면(render/stage.ts)이 그리고, 여기 DOM 칸은 입력(드래그·놓기·클릭)과 말을 맡는다.
+// 칸 영역은 보드 그림에서 잰 격자(art/board.ts)를 따르고, 장면은 이 .art 요소의 사각형에 보드 그림을 맞춘다.
+// 아군은 끌어서 옮기고(DragLayer), 모든 칸이 놓을 곳이며 가능 여부는 core/preparation이 정한다.
 import P from '../../core/progression.js';
 import type { ComponentChildren } from 'preact';
-import { useEffect, useRef, useState } from 'preact/hooks';
-import { boardArt, tracks, playArea } from '../art/board.ts';
+import { useContext, useEffect, useRef, useState } from 'preact/hooks';
+import { boardArt, playArea, COLUMNS, ROWS } from '../art/board.ts';
+import { SceneContext } from './SceneContext.ts';
 import { Pawn } from './Pawn.tsx';
 import type { Battlefield, FieldBattle } from '../render/battlefield.ts';
 import type { GameProps } from './Game.tsx';
 import styles from './Board.module.css';
-
-const COLUMNS = D.prototypeConfig.board.columns as number;
-const ROWS = D.prototypeConfig.board.rows as number;
 
 /** 전투 중 화면에 쓰는 전투 유닛 필드(core Battle의 units). */
 interface CombatUnit {
@@ -54,15 +52,20 @@ function CombatBoard({ ui, actions }: GameProps) {
     time: number;
     events: unknown[];
   };
-  const host = useRef<HTMLDivElement>(null);
+  const scene = useContext(SceneContext);
   const field = useRef<Battlefield | null>(null);
   const [mode, setMode] = useState<'loading' | 'canvas' | 'dom'>('loading');
 
   useEffect(() => {
     let alive = true;
     let made: Battlefield | null = null;
+    // 장면이 없으면(WebGL·Canvas 불가, 아직 불러오는 중) DOM 말로 그린다
+    if (!scene) {
+      setMode('dom');
+      return;
+    }
     import('../render/battlefield.ts')
-      .then((m) => m.createBattlefield(host.current!, { reduced: reducedMotion }))
+      .then((m) => m.createBattlefield(scene, { reduced: reducedMotion }))
       .then((f) => {
         made = f;
         if (!alive) return f.destroy();
@@ -75,7 +78,7 @@ function CombatBoard({ ui, actions }: GameProps) {
       made?.destroy();
       field.current = null;
     };
-  }, []);
+  }, [scene]);
 
   // 스냅샷이 바뀔 때마다 캔버스에 넘긴다(캔버스는 읽기만 한다)
   useEffect(() => {
@@ -93,7 +96,7 @@ function CombatBoard({ ui, actions }: GameProps) {
         const uid = field.current?.unitAt(e.clientX, e.clientY) ?? null;
         actions.inspect(uid, e.clientX, e.clientY);
       }}
-      layer={<div ref={host} class={styles.canvas} data-mode={mode} />}
+      layer={<div class={styles.canvas} data-mode={mode} />}
       cell={(pos) => {
         if (mode !== 'dom') return null;
         const u = units.get(pos);
@@ -164,7 +167,7 @@ function PrepareBoard({ ui, actions }: GameProps) {
   );
 }
 
-/** 보드 그림과 7×8 칸. cell(pos)이 칸 내용, cellProps(pos)가 칸 속성을 정한다. */
+/** 보드 영역과 8×7 칸. cell(pos)이 칸 내용, cellProps(pos)가 칸 속성을 정한다. */
 function Grid({
   cell,
   cellProps,
@@ -183,14 +186,23 @@ function Grid({
   popupTrigger?: string;
 }) {
   const area = playArea();
+  const scene = useContext(SceneContext);
+  const art = useRef<HTMLDivElement>(null);
+  // 장면이 이 사각형에 보드 그림을 맞추고 칸 중심을 계산한다
+  useEffect(() => {
+    scene?.attach(art.current);
+    return () => scene?.attach(null);
+  }, [scene]);
   return (
     <div
+      ref={art}
       class={styles.art}
       onClick={onClick}
       data-popup-trigger={popupTrigger}
+      data-board="side-8x7"
       style={{ aspectRatio: `${boardArt.source.width} / ${boardArt.source.height}` }}
     >
-      <img class={styles.boardImage} src={boardArt.board} alt="" draggable={false} />
+      {!scene && <img class={styles.boardImage} src={boardArt.board} alt="" draggable={false} />}
       {caption && <span class={styles.caption}>{caption}</span>}
       <div
         class={styles.grid}
@@ -199,8 +211,9 @@ function Grid({
           top: `${area.top}%`,
           width: `${area.width}%`,
           height: `${area.height}%`,
-          gridTemplateColumns: tracks(boardArt.columns),
-          gridTemplateRows: tracks(boardArt.rows),
+          // 보드 그림의 타일은 균등 간격(측정 기록 docs/specs/BOARD_SIDE_8X7_CALIBRATION.json)
+          gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${ROWS}, minmax(0, 1fr))`,
         }}
       >
         {Array.from({ length: COLUMNS * ROWS }, (_, pos) => (
@@ -208,7 +221,7 @@ function Grid({
             key={pos}
             class={styles.cell}
             data-pos={pos}
-            data-side={pos < COLUMNS * (ROWS / 2) ? 'enemy' : 'ally'}
+            data-side={pos % COLUMNS < COLUMNS / 2 ? 'ally' : 'enemy'}
             {...(cellProps?.(pos) ?? {})}
           >
             {cell(pos)}

@@ -29,11 +29,11 @@ const battle = (
   id,
   allies = [],
   enemies = [
-    { id: 'E06', pos: 24 },
-    { id: 'E03', pos: 23 },
-    { id: 'E01', pos: 3 },
+    { id: 'E06', pos: 28 },
+    { id: 'E03', pos: 20 },
+    { id: 'E01', pos: 31 },
   ],
-) => new Battle([{ id, pos: 31 }, ...allies], enemies, { rng: () => 0.99 });
+) => new Battle([{ id, pos: 27 }, ...allies], enemies, { rng: () => 0.99 });
 test('all45 names exactly match approved ID mapping, with45 playable', () => {
   const expected =
     '녹스 아즈칼 태건 리엔 루아 카인 유하 벨모르 라칸 울프릭 둔가르 엘리엘 브룬 적호 베스퍼 토비 이그니스 아우라 설아 진무 오르페 골룸바 로제트 유키나 지그 흐로드 비올라 시그룬 카르도 네레이드 홍련 제피로 아그니 아스텔 메두라 참월 카르미나 오르딘 글라시아 월하 뇌진 바하무트 라이진 백야 아바돈'.split(

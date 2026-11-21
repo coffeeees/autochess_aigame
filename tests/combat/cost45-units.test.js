@@ -20,7 +20,7 @@ let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
   const b = new E.Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     positions.map((pos) => ({ id: 'E01', pos })),
     { rng: () => 0.99 },
   );
@@ -33,10 +33,10 @@ function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
 test('all12 new units run with normal gear/augments and finish finite battles', () => {
   for (const id of D.playableIds.slice(33)) {
     const b = new E.Battle(
-      [{ id, pos: 35, itemIds: ['I27', 'I28', 'I35'] }],
+      [{ id, pos: 2, itemIds: ['I27', 'I28', 'I35'] }],
       [
-        { id: 'E01', pos: 0 },
-        { id: 'E06', pos: 1 },
+        { id: 'E01', pos: 7 },
+        { id: 'E06', pos: 15 },
       ],
       { quickMana: true, rng: () => 0.8, allyModifiers: { augmentIds: ['P04', 'G08'] } },
     );

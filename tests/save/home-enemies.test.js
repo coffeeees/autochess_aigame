@@ -17,7 +17,7 @@ function state(round = 3) {
   const s = P.initialize({
     health: 100,
     gold: 12,
-    units: [{ uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 }],
+    units: [{ uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 }],
     shop: [],
   });
   s.round = round;

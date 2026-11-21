@@ -99,7 +99,7 @@ test('합성은 전장 캐릭터를 남기고 재료 장비를 돌려주며 3성
   const s = run();
   s.units = [
     { uid: 1, id: 'C05', location: 'bench', pos: -1, star: 1, benchSlot: 2 },
-    { uid: 2, id: 'C05', location: 'board', pos: 38, star: 1 },
+    { uid: 2, id: 'C05', location: 'board', pos: 26, star: 1 },
     { uid: 3, id: 'C05', location: 'bench', pos: -1, star: 1, benchSlot: 0 },
   ];
   const item = P.addItem(s, 'I01');
@@ -175,7 +175,7 @@ test('전투 준비: 장비를 반영한 배치 캐릭터, 캐시된 적 편성,
   s.stage = 1;
   s.round = 3;
   s.units[0].location = 'board';
-  s.units[0].pos = 38;
+  s.units[0].pos = 26;
   const copy = clone(s);
   const setup = battleSetup(s);
   a.deepEqual(

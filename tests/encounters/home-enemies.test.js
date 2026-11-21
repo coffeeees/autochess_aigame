@@ -17,7 +17,7 @@ function state(round = 3) {
   const s = P.initialize({
     health: 100,
     gold: 12,
-    units: [{ uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 }],
+    units: [{ uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 }],
     shop: [],
   });
   s.round = round;
@@ -49,8 +49,8 @@ test('enemy roster independent, comparable stats, forbidden in player team', () 
     a(!D.playableIds.includes(e.id));
     a.equal(D.byId(e.id), undefined);
     for (const k of D.statKeys) a(Number.isFinite(e.stats[k]));
-    a.throws(() => new Battle([{ id: e.id, pos: 35 }], [{ id: 'E01', pos: 3 }]));
-    new Battle([{ id: 'C03', pos: 35 }], [{ id: e.id, pos: 3 }]);
+    a.throws(() => new Battle([{ id: e.id, pos: 2 }], [{ id: 'E01', pos: 31 }]));
+    new Battle([{ id: 'C03', pos: 2 }], [{ id: e.id, pos: 31 }]);
   }
 });
 test('encounters contain only enemy IDs and unique valid positions through stage10', () => {
@@ -63,7 +63,7 @@ test('encounters contain only enemy IDs and unique valid positions through stage
       a.equal(new Set(units.map((u) => u.pos)).size, units.length);
       for (const u of units) {
         a(W.byId(u.id));
-        a(u.pos >= 0 && u.pos < 24);
+        a(u.pos >= 0 && u.pos < 56 && u.pos % 8 >= 5, '적은 col 5(앞열)·col 7(뒷열)');
       }
       if (P.roundType(stage, round) === 'SUPPLY') a.equal(units.length, 0);
     }
@@ -110,7 +110,7 @@ test('supply never rolls encounter; advancing combat rerolls', () => {
 test('enemy difficulty scales basic, skill, DOT and summon damage only', () => {
   for (const factor of [0.6, 1, 1.5])
     for (const kind of ['basic', 'skill', 'dot']) {
-      const b = new Battle([{ id: 'C03', pos: 35 }], [{ id: 'E02', pos: 3 }], {
+      const b = new Battle([{ id: 'C03', pos: 2 }], [{ id: 'E02', pos: 31 }], {
           rng: () => 0.99,
           enemyDamageMultiplier: factor,
         }),
@@ -131,11 +131,11 @@ test('new enemy skills and summons complete battle with experimental bonds on/of
     for (const id of W.enemyIds) {
       const b = new Battle(
         [
-          { id: 'C03', pos: 38 },
-          { id: 'C05', pos: 52 },
-          { id: 'C01', pos: 53 },
+          { id: 'C03', pos: 26 },
+          { id: 'C05', pos: 24 },
+          { id: 'C01', pos: 32 },
         ],
-        [{ id, pos: 17 }],
+        [{ id, pos: 29 }],
         { quickMana: true, experimental, rng: () => 0.99 },
       );
       for (let i = 0; i < 2000 && !b.result; i++) b.tick();

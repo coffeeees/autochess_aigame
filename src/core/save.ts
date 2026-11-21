@@ -1,6 +1,7 @@
-// 원정 저장: 형식, 검증, 이전 버전 삭제, 백업, 중단된 전투 복구.
+// 원정 저장: 형식, 검증, 이관, 이전 버전 삭제, 백업, 중단된 전투 복구.
 // 저장 형식은 SAVE_KEY 아래의 RunState JSON 그대로다. v0.17.0부터 이전 버전 저장
 // (버전 1~3: v0.15.18 원본·v0.16.0)은 이관하지 않고 지운 뒤 새 원정을 시작한다(사용자 결정).
+// 버전 4(v0.17.x)는 v0.18.0 좌우 대치 전장으로 칸을 회전해 이관한다(지우지 않음).
 // 저장소는 UI가 넘겨주며 이 모듈은 localStorage를 직접 건드리지 않는다.
 import type { RunState } from './types.ts';
 import D from './data/units.js';
@@ -10,7 +11,7 @@ import W from './encounters.js';
 
 export const SAVE_KEY = 'starlight-onecost-v1';
 /** progression.initialize / migrate가 쓰는 현재 RunState.version. */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 export const BACKUP_PREFIX = SAVE_KEY + '-backup-';
 
 /** UI가 넘겨주는 저장소: window.localStorage 또는 테스트용 대체물. */
@@ -21,11 +22,20 @@ export interface SaveStorage {
 }
 
 /**
- * 저장 형식 이관 목록(오래된 것부터). v0.17.0에서 이전 버전 저장을 지우기로 해서 비어 있다.
+ * 저장 형식 이관 목록(오래된 것부터). 버전 1~3은 v0.17.0 결정으로 이관하지 않고 지운다.
+ * 버전 4 → 5(v0.18.0 좌우 대치 전장)는 전장 칸을 회전해 이관한다(progression.migrate → board.migrate).
  * 앞으로 SAVE_VERSION을 올리면서 저장을 살려야 하면 여기에 단계를 추가하고 progression.migrate를 고친다.
  */
-export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [];
-const ACCEPTED_VERSIONS = [SAVE_VERSION];
+export const MIGRATIONS: readonly { from: number; to: number; note: string }[] = [
+  {
+    from: 4,
+    to: 5,
+    note: 'board.migrate: 상하 대치 7열×8행 → 좌우 대치 8열×7행, 전장 아군·적 편성 칸을 시계 방향 90도 회전(v0.18.0)',
+  },
+];
+/** 버전 4(v0.17.x)는 이관해서 받고, 그보다 오래된 저장은 지운다(v0.17.0 결정) */
+const OLDEST_KEPT = 4;
+const ACCEPTED_VERSIONS = [OLDEST_KEPT, SAVE_VERSION];
 
 type Raw = Record<string, any>;
 type Check = { id: string; message: string; ok: (s: Raw) => boolean };
@@ -38,7 +48,7 @@ const columns = (s: Raw) => s.boardColumns || 8;
 export const CHECKS: readonly Check[] = [
   {
     id: 'version',
-    message: `저장 버전이 ${SAVE_VERSION}이 아닙니다`,
+    message: `저장 버전이 ${OLDEST_KEPT} 또는 ${SAVE_VERSION}이 아닙니다`,
     ok: (s) => ACCEPTED_VERSIONS.includes(s?.version),
   },
   {
@@ -66,13 +76,12 @@ export const CHECKS: readonly Check[] = [
     ok: (s) => {
       const occupied = new Set<number>();
       return boardUnits(s).every((u: Raw) => {
-        if (
-          !Number.isInteger(u.pos) ||
-          u.pos < columns(s) * 4 ||
-          u.pos >= columns(s) * 8 ||
-          occupied.has(u.pos)
-        )
-          return false;
+        // 7열(v0.17.x까지, 아래 4행이 아군) / 8열(v0.18.0부터, 왼쪽 4열이 아군)
+        const ok =
+          columns(s) === 7
+            ? u.pos >= 7 * 4 && u.pos < 7 * 8
+            : u.pos >= 0 && u.pos < 8 * 7 && u.pos % 8 < 4;
+        if (!Number.isInteger(u.pos) || !ok || occupied.has(u.pos)) return false;
         occupied.add(u.pos);
         return true;
       });
@@ -197,7 +206,7 @@ export function loadSave(storage: SaveStorage, now: Date = new Date(0)): LoadRes
   }
   // 이전 버전 저장은 백업하지 않고 지운다(v0.17.0 사용자 결정)
   const version = (parsed as Raw | null)?.version;
-  if (typeof version === 'number' && version < SAVE_VERSION) {
+  if (typeof version === 'number' && version < OLDEST_KEPT) {
     try {
       storage.removeItem(SAVE_KEY);
     } catch {

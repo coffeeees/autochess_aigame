@@ -19,9 +19,9 @@ function state() {
       health: 100,
       gold: 12,
       units: [
-        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 38 },
-        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 53 },
-        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 52 },
+        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 26 },
+        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 32 },
+        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 24 },
         { uid: 4, id: 'C03', star: 1, location: 'bench', pos: -1 },
         { uid: 5, id: 'C02', star: 1, location: 'bench', pos: -1 },
       ],

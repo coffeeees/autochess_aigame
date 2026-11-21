@@ -1,16 +1,16 @@
 {
-  "board-7x8.webp": {
-    "source": "assets-src/images/board-7x8.png",
-    "sourceSha256": "d9e629e17bd51d110fe65662af32fe0e5f775f2d5625d6622190fbef1d020a80",
+  "board-side-8x7.webp": {
+    "source": "assets-src/images/board-side-8x7.png",
+    "sourceSha256": "ba46cd6fb7f7fb698e85ab73ee3d992e70ad6170c8f087b61c1b223d4062c752",
     "size": [
-      1659,
-      948
+      1536,
+      1024
     ],
     "mode": "lossless"
   },
-  "battlefield-bg.webp": {
-    "source": "assets-src/images/battlefield-bg.png",
-    "sourceSha256": "2623c3097ccb4966baae9dbfc54f4a8a04e02714a0a71a70f45be4adec8c9492",
+  "battlefield-bg-fog.webp": {
+    "source": "assets-src/images/battlefield-bg-fog.png",
+    "sourceSha256": "35105ceac628f0febe630553d46bbcdfcc26b30bf59d6958313f67f9688806b3",
     "size": [
       1672,
       941

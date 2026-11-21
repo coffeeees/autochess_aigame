@@ -29,11 +29,11 @@ const battle = (
   id,
   allies = [],
   enemies = [
-    { id: 'E06', pos: 24 },
-    { id: 'E03', pos: 23 },
-    { id: 'E01', pos: 3 },
+    { id: 'E06', pos: 28 },
+    { id: 'E03', pos: 20 },
+    { id: 'E01', pos: 31 },
   ],
-) => new Battle([{ id, pos: 31 }, ...allies], enemies, { rng: () => 0.99 });
+) => new Battle([{ id, pos: 27 }, ...allies], enemies, { rng: () => 0.99 });
 const elements = new Map(),
   el = (id) => {
     if (!elements.has(id))

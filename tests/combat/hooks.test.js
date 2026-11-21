@@ -12,7 +12,7 @@ import Vfx from '../../src/core/combat/vfx-events.js';
 
 const { Battle } = Engine;
 const fight = (Class = Battle) =>
-  new Class([{ id: 'C01', pos: 38 }], [{ id: 'E01', pos: 17 }], { rng: () => 0.5 });
+  new Class([{ id: 'C01', pos: 26 }], [{ id: 'E01', pos: 29 }], { rng: () => 0.5 });
 
 test('기본 확장과 문서에 적은 순서', () => {
   a.deepEqual(
@@ -91,12 +91,12 @@ test('하위 클래스 확장은 기본 클래스에 새지 않고, use()는 한
   const run = (Class) => {
     const b = new Class(
       [
-        { id: 'C07', pos: 38 },
-        { id: 'C25', pos: 39 },
+        { id: 'C07', pos: 26 },
+        { id: 'C25', pos: 34 },
       ],
       [
-        { id: 'E03', pos: 17 },
-        { id: 'E01', pos: 3 },
+        { id: 'E03', pos: 29 },
+        { id: 'E01', pos: 31 },
       ],
       { seed: 9 },
     );

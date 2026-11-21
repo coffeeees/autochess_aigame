@@ -17,9 +17,9 @@ const a = require('assert/strict'),
   F = $bondEffects;
 let count = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
-function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
+function setup(id, allies = [], positions = [28, 20, 31, 39, 47]) {
   const b = new E.Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     positions.map((pos) => ({ id: 'E01', pos })),
     { rng: () => 0.99 },
   );
@@ -30,7 +30,7 @@ function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
   return [b, ...b.units];
 }
 test('C07 primary3×75AD physical, nearest0/1/2 other living targets70AD magic across board, stable ties', () => {
-  for (const positions of [[24], [24, 0], [24, 0, 1, 2]]) {
+  for (const positions of [[28], [28, 7], [28, 7, 15, 23]]) {
     const [b, u, t] = setup('C07', [], positions);
     b.cast(u, t);
     const hits = b.logs.filter((e) => e.kind === 'damage');
@@ -46,7 +46,7 @@ test('C07 primary3×75AD physical, nearest0/1/2 other living targets70AD magic a
     a.equal(event.chains.length, magic.length);
     a(!event.chains.some((t) => t.uid === u.uid || t.uid === b.units[1].uid));
   }
-  const [b, u, t, x, y] = setup('C07', [], [24, 23, 25]);
+  const [b, u, t, x, y] = setup('C07', [], [28, 20, 36]);
   b.cast(u, t);
   a.deepEqual(
     b.logs.find((e) => e.kind === 'chainLightning').chains.map((t) => t.uid),
@@ -65,7 +65,7 @@ test('C07 dead primary can anchor confirmed chain, dead/exhausted extra targets 
   a.equal(new Set(event.chains.map((p) => p.uid)).size, event.chains.length);
 });
 test('C34 team140AP plus lowest-ratio additional160AP, stable UID', () => {
-  const [b, u, x, t] = setup('C34', [{ id: 'C01', pos: 32 }]);
+  const [b, u, x, t] = setup('C34', [{ id: 'C01', pos: 35 }]);
   u.stats.HP = x.stats.HP = 10000;
   u.hp = 100;
   x.hp = 200;
@@ -123,7 +123,7 @@ test('C38 exactly2 specters,400HP×star,70AP magic,10sec duration/cap2, existing
   a(pets.every((p) => p.dead));
 });
 test('C39 self/orthogonal shields220AP5s; only landed basic while shield active slows attacker20%3s', () => {
-  const [b, u, x, t] = setup('C39', [{ id: 'C01', pos: 32 }]);
+  const [b, u, x, t] = setup('C39', [{ id: 'C01', pos: 35 }]);
   b.cast(u, t);
   near(u.shields[0].amount, u.stats.AP * 2.2);
   a.equal(x.shields.length, 1);
@@ -146,7 +146,7 @@ test('C40 four100AD skill hits, final only+30pp critical bonus', () => {
   a(hits[3].critical);
 });
 test('C41 front half-plane around primary max3 at240AD/stun1s', () => {
-  const [b, u, t] = setup('C41', [], [24, 23, 25, 17, 3]);
+  const [b, u, t] = setup('C41', [], [28, 20, 36, 29, 31]);
   b.cast(u, t);
   a.equal(b.logs.filter((e) => e.attackKind === 'skill').length, 3);
   a(
@@ -166,14 +166,14 @@ test('C42 global230AP magic and25%AS slow3s', () => {
   }
 });
 test('C43 six90AD primary hits then150AP on orthogonal neighbors excluding primary', () => {
-  const [b, u, t] = setup('C43', [], [24, 23, 25, 3]);
+  const [b, u, t] = setup('C43', [], [28, 20, 36, 31]);
   b.cast(u, t);
   const hits = b.logs.filter((e) => e.kind === 'damage');
   a.equal(hits.filter((e) => e.damageType === 'physical').length, 6);
   a.equal(hits.filter((e) => e.damageType === 'magic').length, 2);
 });
 test('C44 farthest rear charge350AD/stun2s, blocked path no teleport', () => {
-  const [b, u, t] = setup('C44', [], [24, 3]);
+  const [b, u, t] = setup('C44', [], [28, 31]);
   b.cast(u, t);
   const rear = b.units[2];
   a(b.adjacent(u, rear));
@@ -181,19 +181,19 @@ test('C44 farthest rear charge350AD/stun2s, blocked path no teleport', () => {
   const c = setup(
     'C44',
     [
-      { id: 'C01', pos: 24 },
-      { id: 'C03', pos: 30 },
-      { id: 'C05', pos: 32 },
-      { id: 'C06', pos: 38 },
+      { id: 'C01', pos: 28 },
+      { id: 'C03', pos: 19 },
+      { id: 'C05', pos: 35 },
+      { id: 'C06', pos: 26 },
     ],
     [3],
   )[0];
   c.cast(c.units[0], c.units.at(-1));
-  a.equal(c.units[0].pos, 31);
+  a.equal(c.units[0].pos, 27);
   a.equal(c.units.at(-1).hp, c.units.at(-1).stats.HP);
 });
 test('C45 grid ray closest max4,300AD,15%damage taken4s, repeated mark refresh not stack', () => {
-  const [b, u, t] = setup('C45', [], [24, 17, 10, 3, 25]);
+  const [b, u, t] = setup('C45', [], [28, 29, 30, 31, 36]);
   b.cast(u, t);
   const hits = b.logs.filter((e) => e.kind === 'damage');
   a.equal(hits.length, 4);

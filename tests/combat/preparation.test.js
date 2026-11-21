@@ -19,9 +19,9 @@ function state() {
       health: 100,
       gold: 12,
       units: [
-        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 38 },
-        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 53 },
-        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 52 },
+        { uid: 1, id: 'C03', star: 1, location: 'board', pos: 26 },
+        { uid: 2, id: 'C05', star: 1, location: 'board', pos: 32 },
+        { uid: 3, id: 'C01', star: 1, location: 'board', pos: 24 },
         { uid: 4, id: 'C03', star: 1, location: 'bench', pos: -1 },
         { uid: 5, id: 'C02', star: 1, location: 'bench', pos: -1 },
       ],
@@ -32,10 +32,10 @@ function state() {
 test('damage aggregation includes dead summons, excludes enemies and zero allies retained', () => {
   const b = new Battle(
     [
-      { id: 'C02', uid: 1, pos: 38 },
-      { id: 'C05', uid: 2, pos: 53 },
+      { id: 'C02', uid: 1, pos: 26 },
+      { id: 'C05', uid: 2, pos: 32 },
     ],
-    [{ id: 'E01', pos: 3 }],
+    [{ id: 'E01', pos: 31 }],
     { rng: () => 0.99 },
   );
   const pet = b.summon(b.units[0], 'plague');
@@ -56,10 +56,10 @@ test('damage aggregation includes dead summons, excludes enemies and zero allies
 test('actual battle damage conserved in report and survives settlement/reload without mutating receipt', () => {
   const b = new Battle(
     [
-      { id: 'C02', uid: 1, pos: 38 },
-      { id: 'C05', uid: 2, pos: 53 },
+      { id: 'C02', uid: 1, pos: 26 },
+      { id: 'C05', uid: 2, pos: 32 },
     ],
-    [{ id: 'E01', pos: 3 }],
+    [{ id: 'E01', pos: 31 }],
     { quickMana: true, rng: () => 0.99 },
   );
   while (!b.result) b.tick();

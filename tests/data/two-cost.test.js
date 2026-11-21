@@ -17,10 +17,10 @@ let n = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
 function battle(id, allies = []) {
   return new Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     [
-      { id: 'E06', pos: 24 },
-      { id: 'E03', pos: 23 },
+      { id: 'E06', pos: 28 },
+      { id: 'E03', pos: 20 },
     ],
     { rng: () => 0.99 },
   );

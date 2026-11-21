@@ -86,8 +86,9 @@ function encounter(state, rng = runRng(state)) {
   if (state.enemyEncounter?.key === key) return state.enemyEncounter.units;
   const wave = P.ordinal(state),
     n = Math.min(10, 2 + Math.floor(wave * 0.8)),
-    front = [17, 18, 16, 19, 15],
-    back = [3, 4, 2, 5, 1],
+    // 좌우 대치 전장(v0.18.0): 적 앞열 col 5(가운데 행부터), 뒷열 col 7. 예전 [17,18,16,19,15]·[3,4,2,5,1]을 회전한 칸
+    front = [29, 37, 21, 45, 13],
+    back = [31, 39, 23, 47, 15],
     frontIds = ['E03', 'E06', 'E08', 'E04'];
   const units = Array.from({ length: n }, (_, i) => ({
     id:

@@ -16,8 +16,8 @@ const near = (x, y, msg) => a(Math.abs(x - y) < 1e-6, `${msg ?? ''} ${x} != ${y}
 const e = (id) => A.byId(id).effect;
 const cost = (id) => D.byId(id).cost;
 const enemies = [
-  { id: 'E06', pos: 10 },
-  { id: 'E01', pos: 3 },
+  { id: 'E06', pos: 30 },
+  { id: 'E01', pos: 31 },
 ];
 /** 전투 생성(무작위 0.99: 회피·치명타 없음) */
 function fight(ids, allies, opts = {}) {
@@ -34,8 +34,8 @@ function run(extra = {}) {
     health: 100,
     gold: 20,
     units: [
-      { uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 },
-      { uid: 2, id: 'C05', location: 'board', pos: 45, star: 1 },
+      { uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 },
+      { uid: 2, id: 'C05', location: 'board', pos: 25, star: 1 },
     ],
     shop: [null, null, null, null, null],
   });
@@ -58,8 +58,8 @@ function settle(s, winner, extra = {}) {
 // ─── 시작 시 정적 효과 ───
 test('S14 선봉대·S15 후방 지원: 아군이 선 가장 앞줄 HP, 가장 뒷줄 AS', () => {
   const allies = [
-    { id: 'C03', pos: 31 }, // 4행(가장 앞)
-    { id: 'C05', pos: 46 }, // 6행(가장 뒤)
+    { id: 'C03', pos: 27 }, // 4행(가장 앞)
+    { id: 'C05', pos: 33 }, // 6행(가장 뒤)
   ];
   const [x, y] = pair(['S14', 'S15'], allies);
   near(ally(y, 'C03').stats.HP, ally(x, 'C03').stats.HP * 1.2, '앞줄 HP');
@@ -71,24 +71,24 @@ test('S14 선봉대·S15 후방 지원: 아군이 선 가장 앞줄 HP, 가장 �
 
 test('S16 쌍둥이 수호자: 가장 앞줄에 정확히 2명일 때만 GD +25(고정값)', () => {
   const two = [
-    { id: 'C03', pos: 36 },
-    { id: 'C05', pos: 37 },
-    { id: 'C01', pos: 50 },
+    { id: 'C03', pos: 10 },
+    { id: 'C05', pos: 18 },
+    { id: 'C01', pos: 8 },
   ];
   const [x, y] = pair(['S16'], two);
   a.equal(ally(y, 'C03').stats.GD, ally(x, 'C03').stats.GD + 25);
   a.equal(ally(y, 'C05').stats.GD, ally(x, 'C05').stats.GD + 25);
   a.equal(ally(y, 'C01').stats.GD, ally(x, 'C01').stats.GD);
-  const three = [...two, { id: 'C02', pos: 35 }];
+  const three = [...two, { id: 'C02', pos: 2 }];
   const [p, q] = pair(['S16'], three);
   a.equal(ally(q, 'C03').stats.GD, ally(p, 'C03').stats.GD, '3명이면 없음');
 });
 
 test('S17 모범 동료: AD가 가장 높은 1명 AS +20%', () => {
   const allies = [
-    { id: 'C03', pos: 38 },
-    { id: 'C05', pos: 45 },
-    { id: 'C09', pos: 46 },
+    { id: 'C03', pos: 26 },
+    { id: 'C05', pos: 25 },
+    { id: 'C09', pos: 33 },
   ];
   const [x, y] = pair(['S17'], allies);
   const best = [...x.units.filter((u) => u.team === 'ally')].sort(
@@ -100,8 +100,8 @@ test('S17 모범 동료: AD가 가장 높은 1명 AS +20%', () => {
 
 test('G16 선택받은 영웅·P16 왕의 친위대: 코스트 최고 1명 HP 배율과 피해량', () => {
   const allies = [
-    { id: 'C03', pos: 38 },
-    { id: 'C24', pos: 45 }, // 3코스트
+    { id: 'C03', pos: 26 },
+    { id: 'C24', pos: 25 }, // 3코스트
   ];
   const [x, g] = pair(['G16'], allies);
   near(ally(g, 'C24').stats.HP, ally(x, 'C24').stats.HP * 1.3);
@@ -113,29 +113,29 @@ test('G16 선택받은 영웅·P16 왕의 친위대: 코스트 최고 1명 HP �
   a.equal(ally(k, 'C03').augmentState.king, undefined);
 });
 
-test('G14 전장의 지휘관: 전방 2줄(행 4·5) 1명당 후방 2줄(행 6·7) 피해량 +5%, 최대 25%', () => {
+test('G14 전장의 지휘관: 전방 2열(col 2·3) 1명당 후방 2열(col 0·1) 피해량 +5%, 최대 25%', () => {
   const two = [
-    { id: 'C03', pos: 30 }, // 행 4
-    { id: 'C05', pos: 37 }, // 행 5
-    { id: 'C01', pos: 45 }, // 행 6
-    { id: 'C02', pos: 52 }, // 행 7
+    { id: 'C03', pos: 19 }, // col 3
+    { id: 'C05', pos: 18 }, // col 2
+    { id: 'C01', pos: 25 }, // col 1
+    { id: 'C02', pos: 24 }, // col 0
   ];
   const [, g] = pair(['G14'], two);
   near(ally(g, 'C01').augmentState.damage, 0.1);
   near(ally(g, 'C02').augmentState.damage, 0.1);
   a(!ally(g, 'C03').augmentState.damage, '전방은 받지 않음');
-  const six = ['C03', 'C05', 'C06', 'C07', 'C08', 'C09'].map((id, i) => ({ id, pos: 28 + i }));
-  const [, h] = pair(['G14'], [...six, { id: 'C01', pos: 45 }]);
+  const six = ['C03', 'C05', 'C06', 'C07', 'C08', 'C09'].map((id, i) => ({ id, pos: 3 + 8 * i }));
+  const [, h] = pair(['G14'], [...six, { id: 'C01', pos: 25 }]);
   near(ally(h, 'C01').augmentState.damage, 0.25, '6명이어도 최대 25%');
 });
 
 test('경계 조건: 동률은 코스트 → 성급 → 작은 칸 번호, 아군 1명이면 P18 희생 없음', () => {
-  const foe = [{ id: 'E01', pos: 3 }];
+  const foe = [{ id: 'E01', pos: 31 }];
   const star = fight(
     ['G16'],
     [
-      { id: 'C03', pos: 38 },
-      { id: 'C05', pos: 45, star: 2 },
+      { id: 'C03', pos: 26 },
+      { id: 'C05', pos: 25, star: 2 },
     ],
     { enemies: foe },
   );
@@ -143,21 +143,22 @@ test('경계 조건: 동률은 코스트 → 성급 → 작은 칸 번호, 아�
   const cell = fight(
     ['G16'],
     [
-      { id: 'C05', pos: 45 },
-      { id: 'C03', pos: 38 },
+      { id: 'C05', pos: 25 },
+      { id: 'C03', pos: 26 },
     ],
     { enemies: foe },
   );
-  near(ally(cell, 'C03').augmentState.damage, 0.2, '성급도 같으면 작은 칸 번호');
-  const solo = fight(['P18'], [{ id: 'C03', pos: 38 }], { enemies: foe });
+  // v0.18.0: 동률의 "작은 칸 번호"는 새 좌표계(8열×7행) 번호 기준(명세). C05 25 < C03 26
+  near(ally(cell, 'C05').augmentState.damage, 0.2, '성급도 같으면 작은 칸 번호');
+  const solo = fight(['P18'], [{ id: 'C03', pos: 26 }], { enemies: foe });
   a(ally(solo, 'C03'), '혼자면 희생하지 않음');
   a.equal(solo.augment.sacrifice, null);
 });
 
 test('S13·G15 활성 조합 수만큼, P17 활성 조합 4개 이상일 때만', () => {
   const allies = [
-    { id: 'C01', pos: 38 },
-    { id: 'C28', pos: 39 },
+    { id: 'C01', pos: 26 },
+    { id: 'C28', pos: 34 },
   ];
   const [x, y] = pair(['S13', 'G15'], allies);
   const n = y.synergySnapshot.ally.filter((s) => s.tier > 0).length;
@@ -170,7 +171,7 @@ test('S13·G15 활성 조합 수만큼, P17 활성 조합 4개 이상일 때만'
 });
 
 test('P03 광전사의 축제: AS +40%, 최대 HP -20%(준비 화면 미리보기와 같음)', () => {
-  const [x, y] = pair(['P03'], [{ id: 'C03', pos: 38 }]);
+  const [x, y] = pair(['P03'], [{ id: 'C03', pos: 26 }]);
   near(ally(y, 'C03').stats.AS, ally(x, 'C03').stats.AS * 1.4);
   near(ally(y, 'C03').stats.HP, ally(x, 'C03').stats.HP * 0.8);
   const s = run({ augments: ['P03'] });
@@ -178,7 +179,7 @@ test('P03 광전사의 축제: AS +40%, 최대 HP -20%(준비 화면 미리보�
 });
 
 test('S03·P02 시작 MP: 큰 값 하나만, P02 스킬 뒤 3초 AP +25%', () => {
-  const b = fight(['S03', 'P02'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['S03', 'P02'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03');
   near(u.mp, u.stats.MP * 0.75);
   const ap = b.stats(u).AP;
@@ -193,7 +194,7 @@ test('S03·P02 시작 MP: 큰 값 하나만, P02 스킬 뒤 3초 AP +25%', () =>
 
 // ─── 시간 효과 ───
 test('S02·G03 시간마다 AS 중첩(최대치), G01 12초 뒤 피해량 +35%', () => {
-  const b = fight(['S02', 'G03'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['S02', 'G03'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     base = b.stats(u).AS;
   b.time = 6;
@@ -202,7 +203,7 @@ test('S02·G03 시간마다 AS 중첩(최대치), G01 12초 뒤 피해량 +35%',
   b.time = 60;
   b.emit('update');
   near(b.stats(u).AS, base * (1 + 0.04 * 4) * (1 + 0.08 * 5), '최대 4·5중첩');
-  const [x, y] = pair(['G01'], [{ id: 'C03', pos: 38 }]);
+  const [x, y] = pair(['G01'], [{ id: 'C03', pos: 26 }]);
   const hit = (bt) => {
     const t = bt.units.find((v) => v.team === 'enemy');
     return bt.deal(ally(bt, 'C03'), t, 100, 'magic', { kind: 'skill', canCrit: false }).damage;
@@ -214,7 +215,7 @@ test('S02·G03 시간마다 AS 중첩(최대치), G01 12초 뒤 피해량 +35%',
 });
 
 test('P06 시간의 지배자: 10~18초 적 AS -30%, 아군 AS +30%', () => {
-  const b = fight(['P06'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['P06'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     foe = b.units.find((v) => v.team === 'enemy');
   const [ua, fa] = [b.stats(u).AS, b.stats(foe).AS];
@@ -227,10 +228,10 @@ test('P06 시간의 지배자: 10~18초 적 AS -30%, 아군 AS +30%', () => {
 });
 
 test('P04 최후의 심판: 15초에 적 최대 HP 20%(보스 5%) 고정 피해, 방어 무시·보호막에 막힘', () => {
-  const b = fight(['P04'], [{ id: 'C03', pos: 38 }], {
+  const b = fight(['P04'], [{ id: 'C03', pos: 26 }], {
     enemies: [
-      { id: 'E06', pos: 10 },
-      { id: 'E01', pos: 3, boss: true },
+      { id: 'E06', pos: 30 },
+      { id: 'E01', pos: 31, boss: true },
     ],
   });
   const [norm, boss] = b.units.filter((v) => v.team === 'enemy');
@@ -250,7 +251,7 @@ test('P04 최후의 심판: 15초에 적 최대 HP 20%(보스 5%) 고정 피해,
 
 // ─── 피해·처치·사망 반응 ───
 test('S01 천상의 축복: 기본 공격·스킬·지속 피해의 8% 회복, 아이템 발동 제외', () => {
-  const b = fight(['S01'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['S01'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     foe = b.units.find((v) => v.team === 'enemy');
   for (const kind of ['basic', 'skill', 'dot']) {
@@ -264,7 +265,7 @@ test('S01 천상의 축복: 기본 공격·스킬·지속 피해의 8% 회복, �
 });
 
 test('S05 집중 포화: 같은 적 기본 공격마다 +2%(최대 10), 대상이 바뀌면 처음부터', () => {
-  const b = fight(['S05'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['S05'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     [f1, f2] = b.units.filter((v) => v.team === 'enemy');
   const hit = (t) => {
@@ -281,7 +282,7 @@ test('S05 집중 포화: 같은 적 기본 공격마다 +2%(최대 10), 대상�
 });
 
 test('S04·G02: 처음 HP 30%·35% 이하 때 한 번만 보호막 / 회복+GD', () => {
-  const b = fight(['S04', 'G02'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['S04', 'G02'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     foe = b.units.find((v) => v.team === 'enemy');
   u.hp = u.stats.HP * 0.36;
@@ -303,8 +304,8 @@ test('S06·G06·P03: 적 처치 시 처치자 AD·AP +15% 5초, HP 비율 최저
   const b = fight(
     ['S06', 'G06', 'P03'],
     [
-      { id: 'C03', pos: 38 },
-      { id: 'C05', pos: 45 },
+      { id: 'C03', pos: 26 },
+      { id: 'C05', pos: 25 },
     ],
   );
   const u = ally(b, 'C03'),
@@ -326,9 +327,9 @@ test('G05·P05·G17: 아군 사망 시 중첩·능력치 이전·마지막 생�
   const b = fight(
     ['G05', 'P05', 'G17'],
     [
-      { id: 'C03', pos: 38 },
-      { id: 'C05', pos: 39 },
-      { id: 'C09', pos: 52 },
+      { id: 'C03', pos: 26 },
+      { id: 'C05', pos: 34 },
+      { id: 'C09', pos: 24 },
     ],
   );
   const [x, near1, far] = [ally(b, 'C03'), ally(b, 'C05'), ally(b, 'C09')];
@@ -350,8 +351,8 @@ test('P16 왕 사망: 다른 아군이 최대 HP 20% 피해, HP 1 아래로는 �
   const b = fight(
     ['P16'],
     [
-      { id: 'C24', pos: 38 },
-      { id: 'C03', pos: 39 },
+      { id: 'C24', pos: 26 },
+      { id: 'C03', pos: 34 },
     ],
   );
   const king = ally(b, 'C24'),
@@ -363,7 +364,7 @@ test('P16 왕 사망: 다른 아군이 최대 HP 20% 피해, HP 1 아래로는 �
 });
 
 test('G04 마력 폭주: 스킬마다 AP +8%, 최대 5중첩', () => {
-  const b = fight(['G04'], [{ id: 'C03', pos: 38 }]);
+  const b = fight(['G04'], [{ id: 'C03', pos: 26 }]);
   const u = ally(b, 'C03'),
     foe = b.units.find((v) => v.team === 'enemy');
   const ap = b.stats(u).AP;
@@ -374,8 +375,8 @@ test('G04 마력 폭주: 스킬마다 AP +8%, 최대 5중첩', () => {
 // ─── 시작 단계: 희생·조합 단계·분신 ───
 test('P18 희생의 의식: 코스트 최저 1명 희생, 나머지 AD·AP·HP +코스트×10%, 조합 다시 계산', () => {
   const allies = [
-    { id: 'C01', pos: 38 },
-    { id: 'C24', pos: 39 },
+    { id: 'C01', pos: 26 },
+    { id: 'C24', pos: 34 },
   ];
   const [x, y] = pair(['P18'], allies);
   a(!ally(y, 'C01'), '1코스트 희생');
@@ -383,7 +384,7 @@ test('P18 희생의 의식: 코스트 최저 1명 희생, 나머지 AD·AP·HP +
   near(ally(y, 'C24').stats.HP, ally(x, 'C24').stats.HP * 1.1);
   a.equal(y.augment.sacrifice.id, 'C01');
   a(!y.synergySnapshot.ally.some((s) => s.members.includes('C01')));
-  const solo = fight(['P18'], [{ id: 'C24', pos: 38 }]);
+  const solo = fight(['P18'], [{ id: 'C24', pos: 26 }]);
   a(ally(solo, 'C24') && !solo.augment.sacrifice, '혼자면 희생 없음');
 });
 
@@ -391,8 +392,8 @@ test('P14 이중 조합: 활성 조합 하나의 단계 +1(인원 수는 그대�
   const b = fight(
     ['P14'],
     [
-      { id: 'C01', pos: 38 },
-      { id: 'C28', pos: 39 },
+      { id: 'C01', pos: 26 },
+      { id: 'C28', pos: 34 },
     ],
   );
   const boosted = b.synergySnapshot.ally.find((s) => s.name === b.augment.boosted);
@@ -400,14 +401,14 @@ test('P14 이중 조합: 활성 조합 하나의 단계 +1(인원 수는 그대�
   a.equal(boosted.tier, 2);
   a.equal(boosted.count, 2, '인원 수 그대로');
   a.equal(boosted.threshold, boosted.thresholds[1]);
-  const none = fight(['P14'], [{ id: 'C03', pos: 38 }]);
+  const none = fight(['P14'], [{ id: 'C03', pos: 26 }]);
   a.equal(none.augment.boosted, null);
 });
 
 test('G18·P15 분신: 지정(없으면 최고 코스트) 원본의 HP·AD·AP 비율, 기본 공격만, 조합 제외', () => {
   const allies = [
-    { id: 'C03', pos: 38, uid: 11 },
-    { id: 'C24', pos: 39, uid: 12 },
+    { id: 'C03', pos: 26, uid: 11 },
+    { id: 'C24', pos: 34, uid: 12 },
   ];
   const b = fight(['G18'], allies, { cloneTarget: 11 });
   const c = b.units.find((u) => u.summonKind === 'clone');
@@ -645,14 +646,14 @@ test('저장 복원: augmentRun(지연 보상·투자·무료 새로고침·가�
   s.augmentRun.cloneTarget = 1;
   const restored = P.migrate(JSON.parse(JSON.stringify(s)));
   a.deepEqual(restored.augmentRun, s.augmentRun);
-  a.equal(restored.version, 4);
+  a.equal(restored.version, 5);
 });
 
 test('G13 쌍둥이 전술: 같은 캐릭터 정확히 2명이면 두 명 AD·AP·GD +25%, 1명·다른 캐릭터는 그대로', () => {
   const allies = [
-    { id: 'C03', pos: 37 },
-    { id: 'C03', pos: 38 },
-    { id: 'C05', pos: 45 },
+    { id: 'C03', pos: 18 },
+    { id: 'C03', pos: 26 },
+    { id: 'C05', pos: 25 },
   ];
   const b = fight(['G13'], allies);
   const [base] = pair([], [allies[0], allies[2]]);
@@ -679,7 +680,7 @@ test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까�
   s.level = 6;
   s.roundPhase = 'prepare';
   const move = (uid, pos) => V.moveUnit(s, uid, { location: 'board', pos });
-  a.deepEqual(move(3, 39), {
+  a.deepEqual(move(3, 34), {
     ok: false,
     message: '동일한 캐릭터는 전장에 1명만 배치할 수 있습니다.',
   });
@@ -688,16 +689,16 @@ test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까�
       fight(
         [],
         [
-          { id: 'C03', pos: 37 },
-          { id: 'C03', pos: 38 },
+          { id: 'C03', pos: 18 },
+          { id: 'C03', pos: 26 },
         ],
       ),
     /1명만/,
     'G13 없으면 전투도 거절',
   );
   s.augments = ['G13'];
-  a(move(3, 39).ok, 'G13이 있으면 2명째 허용');
-  a.deepEqual(move(4, 40), {
+  a(move(3, 34).ok, 'G13이 있으면 2명째 허용');
+  a.deepEqual(move(4, 42), {
     ok: false,
     message: '쌍둥이 전술: 동일한 캐릭터는 전장에 2명까지 배치할 수 있습니다.',
   });
@@ -706,16 +707,22 @@ test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까�
       fight(
         ['G13'],
         [
-          { id: 'C03', pos: 37 },
-          { id: 'C03', pos: 38 },
-          { id: 'C03', pos: 39 },
+          { id: 'C03', pos: 18 },
+          { id: 'C03', pos: 26 },
+          { id: 'C03', pos: 34 },
         ],
       ),
     /2명까지/,
   );
   // 배치 수선도 같은 한도: G13이면 2명은 그대로, 3명째만 대기석으로
   const r = run({ augments: ['G13'] });
-  r.units = [1, 2, 3].map((uid) => ({ uid, id: 'C03', location: 'board', pos: 36 + uid, star: 1 }));
+  r.units = [1, 2, 3].map((uid) => ({
+    uid,
+    id: 'C03',
+    location: 'board',
+    pos: 10 + 8 * uid,
+    star: 1,
+  }));
   a.equal(V.repairDeployment(r), 1);
   a.equal(r.units.filter((u) => u.location === 'board').length, 2);
   r.augments = [];
@@ -724,8 +731,8 @@ test('G13 예외: 증강이 있을 때만 같은 캐릭터를 전장에 2명까�
   const b = fight(
     ['G13'],
     [
-      { id: 'C03', pos: 37 },
-      { id: 'C03', pos: 38 },
+      { id: 'C03', pos: 18 },
+      { id: 'C03', pos: 26 },
     ],
   );
   for (const bond of b.synergySnapshot.ally.filter((x) => x.count)) a.equal(bond.count, 1);
@@ -755,8 +762,8 @@ test('상호작용: P01 불멸+P05 계승(실제 사망 때만 이전), G18 분�
   const b = fight(
     ['P01', 'P05'],
     [
-      { id: 'C03', pos: 38 },
-      { id: 'C05', pos: 39 },
+      { id: 'C03', pos: 26 },
+      { id: 'C05', pos: 34 },
     ],
   );
   const [x, y] = [ally(b, 'C03'), ally(b, 'C05')];
@@ -769,15 +776,15 @@ test('상호작용: P01 불멸+P05 계승(실제 사망 때만 이전), G18 분�
   b.deal(foe, x, 9999, 'magic', { kind: 'skill', canCrit: false });
   a(x.dead);
   a(y.augmentState.flat?.AD > 0, '실제 사망 뒤 계승');
-  const c = fight(['G18', 'S11'], [{ id: 'C03', pos: 38, uid: 1 }]);
+  const c = fight(['G18', 'S11'], [{ id: 'C03', pos: 26, uid: 1 }]);
   const cl = c.units.find((u) => u.summonKind === 'clone');
   c.kill(cl, foe);
   a.equal(c.units.filter((u) => u.team === 'ally' && !u.summon && u.dead).length, 0);
   const h = fight(
     ['P14', 'P17'],
     [
-      { id: 'C01', pos: 38 },
-      { id: 'C28', pos: 39 },
+      { id: 'C01', pos: 26 },
+      { id: 'C28', pos: 34 },
     ],
   );
   a.equal(
@@ -798,15 +805,15 @@ test('54종 각각·무작위 3개 조합으로 실제 전투가 끝까지 오�
         : [...new Set(Array.from({ length: 3 }, () => all[Math.floor(rng() * all.length)]))];
     const b = new Battle(
       [
-        { id: 'C01', pos: 38, uid: 1 },
-        { id: 'C28', pos: 39, uid: 2 },
-        { id: 'C24', pos: 45, uid: 3 },
-        { id: 'C05', pos: 52, uid: 4 },
+        { id: 'C01', pos: 26, uid: 1 },
+        { id: 'C28', pos: 34, uid: 2 },
+        { id: 'C24', pos: 25, uid: 3 },
+        { id: 'C05', pos: 24, uid: 4 },
       ],
       [
-        { id: 'E06', pos: 10, star: 2 },
-        { id: 'E01', pos: 3, boss: true },
-        { id: 'E03', pos: 17 },
+        { id: 'E06', pos: 30, star: 2 },
+        { id: 'E01', pos: 31, boss: true },
+        { id: 'E03', pos: 29 },
       ],
       { seed: 100 + i, allyModifiers: { augmentIds: ids, cloneTarget: 1 } },
     );

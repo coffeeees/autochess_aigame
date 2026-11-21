@@ -21,12 +21,12 @@ const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(name, tier = 2) {
   const b = new Battle(
     [
-      { id: 'C01', pos: 35 },
-      { id: 'C03', pos: 36 },
+      { id: 'C01', pos: 2 },
+      { id: 'C03', pos: 10 },
     ],
     [
-      { id: 'E01', pos: 28 },
-      { id: 'E02', pos: 29 },
+      { id: 'E01', pos: 3 },
+      { id: 'E02', pos: 11 },
     ],
     { rng: () => 0.99 },
   );
@@ -187,7 +187,7 @@ test('천명 starting adjacent ally GD only, aura does not duplicate per provide
   const [b, u, x] = setup('천명');
   near(x.stats.GD, D.byId(x.id).stats.GD + 10);
   near(u.stats.GD, D.byId(u.id).stats.GD + 15);
-  x.pos = 53;
+  x.pos = 32;
   near(x.stats.GD, D.byId(x.id).stats.GD + 10);
 });
 test('왕권 only actual stun/root marks damage vulnerability3s; armor debuff does not', () => {
@@ -235,12 +235,12 @@ test('심연 timed30% healing reduction uses highest overlap, skill direct hit o
 test('운명 one RNG draw per team, same buff for all members, no reroll on stats/tick', () => {
   const b = new Battle(
     [
-      { id: 'C05', pos: 35 },
-      { id: 'C07', pos: 36 },
-      { id: 'C16', pos: 42 },
-      { id: 'C33', pos: 43 },
+      { id: 'C05', pos: 2 },
+      { id: 'C07', pos: 10 },
+      { id: 'C16', pos: 1 },
+      { id: 'C33', pos: 9 },
     ],
-    [{ id: 'E01', pos: 0 }],
+    [{ id: 'E01', pos: 7 }],
     { rng: () => 0.99 },
   );
   a(b.units.slice(0, 4).every((u) => u.bondState.fate === 2));
@@ -269,12 +269,12 @@ test('금단 currentHP cost min1; next cast charge is not current, not stacked; 
 test('old experimental toggle cannot restore28 effects; new combat per battle state resets', () => {
   const args = [
     [
-      { id: 'C03', pos: 35 },
-      { id: 'C10', pos: 36 },
-      { id: 'C22', pos: 42 },
-      { id: 'C23', pos: 43 },
+      { id: 'C03', pos: 2 },
+      { id: 'C10', pos: 10 },
+      { id: 'C22', pos: 1 },
+      { id: 'C23', pos: 9 },
     ],
-    [{ id: 'E01', pos: 0 }],
+    [{ id: 'E01', pos: 7 }],
   ];
   const x = new Battle(...args, { rng: () => 0.99 }),
     y = new Battle(...args, { rng: () => 0.99, experimental: true });
@@ -287,8 +287,8 @@ test('혈광 includes attributed proc/transfer damage once; 금단 excludes I27 
   const [b, u, x, t] = setup('혈광', 3);
   u.hp = 100;
   t.bondRules.성약 = { share: 0.15 };
-  t.pos = 29;
-  b.units[3].pos = 28;
+  t.pos = 11;
+  b.units[3].pos = 3;
   b.units[3].stats.GD = 0;
   const hp = u.hp,
     damage = u.damageDone;
