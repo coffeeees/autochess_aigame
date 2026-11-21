@@ -5,6 +5,7 @@ import D from './data/units.js';
 import P from './progression.js';
 import V from './preparation.js';
 import { mergeAll, type MergeEvent } from './merge.ts';
+import U from './meta-upgrades.ts';
 
 const C = D.prototypeConfig;
 // data/units.js는 JS라서, 레코드가 UnitDef와 맞는지는 tests/data/types.test.js가 확인한다
@@ -35,9 +36,12 @@ export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyRe
   const canMerge = state.units.filter((u) => u.id === id && u.star === 1).length >= 2;
   if (state.units.filter((u) => u.location === 'bench').length >= C.board.benchSize && !canMerge)
     return { ok: false, notice: 'T05' }; // 대기석 가득 참
-  const cost = unitCost(id);
+  const cost = buyCost(state, id);
   if (!free && state.gold < cost) return { ok: false, notice: 'T06' }; // 골드 부족
-  if (!free) state.gold -= cost;
+  if (!free) {
+    state.gold -= cost;
+    if (cost < unitCost(id)) U.take(state, 'E5'); // 할인은 실제로 산 경우에만 횟수를 쓴다
+  }
   const unit: RunUnit = { uid, id, location: 'bench', pos: -1, star: 1 };
   state.units.push(unit);
   V.normalize(state);
@@ -45,6 +49,12 @@ export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyRe
   const merges = mergeAll(state, beforeMerge);
   V.normalize(state);
   return { ok: true, unit, merges };
+}
+
+/** 지금 이 캐릭터를 상점에서 살 때 내는 골드. E5 영입 지원(메타)이 남아 있으면 1G 할인(0G까지) */
+export function buyCost(state: RunState, id: string): number {
+  const cost = unitCost(id);
+  return U.left(state, 'E5') > 0 ? Math.max(0, cost - 1) : cost;
 }
 
 /** 판매가: 코스트 × 3^(성급-1). */
@@ -79,4 +89,4 @@ export function sellUnit(
   return { ok: true, price };
 }
 
-export default { buyUnit, salePrice, canSell, sellUnit };
+export default { buyUnit, buyCost, salePrice, canSell, sellUnit };

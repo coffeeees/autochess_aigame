@@ -4,6 +4,7 @@ import { percentNumber } from '../../core/format.ts';
 import { costColor, unitDef } from '../data.ts';
 import P from '../../core/progression.js';
 import V from '../../core/preparation.js';
+import { buyCost } from '../../core/shop.ts';
 import { CharacterImage } from './CharacterImage.tsx';
 import type { GameProps } from './Game.tsx';
 import styles from './ShopPopover.module.css';
@@ -65,6 +66,7 @@ function Offer({
   const owned = run.units.some((u) => u.id === id);
   const recommended: string[] = V.recommendedFor(run, id);
   const preview: number = V.mergePreview(run, id);
+  const price = buyCost(run, id); // E5 영입 지원(메타)이 남아 있으면 1G 할인
   return (
     <button
       class={styles.card}
@@ -73,7 +75,7 @@ function Offer({
       data-recommended={recommended.length > 0}
       disabled={!editable}
       onClick={() => actions.buy(slot)}
-      aria-label={`${unit.name} 구매 ${unit.cost}G${recommended.length ? ' · 추천 ' + recommended.join(', ') : ''}`}
+      aria-label={`${unit.name} 구매 ${price}G${recommended.length ? ' · 추천 ' + recommended.join(', ') : ''}`}
     >
       <span class={styles.art}>
         <CharacterImage id={id} context="shop" />
@@ -93,7 +95,9 @@ function Offer({
         <span class={styles.tags}>{unit.bonds.join(' · ')}</span>
         {owned && <span class={styles.owned}>✓ 보유 중</span>}
       </span>
-      <span class={styles.cost}>{unit.cost}G</span>
+      <span class={styles.cost} data-discount={price < unit.cost}>
+        {price < unit.cost ? `${price}G 할인` : `${unit.cost}G`}
+      </span>
     </button>
   );
 }

@@ -20,7 +20,10 @@ export function Home({ ui, actions }: Props) {
         <div class={styles.metaPill} aria-label="메타 레벨">
           <strong>메타 레벨 {ui.meta.metaLevel}</strong>
           <span class={styles.metaXp}>{M.progressLabel(ui.meta.metaLevel, ui.meta.metaXp)}</span>
-          <span>인게임 레벨과 별도 · 원정이 끝나면 메타 XP 획득 · 성장 보상은 추후 적용</span>
+          <span>
+            성장 포인트 {ui.meta.growthPoints}P · 뽑기 티켓 {ui.meta.tickets}장 · 원정이 끝나면 메타
+            XP 획득
+          </span>
         </div>
         {ui.view === 'difficulty' ? (
           <DifficultyPicker ui={ui} actions={actions} />
@@ -43,10 +46,10 @@ function MainMenu({ ui, actions }: Props) {
           <b>게임시작</b>
           <small>난이도를 선택하고 새로운 원정을 시작합니다.</small>
         </button>
-        <button class={styles.card} disabled>
+        <button class={styles.card} onClick={actions.showAbilities}>
           <span>◇</span>
           <b>능력치</b>
-          <small>준비 중 · 메타 레벨 기반 전체 성장</small>
+          <small>성장 포인트로 영구 강화 40종 · 보유 {ui.meta.growthPoints}P</small>
         </button>
         <button class={styles.card} disabled>
           <span>✦</span>

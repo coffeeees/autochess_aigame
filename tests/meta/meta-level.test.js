@@ -248,7 +248,8 @@ test('11. 메타 정산은 인게임 레벨·XP·골드·증강을 바꾸지 않
   a.deepEqual(newRun({ seed: 3, difficulty: 1, runId: 'x' }), fresh);
   a.deepEqual([fresh.level, fresh.xp, fresh.gold], [3, 0, 7]);
   a.equal(A.augments.length, 54);
-  a.equal(p2.growthEnabled, false, '레벨업 보상·영구 강화 없음');
+  // v0.19.0: 레벨업 보상(성장 포인트·티켓)이 생겼지만 원정 상태(레벨·XP·골드)는 그대로다
+  a.equal(p2.growthEnabled, true);
 });
 
 // ─── v0.17.3 지급 시점 추가(사용자 결정 2026-11-19) ───

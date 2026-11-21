@@ -33,7 +33,7 @@
   "coreHashes": {
     "dist/higher-cost-drafts.js": "966179826286fd7953ff455870caf2c9101eff59ef22a2b6d56d549a02c3b15f",
     "dist/board.js": "92012aecc85704881395d906b1b1c3edef8d653c289c394d05ba0d304ed90ad7",
-    "dist/encounters.js": "42ba8c5670e8ec0aa25882f4c065fd1fcbbea003f0dc23b6252e9adbd6383ce0",
+    "dist/encounters.js": "801e61ffd2a917eb44c8e7b615ccb6fd82458743fcda0dffe52ad4360c664471",
     "dist/augments.js": "e5dabfac0b9b71c2781d3552733cedda80f75232f732db5e4016c29730fc0a42",
     "dist/augment-effects.js": "69f535e64c23722d668327b46bde65a6c0b4a376d6a8aca41de366ccdfa16d1a"
   }

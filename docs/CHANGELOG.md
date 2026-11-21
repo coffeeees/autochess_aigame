@@ -641,6 +641,16 @@
 - 사용자 정정: 자동 열기는 큰 라운드 전환(R-1)만이 아니라 다음 라운드로 넘어갈 때마다. `store.openShopAfter`가 `continueRound`·`chooseAugment`에서 준비 단계 진입 때 안내 신호가 끝나면(없으면 바로) 연다. 새 원정 1-1·원정 종료·불러오기·화면 복귀는 열지 않음.
 - 여는 모션(`ShopPopover.module.css`): 창 `clip-path` 위→아래 펼침 + 10px 내려옴 + 불투명도 0.4→1, 200ms. 카드는 60ms + 칸 × 25ms 지연으로 14px 내려앉으며 나타남(160ms). 닫힘은 즉시(드래그 규칙 유지). `prefers-reduced-motion`이면 모션 없음.
 
+### v0.19.0 — 메타 영구 강화 40종 · 능력치 화면
+
+- 사용자 요청(AUTOCHESS_META_PERMANENT_UPGRADES_IMPLEMENTATION_TEST): 5계열(공격·방어·경제·성장·특수) × 8종, 수치는 문서의 테스트용 임시값 그대로.
+- 메타 재화: `meta-upgrades.ts`(레벨 보상·구매·원정 스냅샷·횟수 제한·S5 확률), 프로필 버전 2(성장 포인트·티켓·강화 단계·보상 원장). 예전 프로필은 지우지 않고 지금 레벨까지 한 번 소급 지급 후 바로 저장. 메타 XP 공식은 그대로.
+- 원정: `newRun`이 구매 단계를 `metaRun`에 복사(원정 도중 구매는 다음 원정부터), 시작 보너스 E1·G1·S1. 정산(`settleRound`)에 E2·E3·E6·E7·E8·G2·G3·S2·S4·S8, XP 구매 G4, 라운드 시작 G5, 새로고침 E4, 구매 할인 E5(`shop.buyCost`), 장비 S3(`unitBonuses`), 상점 확률 S5(`shopOdds`). 영수증에 `metaGold·metaParts·metaXp·insured`.
+- 전투: `combat/meta-effects.js`(시작 order 7, around order 15). 전투 옵션 `allyModifiers.meta`가 없으면(강화 없음) 전투 입력·결과가 예전과 같음(기준선 45건 같음).
+- HP 상한: `encounters.ensureRunDefaults`가 상한을 100으로 덮어써 S1이 사라지던 문제를 브라우저 확인 중 발견, 상한을 원정의 강화 단계에서 계산(`healthCap`)하도록 고침.
+- 화면: 시작 화면 "능력치" 활성화, `Abilities.tsx`(헤더·5탭·8노드 연결 트리·상세 패널·강화 버튼 350ms 연타 방지·발광). 결과 창에 영구 강화 골드·XP·보험 줄, 상점 할인 가격 표시. 개발용 테스트 프로필 `?metadev`(별도 저장 키 `autochess-meta-dev-v1`, 레벨·P·티켓·단계 설정, 전투 로그에 메타 전후 수치).
+- 테스트 기록은 패치노트 "밸런스 테스트" 탭의 영구 강화 기록.
+
 ## 4. 조사 파일 목록
 
 현재dist 전체(스크립트·스타일·HTML·자산),docs 전체(기획/과거감사),루트개발·테스트·변경보고파일을읽어목록화했습니다.이미지/글꼴은수치기획으로해석하지않고자산존재/해시를기록했습니다.4개생성문서자신은순환해시를피하려고목록에서제외합니다.해시앞16자,줄수는현재작업트리기준입니다.

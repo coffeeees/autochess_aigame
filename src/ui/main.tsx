@@ -22,6 +22,8 @@ const store = createStore({
   storage: localStorage,
   newSeed: () => crypto.getRandomValues(new Uint32Array(1))[0],
   combat,
+  // 개발용 메타 테스트 프로필(주소에 ?metadev): 정식 프로필과 다른 저장 키를 쓴다
+  metaDev: new URLSearchParams(location.search).has('metadev'),
   // 화면 연출(전투 끝 장면·하트 체력·라운드 안내·합성)을 켠다
   presentation: {
     reduced: () => matchMedia('(prefers-reduced-motion: reduce)').matches,
