@@ -102,7 +102,7 @@ test('changelog preserves every version and separately records sourced differenc
   a(docs[files[2]].includes('확인필요'));
 });
 test('patch metadata keeps Codex decisions and all notification changes independently exportable', () => {
-  a.equal(N.current, '0.18.2');
+  a.equal(N.current, '0.18.3');
   const e = N.history.find((x) => x.version === '0.15.11'),
     md = N.toMarkdown();
   for (const key of ['approvedDecisions', 'additionalChanges', 'notificationChanges'])

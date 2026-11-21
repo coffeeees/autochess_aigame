@@ -183,6 +183,11 @@ export function createStore(env: StoreEnv) {
     version: 0,
   };
   let clickGuardUntil = 0;
+  /**
+   * 새 라운드(상위 구간 R-1, 화면의 ROUND n) 준비에 들어갈 때 동료 영입창을 한 번 자동으로 연다(v0.18.3 사용자 요청 1).
+   * ROUND 안내 연출이 있으면 그것이 끝난 뒤(doneCue) 연다. 저장에 넣지 않아 불러오기·화면 복귀로는 열리지 않는다.
+   */
+  let autoShopCue: number | null = null;
   const clock = () => (env.now?.() ?? new Date()).getTime();
   let nextUid = 0;
   let noticeKey = 0;
@@ -473,7 +478,18 @@ export function createStore(env: StoreEnv) {
     if (r.roundPhase === 'augment') return changed({ modal: 'augment', lastBattle: null });
     V.enterShop(r);
     prepareFormation();
-    changed({ modal: null, selected: null, lastBattle: null, ...roundCue() });
+    // 같은 라운드 안의 스테이지 이동(R-2~R-5)에서는 열지 않는다
+    const newRound = r.round === 1 && r.roundPhase === 'prepare' && !r.done;
+    const intro = roundCue();
+    const introKey = intro.cues?.at(-1)?.key ?? null;
+    autoShopCue = newRound && introKey !== null ? introKey : null;
+    changed({
+      modal: null,
+      selected: null,
+      lastBattle: null,
+      ...intro,
+      ...(newRound && introKey === null ? { shopOpen: true } : {}),
+    });
     notify('T36', P.label(r) + ' 준비 · ' + P.roundType(r.stage, r.round));
   }
 
@@ -531,6 +547,7 @@ export function createStore(env: StoreEnv) {
         runId: `run-${clock()}-${seed >>> 0}`,
       });
       nextUid += created.units.length;
+      autoShopCue = null;
       state = { ...state, run: created };
       prepareFormation();
       changed({
@@ -638,11 +655,22 @@ export function createStore(env: StoreEnv) {
       const drag = state.drag;
       if (!drag || drag.pointerId !== pointerId) return;
       if (!drag.active && Math.hypot(x - drag.startX, y - drag.startY) < DRAG_THRESHOLD) return;
-      // 처음 실제로 움직일 때 드래그 시작: 선택이 풀리고 판매 영역이 나타난다
+      // 처음 실제로 움직일 때 드래그 시작: 선택이 풀리고 판매 영역이 나타난다.
+      // 열려 있던 일반 팝업(영입창·설정·더보기·유대 미리보기·상세)도 모두 닫는다(v0.18.3, 겹친 팝업이 남지 않게).
+      // 확인 창(modal)과 전체 화면 창(overlay)은 드래그 자체가 시작되지 않는다(배경을 가림).
       const starting = !drag.active;
       publish({
         drag: { ...drag, active: true, x, y, over },
-        ...(starting ? { selected: null, selectedItem: null } : {}),
+        ...(starting
+          ? {
+              selected: null,
+              selectedItem: null,
+              inspected: null,
+              peek: null,
+              popover: null,
+              shopOpen: false,
+            }
+          : {}),
       });
     },
     /** 놓기: 판매 영역이면 판매, 칸이면 이동, 그 밖이면 그대로. */
@@ -833,9 +861,13 @@ export function createStore(env: StoreEnv) {
       const done = state.cues.find((c) => c.key === key);
       if (!done) return;
       const cues = state.cues.filter((c) => c.key !== key);
+      // 새 라운드 안내가 끝나면 영입창을 연다(한 번만, 준비 단계이고 확인 창이 없을 때)
+      const openShop = key === autoShopCue && editable() && !state.modal && !state.overlay;
+      if (key === autoShopCue) autoShopCue = null;
       publish({
         cues,
         ...(done.kind === 'health' && phaseModal() === 'result' ? { modal: 'result' } : {}),
+        ...(openShop ? { shopOpen: true } : {}),
       });
     },
     /** 전투 끝 장면을 건너뛰고 바로 다음으로 */

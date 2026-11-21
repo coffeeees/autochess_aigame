@@ -47,6 +47,7 @@ export function Pawn({
       data-context={context}
       data-enemy={enemy}
       data-selected={selected}
+      data-drag-source={onDragStart ? 'unit' : undefined}
       style={{ '--cost-color': costColor(cost) }}
       onClick={onClick}
       onPointerDown={

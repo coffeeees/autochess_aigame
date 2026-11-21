@@ -129,12 +129,12 @@ test('manual reroll succeeds for correct price and unlocks; rejected action is f
     a.deepEqual(s, before);
   }
 });
-test('locked carry never restores a now-owned3star and lock defaults do not change old fields', () => {
+test('잠근 후보는 3성 보유 캐릭터도 그대로 넘기고(v0.18.3) lock defaults do not change old fields', () => {
   const s = state();
   s.shopCarry = { node: '1-3', offers: ['C01', null, 'C24', 'C03', 'C05'] };
   s.units = [{ id: 'C24', star: 3 }];
   V.enterShop(s);
-  a.equal(s.shop[2], null);
+  a.deepEqual(s.shop, ['C01', null, 'C24', 'C03', 'C05']);
   const old = state();
   delete old.shopLocked;
   delete old.shopCarry;

@@ -21,10 +21,15 @@ export type BuyResult =
   | { ok: true; unit: RunUnit; merges: MergeEvent[] }
   | { ok: false; notice: 'T04' | 'T05' | 'T06' | null };
 
-/** 상점에서 캐릭터를 사고, 합성한 뒤 상점을 갱신한다. */
+/**
+ * 상점에서 캐릭터를 사고 합성한다. 구매한 칸만 비운다.
+ * v0.18.3(사용자 요청): 구매로 3성이 돼도 아직 사지 않은 같은 캐릭터 후보는 바꾸지 않고 그대로 살 수 있다
+ * (예전에는 refreshShop이 그 칸을 다른 후보로 다시 뽑았다). 3성 보유 캐릭터를 새로 뽑지 않는 규칙(shopPool)은 그대로다.
+ */
 export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyResult {
   const { uid, free = false, slot = -1, busy = false, beforeMerge } = options;
-  if (!V.shopPool(state).includes(id)) return { ok: false, notice: 'T04' }; // 3성 보유
+  const offered = slot >= 0 && state.shop[slot] === id; // 지금 상점에 떠 있는 후보
+  if (!offered && !V.shopPool(state).includes(id)) return { ok: false, notice: 'T04' }; // 3성 보유
   if (busy || state.done || state.roundPhase !== 'prepare' || !D.playableIds.includes(id))
     return { ok: false, notice: null };
   const canMerge = state.units.filter((u) => u.id === id && u.star === 1).length >= 2;
@@ -39,7 +44,6 @@ export function buyUnit(state: RunState, id: string, options: BuyOptions): BuyRe
   if (slot >= 0) state.shop[slot] = null;
   const merges = mergeAll(state, beforeMerge);
   V.normalize(state);
-  V.refreshShop(state);
   return { ok: true, unit, merges };
 }
 
