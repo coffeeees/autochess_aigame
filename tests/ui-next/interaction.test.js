@@ -1,4 +1,4 @@
-// v0.18.3 상점·팝업 상호작용 요청: (1) 새 라운드(R-1) 준비 진입 때 영입창 자동 열기,
+// v0.18.3 상점·팝업 상호작용 요청: (1) 다음 라운드 준비 진입 때마다 영입창 자동 열기(v0.18.4 사용자 정정: 2-1 → 2-2도),
 // (3) 끌기 시작하면 열린 일반 팝업 모두 닫기. (2) 3성 후보 유지는 tests/shop/core-shop.test.js.
 // 화면 쪽 같은 누름 드래그 연결(usePopupDismiss)은 실제 브라우저에서 확인했다(패치노트 기록).
 import { test } from 'vitest';
@@ -33,7 +33,7 @@ function setup({ presentation = false } = {}) {
   return { store, s, data, finish };
 }
 
-test('영입창 자동 열기: 1-5 → 2-1(새 라운드)에서 한 번, 같은 라운드 안 스테이지 이동(2-1 → 2-2)에서는 열지 않음', () => {
+test('영입창 자동 열기: 다음 라운드 준비에 들어갈 때마다(1-5 → 2-1, 2-1 → 2-2, 2-4 → 2-5) 한 번, 새 원정 1-1은 아님', () => {
   const { store, s, finish } = setup();
   a.equal(s().shopOpen, false, '새 원정 시작(1-1)에서는 열지 않음');
   finish(1, 5);
@@ -45,12 +45,13 @@ test('영입창 자동 열기: 1-5 → 2-1(새 라운드)에서 한 번, 같은 
   store.actions.setShopOpen(false);
   finish(2, 1);
   a.equal(P.label(s().run), '2-2');
-  a.equal(s().shopOpen, false, '같은 라운드의 스테이지 이동');
+  a.equal(s().shopOpen, true, '같은 구간 안 이동도 연다(v0.18.4)');
+  store.actions.setShopOpen(false);
   finish(2, 4);
-  a.equal(s().shopOpen, false, '2-5');
+  a.equal(s().shopOpen, true, '2-5');
 });
 
-test('영입창 자동 열기: ROUND 안내 연출이 있으면 끝난 뒤 한 번만 연다', () => {
+test('영입창 자동 열기: ROUND·STAGE 안내 연출이 있으면 끝난 뒤 한 번만 연다', () => {
   const { store, s, finish } = setup({ presentation: true });
   finish(1, 5);
   const intro = s().cues.find((c) => c.kind === 'round');
@@ -61,20 +62,19 @@ test('영입창 자동 열기: ROUND 안내 연출이 있으면 끝난 뒤 한 �
   store.actions.setShopOpen(false);
   store.actions.doneCue(intro.key); // 같은 신호를 다시 끝내도 다시 열리지 않음
   a.equal(s().shopOpen, false);
-  // 스테이지 안내(2-2)는 영입창을 열지 않음
   finish(2, 1);
   const stage = s().cues.find((c) => c.kind === 'stage');
+  a.equal(s().shopOpen, false, 'STAGE 안내 중에는 열지 않음');
   store.actions.doneCue(stage.key);
-  a.equal(s().shopOpen, false);
+  a.equal(s().shopOpen, true, 'STAGE 안내가 끝나면 열림');
 });
 
-test('영입창 자동 열기: 증강 선택(필수 창)이 먼저면 선택 뒤에도 R-3이라 열지 않고, 6-5 계속 진행 뒤 7-1에서 연다', () => {
+test('영입창 자동 열기: 증강 선택(필수 창)이 먼저면 선택 뒤에 열고, 6-5 종료 선택 뒤 7-1에서 연다', () => {
   const { store, s, finish } = setup();
-  // 2-5 → 3-1은 새 라운드
   finish(2, 5);
   a.equal(s().shopOpen, true);
   store.actions.setShopOpen(false);
-  // 3-2 → 3-3: 증강 선택 창이 먼저(스테이지 이동이라 열지 않음)
+  // 3-2 → 3-3: 증강 선택 창이 먼저
   s().run.augmentState.completedPicks = ['1-3'];
   Object.assign(s().run, { stage: 3, round: 2, roundPhase: 'result' });
   s().run.completedRounds['3-2'] = { win: true };
@@ -82,7 +82,8 @@ test('영입창 자동 열기: 증강 선택(필수 창)이 먼저면 선택 뒤
   a.equal(s().modal, 'augment');
   a.equal(s().shopOpen, false, '필수 선택 창을 가리지 않음');
   store.actions.chooseAugment(P.availableAugments(s().run)[0].id);
-  a.equal(s().shopOpen, false);
+  a.equal(s().shopOpen, true, '증강 선택 뒤 3-3 준비');
+  store.actions.setShopOpen(false);
   // 6-5 정규 종료 선택 → 계속 진행 → 7-1
   Object.assign(s().run, { stage: 6, round: 5, roundPhase: 'result', completionChoice: 'pending' });
   s().run.completedRounds['6-5'] = { win: true };
@@ -92,6 +93,16 @@ test('영입창 자동 열기: 증강 선택(필수 창)이 먼저면 선택 뒤
   store.actions.chooseCompletion('continue');
   a.equal(P.label(s().run), '7-1');
   a.equal(s().shopOpen, true, '선택 뒤 7-1 준비 진입');
+});
+
+test('영입창 자동 열기: 원정이 끝나면(6-5 뒤 종료) 열지 않음', () => {
+  const { store, s } = setup();
+  Object.assign(s().run, { stage: 6, round: 5, roundPhase: 'result', completionChoice: 'pending' });
+  s().run.completedRounds['6-5'] = { win: true };
+  store.actions.continueRound();
+  store.actions.chooseCompletion('end');
+  a.equal(s().shopOpen, false);
+  a.equal(s().modal, 'summary');
 });
 
 test('영입창 자동 열기: 저장 불러오기·시작 화면 복귀로는 열리지 않음', () => {

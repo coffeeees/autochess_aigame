@@ -1,6 +1,6 @@
 {
   "name": "starlight-onecost-prototype",
-  "version": "0.18.3",
+  "version": "0.18.4",
   "private": true,
   "description": "PvE autochess prototype with 33 playable units, 40 equipment items and patch notes",
   "scripts": {
