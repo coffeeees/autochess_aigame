@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.18.0');
+  a.equal(notes.current, '0.18.1');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -329,5 +329,23 @@ test('좌우 대치 전장 기록: 브라우저 확인·기준선·창 크기별
       size,
     );
   a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 좌우 대치 전장'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 좌우 대치 전장'));
+});
+
+test('시각 개선 기록(v0.18.1): 적용 수치·창 크기별 확대율·실행하지 않은 항목을 적는다', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.visual;
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  for (const size of ['1600×900', '1920×1080', '1366×768'])
+    a(
+      t.cases.some((c) => c[0] === size),
+      size,
+    );
+  for (const word of ['테두리', '그림자', '1.09'])
+    a(
+      t.growth.some((x) => x.includes(word)),
+      word,
+    );
+  a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 패널 테두리'));
 });

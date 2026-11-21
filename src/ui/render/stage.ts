@@ -1,11 +1,35 @@
 // 게임 화면 뒤에 까는 PixiJS 장면(v0.18.0 좌우 대치 전장). 결정 D1.
-// 레이어(아래 → 위): 배경(cover) → 보드 그림(contain) → 입력 격자 디버그 → 유닛 → 연출.
+// 레이어(아래 → 위): 배경(cover) → 보드 그림자 → 보드 그림(contain) → 입력 격자 디버그 → 유닛 → 연출.
 // HTML UI(HUD·패널·대기석·입력 칸)는 이 캔버스 위에 그대로 있다(캔버스는 z-index −1, 입력을 받지 않음).
 // 보드 위치는 DOM 입력 칸 컨테이너(Board.tsx의 .art)의 실제 사각형을 읽는다. 그 사각형은 art/board.ts의
 // fitBoard와 같은 규칙(사용 영역 안에서 비율 그대로 contain)으로 CSS가 정하므로, 입력 칸·그림·유닛이 한 좌표를 쓴다.
 // 캔버스가 화면 (0,0)에 꽉 차 있어 장면 좌표 = 화면 CSS px(clientX/Y)다.
-import { Application, Assets, Container, Graphics, Sprite, type Texture } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { boardArt, coverBackground, tileOnScreen, COLUMNS, ROWS, type Rect } from '../art/board.ts';
+
+/**
+ * 보드 그림의 알파 윤곽을 따라 흐린 검은 그림자 텍스처를 한 번 만든다(v0.18.1 시각 개선 요청 3).
+ * 매 프레임 필터를 돌리지 않고 미리 그린 그림을 보드 아래에 깐다. 그림 바깥으로 흐림 여백 pad를 둔다.
+ * 캔버스 2D 그림자(shadowBlur)는 거의 모든 브라우저가 지원한다. 그림을 캔버스 밖에 그리고 그림자만 안으로 옮긴다.
+ */
+function boardShadowTexture(board: Texture) {
+  const { width, height } = boardArt.source;
+  const { blur, offsetY } = boardArt.shadow;
+  const pad = Math.ceil(blur * 2);
+  const canvas = document.createElement('canvas');
+  canvas.width = width + pad * 2;
+  canvas.height = height + pad * 2 + offsetY;
+  const ctx = canvas.getContext('2d');
+  const image = board.source.resource as CanvasImageSource | undefined;
+  if (!ctx || !image) return null;
+  const away = canvas.width + width; // 그림은 캔버스 밖으로, 그림자만 원래 자리에
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = blur;
+  ctx.shadowOffsetX = away;
+  ctx.shadowOffsetY = offsetY;
+  ctx.drawImage(image, pad - away, pad, width, height);
+  return { texture: Texture.from(canvas), pad };
+}
 
 export interface Scene {
   app: Application;
@@ -54,12 +78,15 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
     Assets.load(boardArt.board),
   ])) as [Texture, Texture];
   const background = new Sprite(bgTexture);
+  const shadowArt = boardShadowTexture(boardTexture);
+  const shadow = new Sprite(shadowArt?.texture ?? Texture.EMPTY);
+  shadow.alpha = boardArt.shadow.alpha;
   const boardSprite = new Sprite(boardTexture);
   const debug = new Graphics();
   const vfxUnder = new Container();
   const units = new Container();
   const vfx = new Container();
-  app.stage.addChild(background, boardSprite, debug, vfxUnder, units, vfx);
+  app.stage.addChild(background, shadow, boardSprite, debug, vfxUnder, units, vfx);
 
   let boardEl: HTMLElement | null = null;
   let boardRect: Rect | null = null;
@@ -101,10 +128,16 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
     boardRect =
       r && r.width > 0 ? { left: r.left, top: r.top, width: r.width, height: r.height } : null;
     boardSprite.visible = !!boardRect;
+    shadow.visible = !!boardRect && !!shadowArt;
     if (boardRect) {
       // 비율 고정: 가로·세로에 같은 배율(그림을 늘이거나 비틀지 않는다)
+      const s = boardRect.width / boardArt.source.width;
       boardSprite.position.set(boardRect.left, boardRect.top);
-      boardSprite.scale.set(boardRect.width / boardArt.source.width);
+      boardSprite.scale.set(s);
+      // 그림자도 같은 배율(흐림·아래로 떨어지는 거리가 보드 크기를 따라감)
+      const pad = shadowArt?.pad ?? 0;
+      shadow.position.set(boardRect.left - pad * s, boardRect.top - pad * s);
+      shadow.scale.set(s);
     }
     drawDebug();
     listeners.forEach((l) => l());
