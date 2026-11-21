@@ -1,6 +1,6 @@
 # AUTOCHESS 전체 게임 기획·현재 실행 명세
 
-기준 버전: **0.18.4**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.19.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/core/run.ts:21](../src/core/run.ts#L21) · `function newRun`, [src/core/preparation.js:274](../src/core/preparation.js#L274) · `function startingRoster`.
+[src/core/run.ts:24](../src/core/run.ts#L24) · `function newRun`, [src/core/preparation.js:268](../src/core/preparation.js#L268) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 6-5 정산후HP>0이면 종료/계속 선택.종료는complete 상태로기록보존,계속은7-1. HP0은gameover가우선. 이미7+구간인기존세이브는소급팝업없음.7+는동일패턴기록용이며 메타XP미지급을안내하지만 실제메타XP지급은1~6을포함해모두비활성입니다.
 
-[src/core/progression.js:495](../src/core/progression.js#L495) · `function advanceRound`, [src/core/progression.js:518](../src/core/progression.js#L518) · `function chooseCompletion`.
+[src/core/progression.js:530](../src/core/progression.js#L530) · `function advanceRound`, [src/core/progression.js:553](../src/core/progression.js#L553) · `function chooseCompletion`.
 
 ## 3. 난이도·플레이어 체력
 
@@ -62,7 +62,7 @@
 
 적피해배율은적의기본/스킬/DOT/소환공격에적용되며 플레이어패배HP손실배율은아닙니다. 난이도는시작HP가낮아져도최대HP100을유지합니다.
 
-[src/core/encounters.js:13](../src/core/encounters.js#L13) · `const difficulties=`, [src/core/progression.js:428](../src/core/progression.js#L428) · `legacyDamage=`.
+[src/core/encounters.js:14](../src/core/encounters.js#L14) · `const difficulties=`, [src/core/progression.js:459](../src/core/progression.js#L459) · `legacyDamage=`.
 
 ## 4. 전장·준비 조작
 
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역. v0.18.3: 일반 팝업(영입창·설정·더보기·유대/증강 미리보기·아이템·캐릭터 상세)이 열린 채 대기석·전장 캐릭터나 아이템을 누르고 끌면 팝업을 닫고 같은 누름으로 바로 드래그한다(끌기 시작 때 남은 일반 팝업도 모두 닫음). 움직이지 않고 떼면 팝업 닫기로만 쓰고, 팝업 밖 버튼 클릭도 닫기로만 쓴다. 보급·증강·결과·배치 확인 같은 확인 창은 뒤쪽 입력을 계속 막는다.
 
-[src/core/board.js:1](../src/core/board.js#L1) · `const config=`, [src/core/preparation.js:74](../src/core/preparation.js#L74) · `function moveUnit`, [src/ui/store.ts:360](../src/ui/store.ts#L360) · `function beginBattle`.
+[src/core/board.js:5](../src/core/board.js#L5) · `const config=`, [src/core/preparation.js:76](../src/core/preparation.js#L76) · `function moveUnit`, [src/ui/store.ts:417](../src/ui/store.ts#L417) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외(새로 뽑을 때만),판매후복귀. v0.18.3(사용자 요청): 구매로 3성이 돼도 이미 떠 있는 같은 캐릭터 후보와 잠근 후보는 바꾸지 않고 그대로 살 수 있다(1성으로 들어옴, 구매한 칸만 빈칸). 상점 칸 밖의 영입(도감 무료 영입)은 3성 보유면 T04로 거절. 다음 라운드 준비에 들어갈 때마다 영입창을 한 번 자동으로 연다(v0.18.4 사용자 정정: 같은 구간 안 이동·증강 선택 뒤 포함. ROUND·STAGE 안내 뒤, 새 원정 1-1·원정 종료·불러오기·화면 복귀로는 열지 않음). 영입창은 0.2초 동안 위에서 아래로 펼쳐지며 열린다(카드는 왼쪽부터 25ms 간격). 1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:366](../src/core/progression.js#L366) · `function settleRound`, [src/core/shop.ts:47](../src/core/shop.ts#L47) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:195](../src/core/preparation.js#L195) · `function enterShop`.
+[src/core/progression.js:381](../src/core/progression.js#L381) · `function settleRound`, [src/core/shop.ts:61](../src/core/shop.ts#L61) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:197](../src/core/preparation.js#L197) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -119,7 +119,7 @@
 | 10 | 5 | 10 | 20 | 40 | 25 | 5 | 10 | 20 |
 
 
-[src/core/preparation.js:160](../src/core/preparation.js#L160) · `const baseOdds=`.
+[src/core/preparation.js:158](../src/core/preparation.js#L158) · `const baseOdds=`.
 
 ## 6. 인게임 레벨·메타 레벨
 
@@ -192,7 +192,7 @@
 | S7 | 전투의 축복 | Lv.50 | 5 | 매 전투 동안 모든 아군 GD +2 | 매 전투 동안 모든 아군 GD +10 |
 | S8 | 원정 보험 | Lv.70 | 4 | 원정마다 HP를 잃는 첫 1번의 패배에서 손실 HP −1 (캐릭터 부활 아님) | 원정마다 HP를 잃는 첫 4번의 패배에서 손실 HP −1 (캐릭터 부활 아님) |
 
-[src/core/progression.js:126](../src/core/progression.js#L126) · `function addXp`, [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY`, [src/core/meta.ts:159](../src/core/meta.ts#L159) · `export function settleRun`.
+[src/core/progression.js:132](../src/core/progression.js#L132) · `function addXp`, [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY`, [src/core/meta.ts:178](../src/core/meta.ts#L178) · `export function settleRun`.
 
 ## 7. 전투 판정 상세(구현된 임시 수치 포함)
 
@@ -219,7 +219,7 @@
 
 DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시간갱신(일부amount갱신),다른시전자DOT중첩.시전자사망후에도units에남아있어기존DOT는지속할수있습니다. harmful상태하나정화는배열의첫항목.
 
-[src/core/combat/battle.js:568](../src/core/combat/battle.js#L568) · `tick(dt=`, [src/core/combat/battle.js:241](../src/core/combat/battle.js#L241) · `deal(source,target`, [src/core/combat/battle.js:210](../src/core/combat/battle.js#L210) · `heal(target,amount`, [src/core/items.js:561](../src/core/items.js#L561) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
+[src/core/combat/battle.js:571](../src/core/combat/battle.js#L571) · `tick(dt=`, [src/core/combat/battle.js:242](../src/core/combat/battle.js#L242) · `deal(source,target`, [src/core/combat/battle.js:211](../src/core/combat/battle.js#L211) · `heal(target,amount`, [src/core/items.js:561](../src/core/items.js#L561) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
 
 ### 전투 공통 임시 설정 원문값
 
@@ -264,7 +264,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 | E99 | 보물 슬라임 | C10 | 650 | 100 | 35 | 20 | 20 |
 
 
-[src/core/encounters.js:82](../src/core/encounters.js#L82) · `function encounter`, [src/core/encounters.js:75](../src/core/encounters.js#L75) · `function stageStars`, [src/core/encounters.js:110](../src/core/encounters.js#L110) · `function claimBonusLoot`.
+[src/core/encounters.js:83](../src/core/encounters.js#L83) · `function encounter`, [src/core/encounters.js:76](../src/core/encounters.js#L76) · `function stageStars`, [src/core/encounters.js:112](../src/core/encounters.js#L112) · `function claimBonusLoot`.
 
 ## 9. 테마 유대16종 · 임시 밸런스 v1
 
@@ -1190,7 +1190,7 @@ T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성�
 
 모든아이템고유효과는비소환수장착자만(has가summon제외).피해출처ITEM_PROC와itemProcDepth가다른고유효과연쇄재귀를차단합니다. 세부확정여부는원문아이템명세의가정과구분해테스트해야합니다.
 
-[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:303](../src/core/progression.js#L303) · `function beginSupply`.
+[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:318](../src/core/progression.js#L318) · `function beginSupply`.
 
 ## 12. 증강 — 54종(1차 후보안, 임시값)
 
@@ -1268,7 +1268,7 @@ v0.17.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종
 
 G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 캐릭터를 전장에 2명까지 둘 수 있습니다(3명은 불가, 배치와 전투 시작 모두 검사). 조합 인원은 원래대로 서로 다른 캐릭터만 세므로 같은 캐릭터 2명은 1명분입니다.
 
-[src/core/augments.js:362](../src/core/augments.js#L362) · `function draw`, [src/core/combat/augment-effects.js:212](../src/core/combat/augment-effects.js#L212) · `function update`, [src/core/augment-run.js:134](../src/core/augment-run.js#L134) · `function settle`.
+[src/core/augments.js:362](../src/core/augments.js#L362) · `function draw`, [src/core/combat/augment-effects.js:216](../src/core/combat/augment-effects.js#L216) · `function update`, [src/core/augment-run.js:137](../src/core/augment-run.js#L137) · `function settle`.
 
 ## 13. 저장·호환·UI·연출
 
@@ -1276,7 +1276,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
 - 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
 
-[src/core/save.ts:177](../src/core/save.ts#L177) · `function loadSave`, [src/core/save.ts:139](../src/core/save.ts#L139) · `function revertInterruptedBattle`, [src/ui/store.ts:211](../src/ui/store.ts#L211) · `function save`.
+[src/core/save.ts:186](../src/core/save.ts#L186) · `function loadSave`, [src/core/save.ts:148](../src/core/save.ts#L148) · `function revertInterruptedBattle`, [src/ui/store.ts:240](../src/ui/store.ts#L240) · `function save`.
 
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
@@ -1287,7 +1287,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
 - 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/ui/store.ts:231](../src/ui/store.ts#L231) · `function load`, [src/core/board.js:46](../src/core/board.js#L46) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
+[src/ui/store.ts:276](../src/ui/store.ts#L276) · `function load`, [src/core/board.js:44](../src/core/board.js#L44) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 ## 14. 남은 결정과 불일치
 

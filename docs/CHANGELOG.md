@@ -1,6 +1,6 @@
 # AUTOCHESS 변경 이력과 소스·문서 차이
 
-기준 버전: **0.18.4**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.19.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -14,20 +14,20 @@
 
 | ID | 유형 | 원문/과거 기록 | 그 기록의 의미 | 현재 코드/판단 | 근거 |
 | --- | --- | --- | --- | --- | --- |
-| D01 | 이전 기획/후속 변경 | docs/AUTOCHESS_CODEX_SPEC.md §3 | 일반5/3G,보스7/5G | 현재 일반3/1G,보스5/3G. 이후0.7 요청 반영. 현재 코드는 그대로 두고 원문은 역사로 보존. | [src/core/progression.js:24](../src/core/progression.js#L24) · `rewards:` |
-| D02 | 이전 기획/후속 변경 | docs/AUTOCHESS_CODEX_SPEC.md §2,§5 | 보급1개,보스40%아이템/60%골드 상호배타 | 현재 보급4개 후보 중2개. 보스 승리 확정 아이템1개+독립60%골드. 아이템 기획과0.10 변경이 후속 규칙. | [src/core/progression.js:366](../src/core/progression.js#L366) · `function settleRound` |
+| D01 | 이전 기획/후속 변경 | docs/AUTOCHESS_CODEX_SPEC.md §3 | 일반5/3G,보스7/5G | 현재 일반3/1G,보스5/3G. 이후0.7 요청 반영. 현재 코드는 그대로 두고 원문은 역사로 보존. | [src/core/progression.js:25](../src/core/progression.js#L25) · `rewards:` |
+| D02 | 이전 기획/후속 변경 | docs/AUTOCHESS_CODEX_SPEC.md §2,§5 | 보급1개,보스40%아이템/60%골드 상호배타 | 현재 보급4개 후보 중2개. 보스 승리 확정 아이템1개+독립60%골드. 아이템 기획과0.10 변경이 후속 규칙. | [src/core/progression.js:381](../src/core/progression.js#L381) · `function settleRound` |
 | D03 | 이전 기획/후속 변경 | docs/AUTOCHESS_CODEX_SPEC.md §증강 | 2/4/6스테이지 시작,테스트3종 | 현재1-3/3-3/5-3 직전,36종. 구버전3종은 세이브 호환만 남음. | [src/core/augments.js:2](../src/core/augments.js#L2) · `const config=` |
-| D04 | 기획 미확정/실행 임시값 | docs/AUTOCHESS_CODEX_SPEC.md §1 | 생존 적에 따른 패배 피해,공식 미정 | 현재10+누적노드번호×2. 생존 적 수는 기록하나 기본 모드 계산에 쓰지 않음. survivors 분기는 설정 대안만 존재. | [src/core/progression.js:428](../src/core/progression.js#L428) · `legacyDamage=` |
+| D04 | 기획 미확정/실행 임시값 | docs/AUTOCHESS_CODEX_SPEC.md §1 | 생존 적에 따른 패배 피해,공식 미정 | 현재10+누적노드번호×2. 생존 적 수는 기록하나 기본 모드 계산에 쓰지 않음. survivors 분기는 설정 대안만 존재. | [src/core/progression.js:459](../src/core/progression.js#L459) · `legacyDamage=` |
 | D05 | 원본 초안/실행 데이터 차이 | docs/AUTOCHESS_02.md 및 dist/higher-cost-drafts.js | C13~45 원래 이름/활성화 전,다수 TODO | data.js가45명 이름을 덮어쓰고 C13~33 implemented=true/todo=[]로 재정의. 원본 초안의 TODO를 현재 미구현으로 오인하면 안 됨. | [src/core/data/units.js:206](../src/core/data/units.js#L206) · `for(const u of roster.filter` |
 | D06 | 메타데이터와 실행의 차이 | dist/data.js skills C01~C12 | 개별 implemented 필드 없음 | Battle.cast에 C01~C12 실행 분기 존재. implemented 플래그 부재를 미구현으로 분류하지 않음. | [src/core/combat/skills/cost1.js:6](../src/core/combat/skills/cost1.js#L6) · `C01(u, target, s)` |
-| D07 | 데이터 콘셉트/실제 효과 차이 | 유대 concept/thresholds | 부활·정화·추가타·은신 등 복합 콘셉트 | v0.15.17에서 새16종 임시 밸런스 v1을 기본 적용. confirmedEffect=false는 최종 밸런스 미확정이며 효과 미구현을 뜻하지 않음. | [src/core/combat/battle.js:540](../src/core/combat/battle.js#L540) · `applyExperimental(){` |
+| D07 | 데이터 콘셉트/실제 효과 차이 | 유대 concept/thresholds | 부활·정화·추가타·은신 등 복합 콘셉트 | v0.15.17에서 새16종 임시 밸런스 v1을 기본 적용. confirmedEffect=false는 최종 밸런스 미확정이며 효과 미구현을 뜻하지 않음. | [src/core/combat/battle.js:543](../src/core/combat/battle.js#L543) · `applyExperimental(){` |
 | D08 | 누적 패치 설명/현재 UI 차이 | dist/patch-notes.js history와 currentRules의 누적 UI 설명 | history의옛합성450/340·작은ROUND1100/400,누적currentRules의슬롯크기유지와최신축소구절이공존 | 현재 합성900/680ms,패널240px,일반/특수슬롯36×36px,라운드전환2200/600ms·스테이지텍스트1600/350ms. 역사 문단은 보존하고 최신UI 및 이 문서로 구분. | [src/ui/render/screen.ts:6](../src/ui/render/screen.ts#L6) · `const cueDurations` |
 | D09 | 효과 문구/코드 세부 예외 | I28불멸자의갑옷의치명피해생존설명 | 전투당1회치명피해를HP1로방지 | 현재I28은ITEM_PROC/아이템파생출처에서는발동하지않는가드가있음.P04는독립죽음방지.포괄적인문구의세부범위가의도와맞는지확인필요하며이번에수정하지않음. | [src/core/combat/item-effects.js:41](../src/core/combat/item-effects.js#L41) · `function preventDeath` |
 | D10 | 이름 승인/구버전 안내 문구 | 캐릭터 도감·상세의 테스트용 이름 안내 | 이름·능력치·스킬 모두 테스트용 제안으로 표시 | 45명 표시 이름은0.15.9 사용자 지정 목록으로 변경됨. provisional 및 안내 문구는 남아 있어 이름 승인과 수치 임시 여부를 문서에서 분리. | [src/ui/components/Overlays.tsx:90](../src/ui/components/Overlays.tsx#L90) · `function CharacterCodex` |
 | D11 | 기획과 연출 용어 구분 | C32 띄우기 | 공중에 띄우는 것으로 해석 가능 | 승인한 구현은 stun 키의1초 행동/이동 불가. 공중 좌표/무적/전용 도트 애니메이션은 없음. | [src/core/combat/skills/cost3.js:70](../src/core/combat/skills/cost3.js#L70) · `C32(u, target, s)` |
-| D12 | 기록용 안내/실제 기능 범위 | 7구간 이후 메타XP미지급 문구 | 1~6구간에서는 메타XP를 주는 것으로 오해 가능 | v0.17.2부터 원정이 끝날 때 1~6구간(정규, 최대 80) 기준으로 메타XP를 지급하고 7구간 이후는 추가 0. 레벨업 보상·영구 강화는 여전히 없음. 인게임 라운드XP2와는 별개. | [src/core/meta.ts:159](../src/core/meta.ts#L159) · `export function settleRun` |
+| D12 | 기록용 안내/실제 기능 범위 | 7구간 이후 메타XP미지급 문구 | 1~6구간에서는 메타XP를 주는 것으로 오해 가능 | v0.17.2부터 원정이 끝날 때 1~6구간(정규, 최대 80) 기준으로 메타XP를 지급하고 7구간 이후는 추가 0. 레벨업 보상·영구 강화는 여전히 없음. 인게임 라운드XP2와는 별개. | [src/core/meta.ts:178](../src/core/meta.ts#L178) · `export function settleRun` |
 | D13 | 이전 패치/현재 표시 정책 | dist/notice-audit.js의 원래41개 조사 문구 | 과거 발생 문구가 모두 현재도 표시되는 것으로 오해 가능 | 실제 notice-policy는13유지/27삭제/T28승인수정1. 이력과 현행 허용 목록을 구분. | [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED` |
-| D14 | 코드 수준 동작/기획 미확정 | 물 실험 재생 및 치유감소 | 모든 회복이 치유감소를 거치는 것으로 오해 가능 | regen은 tick에서 HP를 직접 올리며 heal()을 경유하지 않음. healingReduction과의 의도된 상호작용은 확인 필요. | [src/core/combat/battle.js:598](../src/core/combat/battle.js#L598) · `if(u.regen&&u.hp>0)` |
+| D14 | 코드 수준 동작/기획 미확정 | 물 실험 재생 및 치유감소 | 모든 회복이 치유감소를 거치는 것으로 오해 가능 | regen은 tick에서 HP를 직접 올리며 heal()을 경유하지 않음. healingReduction과의 의도된 상호작용은 확인 필요. | [src/core/combat/battle.js:601](../src/core/combat/battle.js#L601) · `if(u.regen&&u.hp>0)` |
 
 
 ‘이전기획/후속변경’은발견된버그로자동수정하지않습니다.‘확인필요’도이번UI작업으로고치지않았습니다.이표의D08은기존누적currentRules내역과이번최신UI를함께읽어야하는문서구조차이입니다.
