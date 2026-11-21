@@ -40,7 +40,12 @@ export function ShopPopover({ ui, actions }: GameProps) {
           id ? (
             <Offer key={slot} id={id} slot={slot} {...{ ui, actions, editable }} />
           ) : (
-            <div key={slot} class={styles.empty} aria-label="구매한 빈 슬롯" />
+            <div
+              key={slot}
+              class={styles.empty}
+              style={{ '--i': slot }}
+              aria-label="구매한 빈 슬롯"
+            />
           ),
         )}
       </div>
@@ -63,7 +68,7 @@ function Offer({
   return (
     <button
       class={styles.card}
-      style={{ '--cost-color': costColor(unit.cost) }}
+      style={{ '--cost-color': costColor(unit.cost), '--i': slot }}
       data-owned={owned}
       data-recommended={recommended.length > 0}
       disabled={!editable}

@@ -184,10 +184,19 @@ export function createStore(env: StoreEnv) {
   };
   let clickGuardUntil = 0;
   /**
-   * 새 라운드(상위 구간 R-1, 화면의 ROUND n) 준비에 들어갈 때 동료 영입창을 한 번 자동으로 연다(v0.18.3 사용자 요청 1).
-   * ROUND 안내 연출이 있으면 그것이 끝난 뒤(doneCue) 연다. 저장에 넣지 않아 불러오기·화면 복귀로는 열리지 않는다.
+   * 다음 라운드 준비에 들어갈 때마다 동료 영입창을 한 번 자동으로 연다(v0.18.3 요청, v0.18.4에서 사용자가
+   * "다음 라운드로 넘어갈 때마다"로 정정: 같은 구간 안 이동 2-1 → 2-2도, 증강 선택 뒤도 연다).
+   * ROUND·STAGE 안내 연출이 있으면 그것이 끝난 뒤(doneCue) 연다. 저장에 넣지 않아 불러오기·화면 복귀로는 열리지 않는다.
    */
   let autoShopCue: number | null = null;
+  /** 준비 단계에 막 들어왔을 때: 안내 신호(intro)가 있으면 끝난 뒤, 없으면 바로 영입창을 연다 */
+  function openShopAfter(intro: Partial<UiState>): Partial<UiState> {
+    const r = state.run;
+    const ready = !!r && !r.done && r.roundPhase === 'prepare';
+    const key = intro.cues?.at(-1)?.key ?? null;
+    autoShopCue = ready && key !== null ? key : null;
+    return ready && key === null ? { shopOpen: true } : {};
+  }
   const clock = () => (env.now?.() ?? new Date()).getTime();
   let nextUid = 0;
   let noticeKey = 0;
@@ -478,18 +487,8 @@ export function createStore(env: StoreEnv) {
     if (r.roundPhase === 'augment') return changed({ modal: 'augment', lastBattle: null });
     V.enterShop(r);
     prepareFormation();
-    // 같은 라운드 안의 스테이지 이동(R-2~R-5)에서는 열지 않는다
-    const newRound = r.round === 1 && r.roundPhase === 'prepare' && !r.done;
     const intro = roundCue();
-    const introKey = intro.cues?.at(-1)?.key ?? null;
-    autoShopCue = newRound && introKey !== null ? introKey : null;
-    changed({
-      modal: null,
-      selected: null,
-      lastBattle: null,
-      ...intro,
-      ...(newRound && introKey === null ? { shopOpen: true } : {}),
-    });
+    changed({ modal: null, selected: null, lastBattle: null, ...intro, ...openShopAfter(intro) });
     notify('T36', P.label(r) + ' 준비 · ' + P.roundType(r.stage, r.round));
   }
 
@@ -792,7 +791,8 @@ export function createStore(env: StoreEnv) {
       if (!state.run || !P.chooseAugment(run(), id)) return;
       V.enterShop(run());
       prepareFormation();
-      changed({ modal: null, ...roundCue() });
+      const intro = roundCue();
+      changed({ modal: null, ...intro, ...openShopAfter(intro) }); // 증강 선택(필수 창)이 끝난 뒤 영입창
       notify('T35', '증강 선택 완료 · ' + (P.augmentById(id)?.name ?? id));
     },
     continueRound,
@@ -861,7 +861,7 @@ export function createStore(env: StoreEnv) {
       const done = state.cues.find((c) => c.key === key);
       if (!done) return;
       const cues = state.cues.filter((c) => c.key !== key);
-      // 새 라운드 안내가 끝나면 영입창을 연다(한 번만, 준비 단계이고 확인 창이 없을 때)
+      // 라운드 안내가 끝나면 영입창을 연다(한 번만, 준비 단계이고 확인 창이 없을 때)
       const openShop = key === autoShopCue && editable() && !state.modal && !state.overlay;
       if (key === autoShopCue) autoShopCue = null;
       publish({
