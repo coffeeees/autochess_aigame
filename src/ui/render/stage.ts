@@ -91,8 +91,12 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
   let boardEl: HTMLElement | null = null;
   let boardRect: Rect | null = null;
   let debugOn = false;
+  /** destroy 뒤에는 아무것도 하지 않는다. 화면을 나갈 때 Game이 장면을 먼저 정리하고, 그 뒤 Board 정리가
+   *  attach(null)을 부르므로(v0.18.1 시작 화면 먹통 버그: 정리된 renderer를 읽다 예외 → 화면 전환이 멈춤) */
+  let destroyed = false;
 
   function drawDebug() {
+    if (destroyed) return;
     debug.clear();
     if (!debugOn || !boardRect) return;
     const s = boardRect.width / boardArt.source.width;
@@ -118,6 +122,7 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
   }
 
   function layout() {
+    if (destroyed) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
     if (app.renderer.width !== w || app.renderer.height !== h) app.renderer.resize(w, h);
@@ -157,6 +162,7 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
       return boardRect ? tileOnScreen(pos, boardRect) : null;
     },
     attach(el) {
+      if (destroyed) return;
       if (boardEl) observer.unobserve(boardEl);
       boardEl = el;
       if (el) observer.observe(el);
@@ -174,6 +180,10 @@ export async function createScene(host: HTMLElement): Promise<Scene> {
       };
     },
     destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      listeners.clear();
+      boardEl = null;
       observer.disconnect();
       window.removeEventListener('resize', onResize);
       app.destroy({ removeView: true }, { children: true });
