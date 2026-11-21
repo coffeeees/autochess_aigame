@@ -19,8 +19,17 @@ export const boardArt = {
   source: { width: 1536, height: 1024 },
   /** 보드 그림 안의 타일 영역(그림 픽셀) */
   grid: { left: 157, top: 86.5, right: 1379, bottom: 903.5 },
-  /** 전장 사용 영역 안쪽 안전 여백(CSS px, 명세 8~16) */
+  /** 전장 사용 영역 안쪽 안전 여백(CSS px, 명세 8~16). 확대 전 기준 크기를 정한다 */
   margin: 12,
+  /**
+   * v0.18.1 보드 확대(시각 개선 요청 2): 기준 크기 × 1.09. 공간이 모자라면 자동으로 줄인다.
+   * 보드 그림은 전장 칸 밖 화면 격자 틈(12px)으로 bleed만큼 나갈 수 있다(주변 패널과 2px 이상 띄움).
+   * 그림 위·아래 끝은 장식 끝부분이라, 프레임 본체는 이보다 안쪽에 있다.
+   */
+  zoom: 1.09,
+  bleed: 10,
+  /** 보드 그림자(그림 픽셀, 보드와 같이 커지고 작아짐): 아래로 offsetY, 흐림 blur, 진하기 alpha */
+  shadow: { offsetY: 18, blur: 28, alpha: 0.55 },
 } as const;
 
 export interface Rect {
@@ -47,10 +56,18 @@ export function tileCenterArt(pos: number) {
   };
 }
 
-/** 사용 가능 영역 A 안에 보드를 비율 그대로 넣는다(contain, 가운데 정렬). 결과는 화면상 보드 그림의 사각형 */
+/**
+ * 전장 칸(사용 가능 영역 A) 안에 보드를 비율 그대로 넣는다(contain, 가운데 정렬). 결과는 화면상 보드 그림의 사각형.
+ * Board.module.css의 .art 너비 식과 같다: min(기준 × zoom, A + bleed 2배에 맞는 크기), 기준 = A − 여백 2배에 contain.
+ */
 export function fitBoard(area: Rect): Rect & { scale: number } {
   const { width: artW, height: artH } = boardArt.source;
-  const scale = Math.max(0, Math.min(area.width / artW, area.height / artH));
+  const { margin, zoom, bleed } = boardArt;
+  const base = Math.min((area.width - 2 * margin) / artW, (area.height - 2 * margin) / artH);
+  const scale = Math.max(
+    0,
+    Math.min(base * zoom, (area.width + 2 * bleed) / artW, (area.height + 2 * bleed) / artH),
+  );
   const width = artW * scale;
   const height = artH * scale;
   return {

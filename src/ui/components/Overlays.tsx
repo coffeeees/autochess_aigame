@@ -403,6 +403,8 @@ interface BalanceApi {
   meta: BalanceMeta;
   /** 좌우 대치 전장(v0.18.0) */
   battlefield: BalanceMeta;
+  /** 시각 개선(v0.18.1) */
+  visual: BalanceMeta;
   counts<T>(list: T[], key: keyof T & string): Record<string, number>;
   toMarkdown(): string;
 }
@@ -808,7 +810,9 @@ function ResetConfirm({ actions }: Props) {
 
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
-  const [record, setRecord] = useState<'battlefield' | 'meta' | 'stage2' | 'stage1'>('battlefield');
+  const [record, setRecord] = useState<'visual' | 'battlefield' | 'meta' | 'stage2' | 'stage1'>(
+    'visual',
+  );
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -818,6 +822,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'visual'} onClick={() => setRecord('visual')}>
+          시각 개선 · v0.18.1
+        </button>
         <button aria-pressed={record === 'battlefield'} onClick={() => setRecord('battlefield')}>
           좌우 전장 · v0.18.0
         </button>
@@ -838,7 +845,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'battlefield' ? (
+      {record === 'visual' ? (
+        <BalanceMetaView t={balance.visual} />
+      ) : record === 'battlefield' ? (
         <BalanceMetaView t={balance.battlefield} />
       ) : record === 'meta' ? (
         <BalanceMetaView t={balance.meta} />

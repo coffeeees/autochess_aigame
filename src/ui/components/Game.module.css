@@ -60,6 +60,9 @@
   background: var(--panel-bg);
   border: 1px solid var(--panel-edge);
   border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 0 0 var(--panel-ring) var(--panel-edge),
+    var(--panel-shadow);
 }
 .vitals small {
   display: block;

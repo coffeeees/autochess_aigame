@@ -701,11 +701,14 @@ test('보드 그림(v0.18.0 좌우 대치)은 원본 PNG를 무손실 WebP로 �
       ? [(webp.readUInt32LE(21) & 0x3fff) + 1, ((webp.readUInt32LE(21) >> 14) & 0x3fff) + 1]
       : [webp.readUIntLE(24, 3) + 1, webp.readUIntLE(27, 3) + 1];
   a.deepEqual(size, [boardArt.source.width, boardArt.source.height]);
-  // contain: 비율 그대로, 가운데 정렬
+  // contain: 비율 그대로, 가운데 정렬. v0.18.1 확대: 기준(여백 12px contain) × 1.09, 바깥 틈 10px까지만
   const board = B.fitBoard({ left: 218, top: 94, width: 1164, height: 650 });
   near(board.width / board.height, 1.5);
-  a(board.width <= 1164 && board.height <= 650);
+  a(board.width <= 1164 + 20 && board.height <= 650 + 20);
+  near(board.height, 670); // 세로가 모자라 1.09배(682) 대신 틈까지(1.07배)
   near(board.left + board.width / 2, 218 + 1164 / 2);
+  const roomy = B.fitBoard({ left: 0, top: 0, width: 3000, height: 400 });
+  near(roomy.height, (400 - 24) * 1.09); // 공간이 넉넉하면 정확히 1.09배
   // cover: 화면을 다 덮는다
   const bg = B.coverBackground(1761, 832);
   a(bg.width >= 1761 && bg.height >= 832);
