@@ -9,9 +9,10 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / 'assets-src/images'
 OUT = ROOT / 'public/assets'
 # (원본, 결과, 방식): lossless=무손실, 숫자=손실 압축 품질
+# v0.18.0 좌우 대치 전장: 보드(8열×7행, 투명 테두리)·안개 배경. 예전 board-7x8·battlefield-bg는 원본만 assets-src에 보관
 JOBS = [
-    ('board-7x8.png', 'board-7x8.webp', 'lossless'),
-    ('battlefield-bg.png', 'battlefield-bg.webp', 85),
+    ('board-side-8x7.png', 'board-side-8x7.webp', 'lossless'),
+    ('battlefield-bg-fog.png', 'battlefield-bg-fog.webp', 85),
     ('characters/c01-nox.png', 'characters/c01-nox.webp', 88),
     ('characters/c01-nox-thumbnail.png', 'characters/c01-nox-thumbnail.webp', 88),
 ]

@@ -29,15 +29,15 @@ const battle = (
   id,
   allies = [],
   enemies = [
-    { id: 'E06', pos: 24 },
-    { id: 'E03', pos: 23 },
-    { id: 'E01', pos: 3 },
+    { id: 'E06', pos: 28 },
+    { id: 'E03', pos: 20 },
+    { id: 'E01', pos: 31 },
   ],
-) => new Battle([{ id, pos: 31 }, ...allies], enemies, { rng: () => 0.99 });
+) => new Battle([{ id, pos: 27 }, ...allies], enemies, { rng: () => 0.99 });
 test('C24 heals lowest two and slows their last living basic attackers only at cast', () => {
   const b = battle('C24', [
-      { id: 'C03', pos: 32 },
-      { id: 'C05', pos: 53 },
+      { id: 'C03', pos: 35 },
+      { id: 'C05', pos: 32 },
     ]),
     [u, x, y, e, f] = b.units;
   x.hp = 100;
@@ -56,7 +56,7 @@ test('C24 heals lowest two and slows their last living basic attackers only at c
   a(b2.units.slice(1).every((e) => !e.statuses.length));
 });
 test('C24 ignores dead former attacker and does not attach reactive future attacks', () => {
-  const b = battle('C24', [{ id: 'C03', pos: 32 }]),
+  const b = battle('C24', [{ id: 'C03', pos: 35 }]),
     [u, x, e, f] = b.units;
   x.hp = 100;
   b.deal(e, x, 1, 'physical', { kind: 'basic' });
@@ -114,17 +114,17 @@ test('C28 blocked path has no teleport, no damage and no debuff', () => {
   const b = battle(
       'C28',
       [
-        { id: 'C01', pos: 24 },
-        { id: 'C03', pos: 30 },
-        { id: 'C05', pos: 32 },
-        { id: 'C06', pos: 38 },
+        { id: 'C01', pos: 28 },
+        { id: 'C03', pos: 19 },
+        { id: 'C05', pos: 35 },
+        { id: 'C06', pos: 26 },
       ],
-      [{ id: 'E06', pos: 3 }],
+      [{ id: 'E06', pos: 31 }],
     ),
     u = b.units[0],
     t = b.units.at(-1);
   b.cast(u, t);
-  a.equal(u.pos, 31);
+  a.equal(u.pos, 27);
   a.equal(t.hp, t.stats.HP);
   a.equal(t.statuses.length, 0);
 });
@@ -138,10 +138,10 @@ test('C29 uses200AD before applying20percent GD reduction for4seconds', () => {
 });
 test('C30 shields self250AP five seconds and heals two lowest adjacent others100AP', () => {
   const b = battle('C30', [
-      { id: 'C03', pos: 30 },
-      { id: 'C05', pos: 32 },
-      { id: 'C01', pos: 38 },
-      { id: 'C02', pos: 53 },
+      { id: 'C03', pos: 19 },
+      { id: 'C05', pos: 35 },
+      { id: 'C01', pos: 26 },
+      { id: 'C02', pos: 32 },
     ]),
     [u, x, y, z, far] = b.units;
   for (const t of [u, x, y, z, far]) t.hp = 100;
@@ -161,7 +161,7 @@ test('C31 direct230AD and20AP burn expires after3seconds, no extra movement', ()
   near(t.stats.HP - t.hp, mitigatedDamage(u.stats.AD * 2.3, t.stats.GD));
   near(t.statuses[0].amount, u.stats.AP * 0.2);
   a.equal(t.statuses[0].expires, 3);
-  a.equal(u.pos, 31);
+  a.equal(u.pos, 27);
 });
 test('C32 target and orthogonal neighbors200AP, one-second action lock without immunity', () => {
   const b = battle('C32'),
@@ -206,12 +206,12 @@ test('all10 cost3 skills terminate real battles with gear and augments, both bon
     for (const id of D.playableIds.filter((id) => D.byId(id).cost === 3)) {
       const b = new Battle(
         [
-          { id, pos: 31, itemIds: ['I27', 'I35'] },
-          { id: 'C05', pos: 53 },
+          { id, pos: 27, itemIds: ['I27', 'I35'] },
+          { id: 'C05', pos: 32 },
         ],
         [
-          { id: 'E06', pos: 24, star: 2 },
-          { id: 'E01', pos: 3 },
+          { id: 'E06', pos: 28, star: 2 },
+          { id: 'E01', pos: 31 },
         ],
         {
           rng: () => 0.99,

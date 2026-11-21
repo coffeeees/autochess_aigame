@@ -22,12 +22,12 @@ const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(name, tier = 2) {
   const b = new Battle(
     [
-      { id: 'C01', pos: 35 },
-      { id: 'C03', pos: 36 },
+      { id: 'C01', pos: 2 },
+      { id: 'C03', pos: 10 },
     ],
     [
-      { id: 'E01', pos: 28 },
-      { id: 'E02', pos: 29 },
+      { id: 'E01', pos: 3 },
+      { id: 'E02', pos: 11 },
     ],
     { rng: () => 0.99 },
   );
@@ -40,10 +40,10 @@ test('actual 33 playable mixed gear/augments battles terminate with finite stats
   for (let i = 0; i < 33; i += 6) {
     const ids = D.playableIds.slice(i, i + 6),
       b = new Battle(
-        ids.map((id, k) => ({ id, pos: 35 + k, itemIds: ['I27', 'I28', 'I35'] })),
+        ids.map((id, k) => ({ id, pos: 2 + 8 * k, itemIds: ['I27', 'I28', 'I35'] })),
         [
-          { id: 'E03', pos: 0, star: 3 },
-          { id: 'E04', pos: 1, star: 3 },
+          { id: 'E03', pos: 7, star: 3 },
+          { id: 'E04', pos: 15, star: 3 },
         ],
         { rng: () => 0.7, quickMana: true, allyModifiers: { augmentIds: ['P04', 'G07', 'G08'] } },
       );

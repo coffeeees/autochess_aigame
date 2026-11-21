@@ -21,12 +21,12 @@ const near = (x, y) => a(Math.abs(x - y) < 1e-7, `${x} != ${y}`);
 function setup(name, tier = 2) {
   const b = new Battle(
     [
-      { id: 'C01', pos: 35 },
-      { id: 'C03', pos: 36 },
+      { id: 'C01', pos: 2 },
+      { id: 'C03', pos: 10 },
     ],
     [
-      { id: 'E01', pos: 28 },
-      { id: 'E02', pos: 29 },
+      { id: 'E01', pos: 3 },
+      { id: 'E02', pos: 11 },
     ],
     { rng: () => 0.99 },
   );

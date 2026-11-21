@@ -1,0 +1,18 @@
+{
+  "image": "assets-src/images/board-side-8x7.png",
+  "sha256": "ba46cd6fb7f7fb698e85ab73ee3d992e70ad6170c8f087b61c1b223d4062c752",
+  "size": [1536, 1024],
+  "grid": { "columns": 8, "rows": 7, "left": 157, "top": 86.5, "right": 1379, "bottom": 903.5 },
+  "measured": {
+    "method": "타일 이음선(어두운 선) 밝기 최소값: 세로선은 y 200~820 평균, 가로선은 x 250~1300 평균",
+    "verticalSeams": [310, 463, 616, 768, 921, 1075, 1226],
+    "horizontalSeams": [203, 319, 436, 553, 670, 787],
+    "outerLeft": 157,
+    "outerRight": 1379,
+    "outerBottom": 903,
+    "visibleTop": 94,
+    "tile": [152.75, 116.71],
+    "note": "세로·가로 이음선이 모두 균등 간격(오차 1.5px 이하). 위 경계는 균등 간격으로 86.5이고 86.5~94는 프레임 테두리가 덮는다."
+  },
+  "specEstimate": { "left": 155, "top": 96, "right": 1382, "bottom": 907 }
+}

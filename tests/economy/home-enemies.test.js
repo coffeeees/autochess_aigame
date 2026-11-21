@@ -17,7 +17,7 @@ function state(round = 3) {
   const s = P.initialize({
     health: 100,
     gold: 12,
-    units: [{ uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 }],
+    units: [{ uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 }],
     shop: [],
   });
   s.round = round;
@@ -112,7 +112,7 @@ test('boss streak applies, supply maintains streak without paying bonus', () => 
 });
 test('kill callback pays bonus once through actual engine death and repeated kill', () => {
   const s = state(),
-    b = new Battle([{ id: 'C03', pos: 35 }], [{ id: 'E99', pos: 3 }], {
+    b = new Battle([{ id: 'C03', pos: 2 }], [{ id: 'E99', pos: 31 }], {
       rng: () => 0.99,
       onUnitKilled: (u, source) => {
         if (source?.team === 'ally') W.claimBonusLoot(s, u, () => 0.9);

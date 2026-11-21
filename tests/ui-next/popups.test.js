@@ -41,7 +41,7 @@ function setup() {
     const r = s().run;
     r.roundPhase = 'prepare';
     r.round = 3;
-    V.moveUnit(r, r.units[0].uid, { location: 'board', pos: 38 });
+    V.moveUnit(r, r.units[0].uid, { location: 'board', pos: 26 });
   };
   const finish = () => {
     let result = null;

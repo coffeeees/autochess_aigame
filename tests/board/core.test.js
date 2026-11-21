@@ -14,15 +14,18 @@ $bondEffects.init = (b) => {
 let passed = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 const basicBattle = (id = 'C01', enemy = 'C03') =>
-  new Battle([{ id, pos: 31 }], [{ id: enemy, pos: 24 }], { rng: () => 0.99 });
+  new Battle([{ id, pos: 27 }], [{ id: enemy, pos: 28 }], { rng: () => 0.99 });
 test('only playable IDs allowed; duplicate cells and >10 deployment rejected', () => {
   assert.throws(() => basicBattle('C99'));
-  assert.throws(() => new Battle([{ id: 'C01', pos: 1 }], [{ id: 'C02', pos: 1 }]));
+  assert.throws(() => new Battle([{ id: 'C01', pos: 15 }], [{ id: 'C02', pos: 15 }]));
   assert.throws(
     () =>
       new Battle(
-        Array.from({ length: 11 }, (_, i) => ({ id: 'C01', pos: 28 + i })),
-        [{ id: 'C03', pos: 0 }],
+        Array.from({ length: 11 }, (_, i) => ({
+          id: 'C01',
+          pos: (i % 7) * 8 + 3 - Math.floor(i / 7),
+        })),
+        [{ id: 'C03', pos: 7 }],
       ),
   );
 });

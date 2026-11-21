@@ -2,6 +2,7 @@ import D from './data/units.js';
 import P from './progression.js';
 import I from './items.js';
 import A from './augments.js';
+import B from './board.js';
 import { runRng } from './rng.ts';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
@@ -78,13 +79,9 @@ function moveUnit(s, uid, target) {
   if (!unit) return { ok: false, message: '캐릭터를 찾을 수 없습니다.' };
   if (!target || !['board', 'bench'].includes(target.location))
     return { ok: false, message: '전장이나 대기석에 놓아주세요.' };
-  if (
-    target.location === 'board' &&
-    (!Number.isInteger(target.pos) ||
-      target.pos < D.prototypeConfig.board.columns * D.prototypeConfig.board.playerFirstRow ||
-      target.pos >= D.prototypeConfig.board.columns * D.prototypeConfig.board.rows)
-  )
-    return { ok: false, message: '아군 진영 아래 4줄에만 배치할 수 있습니다.' };
+  // 좌우 대치 전장(v0.18.0): 아군은 왼쪽 4열에만
+  if (target.location === 'board' && !B.isAllyCell(target.pos))
+    return { ok: false, message: '아군 진영 왼쪽 4열에만 배치할 수 있습니다.' };
   if (
     target.location === 'bench' &&
     (!Number.isInteger(target.slot) || target.slot < 0 || target.slot >= benchSlots(s))

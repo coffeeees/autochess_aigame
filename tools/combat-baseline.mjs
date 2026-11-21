@@ -36,11 +36,26 @@ const load = async (p) => (await import(new URL('../src/core/' + p, import.meta.
 const D = await load('data/units.js');
 const I = await load('items.js');
 const W = await load('encounters.js');
+const B = await load('board.js');
+// 시나리오의 고정 칸은 예전 상하 대치 좌표(7열×8행)로 적혀 있다. v0.18.0 좌우 대치 전장에서는 여기서 한 번 회전한다
+const R = B.rotateOldPos;
 const { Battle } = await load('combat/battle.js');
 
 const hash = (value) =>
   crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
 const round = (n) => Math.round(n * 1000) / 1000;
+
+const CELL_KEYS = new Set(['pos', 'sourcePos', 'targetPos', 'from', 'to']);
+function oldCells(value) {
+  if (Array.isArray(value)) return value.map(oldCells);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [
+      k,
+      CELL_KEYS.has(k) && Number.isInteger(v) ? B.unrotatePos(v) : oldCells(v),
+    ]),
+  );
+}
 
 function run(name, seed, allies, enemies, options = {}) {
   globalRng = mulberry32(seed ^ 0x9e3779b9);
@@ -73,14 +88,15 @@ function run(name, seed, allies, enemies, options = {}) {
     logCount: battle.logs.length,
     unitsHash: hash(units),
     eventsHash: hash(battle.events),
-    logsHash: hash(battle.logs),
+    // 기준선(v0.15.18)의 로그는 예전 칸 번호라, 칸 필드만 예전 좌표로 되돌려 해시한다(전투 내용은 같음)
+    logsHash: hash(battle.logs.map(oldCells)),
   };
 }
 
 function scenarios() {
   const out = [];
   const ids = D.playableIds;
-  const allyCells = [28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41];
+  const allyCells = [28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41].map(R);
 
   // 1) 플레이 가능한 캐릭터 전원을 5명씩 2성으로, 고정된 적 편성과 대결.
   for (let g = 0; g < ids.length; g += 5) {
@@ -92,7 +108,7 @@ function scenarios() {
         group.map((id, i) => ({ id, pos: allyCells[i], star: 2 })),
         ['E03', 'E06', 'E08', 'E01', 'E04'].map((id, i) => ({
           id,
-          pos: [17, 18, 16, 3, 4][i],
+          pos: R([17, 18, 16, 3, 4][i]),
           star: 2,
         })),
       ),
@@ -109,7 +125,7 @@ function scenarios() {
         `mirror-${g}`,
         2000 + g,
         a.map((id, i) => ({ id, pos: allyCells[i] })),
-        b.map((id, i) => ({ id, pos: [17, 18, 16, 19][i] })),
+        b.map((id, i) => ({ id, pos: R([17, 18, 16, 19][i]) })),
         { quickMana: true },
       ),
     );
@@ -128,9 +144,9 @@ function scenarios() {
       .filter((u) => u.itemIds.length);
     out.push(
       run(`items-${gear.join('-')}`, 3000 + k, allies, [
-        { id: 'E06', pos: 17, star: 2 },
-        { id: 'E01', pos: 3 },
-        { id: 'E03', pos: 18 },
+        { id: 'E06', pos: R(17), star: 2 },
+        { id: 'E01', pos: R(3) },
+        { id: 'E03', pos: R(18) },
       ]),
     );
   }

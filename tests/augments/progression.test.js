@@ -17,8 +17,8 @@ function state() {
     health: 100,
     gold: 12,
     units: [
-      { uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 },
-      { uid: 2, id: 'C05', location: 'board', pos: 53, star: 1 },
+      { uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 },
+      { uid: 2, id: 'C05', location: 'board', pos: 32, star: 1 },
     ],
     shop: D.playableIds.slice(0, 5),
   });

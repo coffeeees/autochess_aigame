@@ -14,7 +14,7 @@ $bondEffects.init = (b) => {
 let passed = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 const basicBattle = (id = 'C01', enemy = 'C03') =>
-  new Battle([{ id, pos: 31 }], [{ id: enemy, pos: 24 }], { rng: () => 0.99 });
+  new Battle([{ id, pos: 27 }], [{ id: enemy, pos: 28 }], { rng: () => 0.99 });
 test('C01 AD160% and four burn ticks', () => {
   const b = basicBattle(),
     [a, t] = b.units;
@@ -40,7 +40,7 @@ test('C02 plague summon cap2 / AP40% / poison / expiry', () => {
   assert.equal(summons.length, 2);
   near(summons[0].stats.AD, a.stats.AP * 0.4);
   assert.equal(summons[0].expires, 8);
-  summons[0].pos = 23;
+  summons[0].pos = 20;
   a.castUntil = 999;
   t.castUntil = 999;
   b.tick();
@@ -72,10 +72,10 @@ test('C04 special crit +20 percentage points and extra magic damage', () => {
 test('C05 heals lowest ratio ally and removes one harmful effect', () => {
   const b = new Battle(
       [
-        { id: 'C05', pos: 31 },
-        { id: 'C03', pos: 32 },
+        { id: 'C05', pos: 27 },
+        { id: 'C03', pos: 35 },
       ],
-      [{ id: 'C10', pos: 24 }],
+      [{ id: 'C10', pos: 28 }],
       { rng: () => 0.99 },
     ),
     [a, ally, target] = b.units;
@@ -94,10 +94,10 @@ test('C06 two AD140% hits + temporary AS20%', () => {
 });
 test('C07 three arrows with one nearby magical ricochet', () => {
   const b = new Battle(
-      [{ id: 'C07', pos: 31 }],
+      [{ id: 'C07', pos: 27 }],
       [
-        { id: 'C03', pos: 24 },
-        { id: 'C10', pos: 23 },
+        { id: 'C03', pos: 28 },
+        { id: 'C10', pos: 20 },
       ],
       { rng: () => 0.99 },
     ),
@@ -115,7 +115,7 @@ test('C08 AP220% magical hit + AS slow15%', () => {
   near(b.stats(t).AS, t.stats.AS * 0.85);
 });
 test('C09 charge ends in a free adjacent cell and stuns', () => {
-  const b = new Battle([{ id: 'C09', pos: 52 }], [{ id: 'C03', pos: 3 }], { rng: () => 0.99 }),
+  const b = new Battle([{ id: 'C09', pos: 24 }], [{ id: 'C03', pos: 31 }], { rng: () => 0.99 }),
     [a, t] = b.units;
   b.cast(a, t);
   assert.equal(distance(a.pos, t.pos), 1);
@@ -125,11 +125,11 @@ test('C09 charge ends in a free adjacent cell and stuns', () => {
 test('C10 GD30% buff and lowest-adjacent ally shield; self excluded', () => {
   const b = new Battle(
       [
-        { id: 'C10', pos: 31 },
-        { id: 'C03', pos: 32 },
-        { id: 'C01', pos: 38 },
+        { id: 'C10', pos: 27 },
+        { id: 'C03', pos: 35 },
+        { id: 'C01', pos: 26 },
       ],
-      [{ id: 'C09', pos: 24 }],
+      [{ id: 'C09', pos: 28 }],
       { rng: () => 0.99 },
     ),
     [a, ally] = b.units;
@@ -150,7 +150,7 @@ test('C11 fire summon cap1, magic basic, death explosion and expiry explosion', 
     const summon = summons[0];
     near(summon.stats.AD, a.stats.AP * 0.6);
     assert.equal(summon.attackType, 'magic');
-    summon.pos = 23;
+    summon.pos = 20;
     const hp = t.hp;
     if (expire) {
       b.time = 8;

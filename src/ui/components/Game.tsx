@@ -16,15 +16,54 @@ import { AugmentRack } from './AugmentRack.tsx';
 import { HealthCounter } from './VitalEffects.tsx';
 import { SpeedButton, LiveDamage } from './CombatControls.tsx';
 import W from '../../core/encounters.js';
-import { boardArt } from '../art/board.ts';
+import { boardArt, debugGridEnabled } from '../art/board.ts';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { SceneContext } from './SceneContext.ts';
+import type { Scene } from '../render/stage.ts';
 import styles from './Game.module.css';
 
 export type GameProps = { ui: UiState; actions: Store['actions'] };
 
 export function Game({ ui, actions }: GameProps) {
   const run = ui.run!;
+  // 배경·보드 그림은 PixiJS 장면이 그린다(v0.18.0). 불러오는 동안·못 만들면 CSS 배경과 DOM 보드 그림으로 대신
+  const host = useRef<HTMLDivElement>(null);
+  const [scene, setScene] = useState<Scene | null>(null);
+  useEffect(() => {
+    let alive = true;
+    let made: Scene | null = null;
+    import('../render/stage.ts')
+      .then((m) => m.createScene(host.current!))
+      .then((s) => {
+        made = s;
+        if (!alive) return s.destroy();
+        s.setDebug(debugGridEnabled());
+        setScene(s);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+      made?.destroy();
+    };
+  }, []);
   return (
-    <div class={styles.screen} style={{ backgroundImage: `url(${boardArt.background})` }}>
+    <div
+      class={styles.screen}
+      data-scene={scene ? 'pixi' : 'css'}
+      style={scene ? undefined : { backgroundImage: `url(${boardArt.background})` }}
+    >
+      <div ref={host} class={styles.scene} aria-hidden="true" />
+      <SceneContext.Provider value={scene}>
+        <GameBody ui={ui} actions={actions} />
+      </SceneContext.Provider>
+    </div>
+  );
+}
+
+function GameBody({ ui, actions }: GameProps) {
+  const run = ui.run!;
+  return (
+    <>
       <Hud ui={ui} actions={actions} />
       <aside class={styles.left}>
         <div class={styles.vitals}>
@@ -50,6 +89,6 @@ export function Game({ ui, actions }: GameProps) {
       <UnitDetail ui={ui} actions={actions} />
       <Modals ui={ui} actions={actions} />
       <ScreenCues ui={ui} actions={actions} />
-    </div>
+    </>
   );
 }

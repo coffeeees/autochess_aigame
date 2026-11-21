@@ -17,10 +17,10 @@ let n = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
 function battle(id, allies = []) {
   return new Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     [
-      { id: 'E06', pos: 24 },
-      { id: 'E03', pos: 23 },
+      { id: 'E06', pos: 28 },
+      { id: 'E03', pos: 20 },
     ],
     { rng: () => 0.99 },
   );
@@ -40,12 +40,12 @@ test('all11 two-cost units complete quickMana battles and use skills with bonds 
     for (const u of D.roster.filter((x) => x.cost === 2)) {
       const b = new Battle(
         [
-          { id: u.id, pos: 31 },
-          { id: 'C05', pos: 32 },
+          { id: u.id, pos: 27 },
+          { id: 'C05', pos: 35 },
         ],
         [
-          { id: 'E06', pos: 24 },
-          { id: 'E01', pos: 3 },
+          { id: 'E06', pos: 28 },
+          { id: 'E01', pos: 31 },
         ],
         { quickMana: true, experimental, rng: () => 0.99 },
       );

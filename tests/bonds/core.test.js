@@ -14,7 +14,7 @@ $bondEffects.init = (b) => {
 let passed = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 const basicBattle = (id = 'C01', enemy = 'C03') =>
-  new Battle([{ id, pos: 31 }], [{ id: enemy, pos: 24 }], { rng: () => 0.99 });
+  new Battle([{ id, pos: 27 }], [{ id: enemy, pos: 28 }], { rng: () => 0.99 });
 test('bond count deduplicates IDs and ignores summons', () => {
   const e = D.evaluateSynergies([
     { id: 'C01' },
@@ -35,13 +35,13 @@ test('highest stage only and six tiers reachable with the unlocked pool', () => 
 });
 test('bond evaluation is pure and frozen after a member dies', () => {
   const units = [
-      { id: 'C03', pos: 31 },
-      { id: 'C10', pos: 32 },
+      { id: 'C03', pos: 27 },
+      { id: 'C10', pos: 35 },
     ],
     before = JSON.stringify(units);
   D.evaluateSynergies(units);
   assert.equal(JSON.stringify(units), before);
-  const b = new Battle(units, [{ id: 'C10', pos: 2 }], { rng: () => 0.99 }),
+  const b = new Battle(units, [{ id: 'C10', pos: 23 }], { rng: () => 0.99 }),
     snapshot = JSON.stringify(b.synergySnapshot);
   b.kill(b.units[0]);
   b.tick();
@@ -50,10 +50,10 @@ test('bond evaluation is pure and frozen after a member dies', () => {
 });
 test('legacy experimental toggle has no independent numerical effect', () => {
   const a = [
-      { id: 'C03', pos: 31 },
-      { id: 'C10', pos: 32 },
+      { id: 'C03', pos: 27 },
+      { id: 'C10', pos: 35 },
     ],
-    e = [{ id: 'C01', pos: 24 }];
+    e = [{ id: 'C01', pos: 28 }];
   assert.deepEqual(
     new Battle(a, e, { experimental: true, rng: () => 0.99 }).units.map((u) => u.stats),
     new Battle(a, e, { rng: () => 0.99 }).units.map((u) => u.stats),

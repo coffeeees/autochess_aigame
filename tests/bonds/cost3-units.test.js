@@ -30,11 +30,11 @@ const battle = (
   id,
   allies = [],
   enemies = [
-    { id: 'E06', pos: 24 },
-    { id: 'E03', pos: 23 },
-    { id: 'E01', pos: 3 },
+    { id: 'E06', pos: 28 },
+    { id: 'E03', pos: 20 },
+    { id: 'E01', pos: 31 },
   ],
-) => new Battle([{ id, pos: 31 }, ...allies], enemies, { rng: () => 0.99 });
+) => new Battle([{ id, pos: 27 }, ...allies], enemies, { rng: () => 0.99 });
 const elements = new Map(),
   el = (id) => {
     if (!elements.has(id))
@@ -57,9 +57,9 @@ const elements = new Map(),
   };
 test('active themes precede inactive themes without changing evaluation', () => {
   const units = [
-    { id: 'C01', uid: 1, location: 'board', pos: 31 },
-    { id: 'C28', uid: 2, location: 'board', pos: 32 },
-    { id: 'C07', uid: 3, location: 'board', pos: 33 },
+    { id: 'C01', uid: 1, location: 'board', pos: 27 },
+    { id: 'C28', uid: 2, location: 'board', pos: 35 },
+    { id: 'C07', uid: 3, location: 'board', pos: 43 },
   ];
   const all = D.evaluateSynergies(units);
   const before = JSON.stringify(all);

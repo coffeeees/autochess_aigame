@@ -50,8 +50,8 @@ const config = {
   ],
 };
 const items = I.items;
-/** 원정 저장 버전(save.ts SAVE_VERSION과 같음). v0.17.0: 4 */
-const VERSION = 4;
+/** 원정 저장 버전(save.ts SAVE_VERSION과 같음). v0.17.0: 4, v0.18.0(좌우 대치 전장): 5 */
+const VERSION = 5;
 const augments = A.augments;
 const label = (s) => `${s.stage}-${s.round}`,
   ordinal = (s) => (s.stage - 1) * config.roundsPerStage + s.round;
@@ -107,6 +107,11 @@ function normalizeRunFeatures(state) {
  * v0.17.0부터 이전 버전 저장은 이관하지 않고 save.ts가 지운다.
  */
 function migrate(state) {
+  // 버전 4(상하 대치 전장)는 전장 칸을 한 번 회전해 5로 올린다. 그보다 오래된 저장은 받지 않는다
+  if (state.version === 4) {
+    B.migrate(state);
+    state.version = VERSION;
+  }
   if (state.version !== VERSION)
     throw Error('이전 버전 저장은 불러오지 않습니다: ' + state.version);
   normalizeRunFeatures(state);

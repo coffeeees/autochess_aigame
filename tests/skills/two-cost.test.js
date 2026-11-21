@@ -17,10 +17,10 @@ let n = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
 function battle(id, allies = []) {
   return new Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     [
-      { id: 'E06', pos: 24 },
-      { id: 'E03', pos: 23 },
+      { id: 'E06', pos: 28 },
+      { id: 'E03', pos: 20 },
     ],
     { rng: () => 0.99 },
   );
@@ -58,7 +58,7 @@ test('C14 threeAD85% hits and exactly3 burn ticks at15%AP', () => {
   a.equal(b.logs.filter((l) => l.attackKind === 'dot').length, 3);
 });
 test('C15 lowestHP ally healsAP200% and GD15% lasts4sec', () => {
-  const b = battle('C15', [{ id: 'C03', pos: 32 }]),
+  const b = battle('C15', [{ id: 'C03', pos: 35 }]),
     u = b.units[0],
     ally = b.units[1];
   ally.hp = 100;
@@ -95,7 +95,7 @@ test('C17 cost8% of CURRENT HP, AD230%, heals20% actual damage', () => {
   near(t.stats.HP - t.hp, damage);
 });
 test('C18 lowHP ally healsAP180% and shieldAP120% lasts4sec', () => {
-  const b = battle('C18', [{ id: 'C03', pos: 32 }]),
+  const b = battle('C18', [{ id: 'C03', pos: 35 }]),
     u = b.units[0],
     ally = b.units[1];
   ally.hp = 100;
@@ -112,12 +112,12 @@ test('C19 AP150%, root blocks movement but allows in-range attacks', () => {
   a.equal(t.statuses[0].key, 'root');
   a.equal(t.statuses[0].expires, 1.5);
   const pos = t.pos;
-  a.deepEqual(b.pathToRange(t, { pos: 52 }, 1), []);
+  a.deepEqual(b.pathToRange(t, { pos: 24 }, 1), []);
   b.tick();
   a.equal(t.pos, pos);
   a(b.logs.some((l) => l.kind === 'damage' && l.source === t.uid));
   b.time = 2;
-  a(b.pathToRange(t, { pos: 52 }, 1).length > 0);
+  a(b.pathToRange(t, { pos: 24 }, 1).length > 0);
 });
 test('C20 currentHP6%, AS30% and AD20% extra attack expire after5sec', () => {
   const b = battle('C20'),
@@ -141,8 +141,8 @@ test('C20 currentHP6%, AS30% and AD20% extra attack expire after5sec', () => {
 });
 test('C21 AP230%, nearest OTHER ally AP100% shield and lonecaster fallback', () => {
   const b = battle('C21', [
-      { id: 'C03', pos: 32 },
-      { id: 'C05', pos: 53 },
+      { id: 'C03', pos: 35 },
+      { id: 'C05', pos: 32 },
     ]),
     u = b.units[0];
   b.cast(u, b.units[3]);
@@ -162,8 +162,8 @@ test('C22 AD170% and ownGD20% for4sec', () => {
 });
 test('C23 shields self+adjacent only and retaliates50%AP on melee basic without recursion', () => {
   const b = battle('C23', [
-      { id: 'C03', pos: 32 },
-      { id: 'C05', pos: 53 },
+      { id: 'C03', pos: 35 },
+      { id: 'C05', pos: 32 },
     ]),
     u = b.units[0],
     enemy = b.units[3];

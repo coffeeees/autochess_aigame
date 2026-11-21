@@ -1,7 +1,8 @@
 .art {
   position: relative;
-  /* 전장 칸(.stage) 안에서 그림 비율(1659×948)을 지키며 가로·세로 모두 넘치지 않게 */
-  width: min(100cqw, 100cqh * 1659 / 948);
+  /* 전장 칸(.stage) 안에서 안전 여백 12px을 두고 그림 비율(1536×1024 = 1.5:1)을 지키며 contain
+     (art/board.ts fitBoard와 같은 식: 배율 = min(가로/1536, 세로/1024)) */
+  width: min(100cqw - 24px, (100cqh - 24px) * 1536 / 1024);
   flex: none;
 }
 .boardImage {

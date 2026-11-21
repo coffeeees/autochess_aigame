@@ -364,11 +364,13 @@ class Battle {
   neighbors(pos) {
     const c = this.config.board.columns,
       r = this.config.board.rows;
+    // 좌우 대치 전장(v0.18.0): 탐색 순서를 예전 상하 대치의 [위, 아래, 왼쪽, 오른쪽]을 회전한 것과 같게 둔다
+    // (적 쪽 → 아군 쪽 → 위 → 아래). 같은 거리의 길 중 고르는 길이 예전과 같아 전투 결과가 바뀌지 않는다
     return [
+      ...(pos % c < c - 1 ? [pos + 1] : []),
+      ...(pos % c > 0 ? [pos - 1] : []),
       pos - c,
       pos + c,
-      ...(pos % c > 0 ? [pos - 1] : []),
-      ...(pos % c < c - 1 ? [pos + 1] : []),
     ].filter((p) => p >= 0 && p < c * r);
   }
   pathToRange(u, target, range) {

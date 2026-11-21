@@ -17,10 +17,10 @@ let n = 0;
 const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
 function battle(id, allies = []) {
   return new Battle(
-    [{ id, pos: 31 }, ...allies],
+    [{ id, pos: 27 }, ...allies],
     [
-      { id: 'E06', pos: 24 },
-      { id: 'E03', pos: 23 },
+      { id: 'E06', pos: 28 },
+      { id: 'E03', pos: 20 },
     ],
     { rng: () => 0.99 },
   );
@@ -55,7 +55,7 @@ test('promoted enemies have actual HP/AD/AP growth; cached encounters stable aft
   s.round = 1;
   const units = W.encounter(s, () => 0.5);
   a.equal(units.filter((u) => u.star === 2).length, 2);
-  const b = new Battle([{ id: 'C13', pos: 38 }], units);
+  const b = new Battle([{ id: 'C13', pos: 26 }], units);
   for (let i = 0; i < units.length; i++) {
     const base = W.byId(units[i].id).stats,
       mult = 2 ** (units[i].star - 1) * units[i].scale;

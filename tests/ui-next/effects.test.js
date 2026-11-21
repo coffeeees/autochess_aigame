@@ -38,16 +38,16 @@ class VfxBattle extends Battle {}
 VfxEvents.install(VfxBattle);
 
 const units = [
-  { uid: 1, id: 'C03', pos: 31, team: 'ally', stats: { RNG: 1 } },
-  { uid: 2, id: 'E01', pos: 24, team: 'enemy', stats: { RNG: 4 } },
-  { uid: 3, id: 'C05', pos: 53, team: 'ally', stats: { RNG: 3 } },
+  { uid: 1, id: 'C03', pos: 27, team: 'ally', stats: { RNG: 1 } },
+  { uid: 2, id: 'E01', pos: 28, team: 'enemy', stats: { RNG: 4 } },
+  { uid: 3, id: 'C05', pos: 32, team: 'ally', stats: { RNG: 3 } },
 ];
 
-/** 칸 pos → 화면 좌표(칸 100×80) */
+/** 칸 pos → 화면 좌표(칸 100×80, v0.18.0 좌우 대치 8열) */
 const cell = (pos) =>
   pos === undefined
     ? undefined
-    : { x: (pos % 7) * 100 + 50, y: Math.floor(pos / 7) * 80 + 40, w: 100, h: 80 };
+    : { x: (pos % 8) * 100 + 50, y: Math.floor(pos / 8) * 80 + 40, w: 100, h: 80 };
 const context = (over = {}) => ({
   point: (uid, pos) => cell(pos) ?? { x: 0, y: 0, w: 100, h: 80 },
   cell,
@@ -144,7 +144,7 @@ test('특성 색: 아는 특성은 고유 색, 모르면 무속성', () => {
 });
 
 test('완전히 막힌 공격은 흡수로, 실제 깎인 체력만 숫자로 보인다', () => {
-  const b = new Battle([{ id: 'C03', pos: 31 }], [{ id: 'E06', pos: 24 }], { rng: () => 0.99 });
+  const b = new Battle([{ id: 'C03', pos: 27 }], [{ id: 'E06', pos: 28 }], { rng: () => 0.99 });
   const [u, t] = b.units;
   b.shield(t, 1000, 10, t);
   b.events = [];
@@ -180,11 +180,11 @@ test('픽셀 VFX 대응: 원거리 기본 공격은 회색 탄, C01 스킬은 �
 
 test('C07 스킬: 실제 전투 이벤트에서 연쇄 번개 명령이 나온다', () => {
   const b = new VfxBattle(
-    [{ id: 'C07', pos: 35 }],
+    [{ id: 'C07', pos: 2 }],
     [
-      { id: 'E01', pos: 28 },
-      { id: 'E02', pos: 27 },
-      { id: 'E03', pos: 21 },
+      { id: 'E01', pos: 3 },
+      { id: 'E02', pos: 52 },
+      { id: 'E03', pos: 4 },
     ],
     { rng: () => 0.99 },
   );
@@ -201,8 +201,8 @@ test('연쇄 번개: 같은 이벤트는 한 번만, 대상 0~2명 모두 줄기
   for (let targets = 0; targets <= 2; targets++) {
     const tl = createTimeline({ random: () => 0.5 });
     const chainTargets = [
-      { uid: 8, pos: 12, landed: true },
-      { uid: 9, pos: 26, landed: true },
+      { uid: 8, pos: 46, landed: true },
+      { uid: 9, pos: 44, landed: true },
     ].slice(0, targets);
     const command = {
       kind: 'chainLightning',
@@ -211,7 +211,7 @@ test('연쇄 번개: 같은 이벤트는 한 번만, 대상 0~2명 모두 줄기
       sourceSummon: false,
       sourcePos: 35,
       critical: false,
-      primary: { uid: 7, pos: 28, landed: true },
+      primary: { uid: 7, pos: 3, landed: true },
       chains: chainTargets,
     };
     tl.consume([command, command], context());
@@ -242,10 +242,10 @@ test('연쇄 번개: 같은 이벤트는 한 번만, 대상 0~2명 모두 줄기
           sourceSummon: false,
           sourcePos: 35,
           critical: false,
-          primary: { uid: 7, pos: 28, landed: true },
+          primary: { uid: 7, pos: 3, landed: true },
           chains: [
-            { uid: 8, pos: 12 },
-            { uid: 9, pos: 26 },
+            { uid: 8, pos: 46 },
+            { uid: 9, pos: 44 },
           ],
         },
       ],
@@ -282,14 +282,14 @@ test('원거리 공격은 비행이 끝난 뒤 숫자가 뜨고, 근접은 바�
       },
       { kind: 'damage', source: 1, target: 2, amount: 10, attackKind: 'skill' },
     ],
-    units.map((u) => (u.uid === 1 ? { ...u, pos: 31 } : u)),
+    units.map((u) => (u.uid === 1 ? { ...u, pos: 27 } : u)),
   );
-  // C03(31)과 E01(24)은 붙어 있어 근접, C05(53)는 원거리
+  // C03(27)과 E01(28)은 붙어 있어 근접, C05(32)는 원거리
   tl.consume(commands, context());
   const first = tl.frame(1000);
   a.equal(first.numbers.length, 1, '근접 숫자만');
   a.equal(first.bolts.length, 1, '원거리 투사체');
-  const flight = flightMs(cell(24).x - cell(53).x, cell(24).y - cell(53).y, 1);
+  const flight = flightMs(cell(28).x - cell(32).x, cell(28).y - cell(32).y, 1);
   const later = tl.frame(1000 + flight + 1);
   a.equal(later.numbers.length, 2, '도착 후 원거리 숫자');
   a(later.units.get(2).bright > 1, '맞은 캐릭터가 번쩍임');
@@ -348,14 +348,14 @@ test('연출을 읽어도 시드 전투의 결과·무작위·아이템 발동·
     const ids = ['I26', 'I27', 'I39'];
     const b = new Kind(
       [
-        { id: 'C13', pos: 38, itemIds: ids, bonuses: I.bonuses(ids) },
-        { id: 'C05', pos: 53 },
-        { id: 'C07', pos: 50 },
+        { id: 'C13', pos: 26, itemIds: ids, bonuses: I.bonuses(ids) },
+        { id: 'C05', pos: 32 },
+        { id: 'C07', pos: 8 },
       ],
       [
-        { id: 'E06', pos: 17 },
-        { id: 'E03', pos: 18 },
-        { id: 'E01', pos: 3 },
+        { id: 'E06', pos: 29 },
+        { id: 'E03', pos: 37 },
+        { id: 'E01', pos: 31 },
       ],
       { rng, quickMana: true },
     );
@@ -564,7 +564,7 @@ test('전투 끝: 정산·저장은 바로, 화면은 마지막 장면 → 하�
   a.equal(s().cues.at(-1).kind, 'stage');
   for (const c of s().cues) store.actions.doneCue(c.key);
   a.equal(s().cues.length, 0);
-  V.moveUnit(s().run, s().run.units[0].uid, { location: 'board', pos: 38 });
+  V.moveUnit(s().run, s().run.units[0].uid, { location: 'board', pos: 26 });
   store.actions.primary();
   store.actions.confirmDeployment(true);
   // 전투가 끝남: 원정은 이미 결과 단계로 저장됨
@@ -593,7 +593,7 @@ test('전투 끝 장면은 건너뛸 수 있고, 연출이 꺼져 있으면 신�
   const { store, s } = presentationStore();
   s().run.roundPhase = 'prepare';
   s().run.round = 3;
-  V.moveUnit(s().run, s().run.units[0].uid, { location: 'board', pos: 38 });
+  V.moveUnit(s().run, s().run.units[0].uid, { location: 'board', pos: 26 });
   store.actions.primary();
   store.actions.confirmDeployment(true);
   a(s().finishing);
@@ -608,7 +608,7 @@ test('합성: 상점에서 세 번째를 사면 남는 캐릭터와 재료 위�
   const id = run.units[0].id;
   // 같은 캐릭터 1성 2명을 대기석에 두고 세 번째를 산다
   run.units = [
-    { uid: 101, id, star: 1, location: 'board', pos: 38 },
+    { uid: 101, id, star: 1, location: 'board', pos: 26 },
     { uid: 102, id, star: 1, location: 'bench', benchSlot: 4 },
   ];
   run.roundPhase = 'prepare';
@@ -631,25 +631,27 @@ test('특성 10개는 모두 다른 색, 소환수 공격은 원래 속성을 �
   const out = plan(
     [{ kind: 'damage', source: 1, target: 2, amount: 5 }],
     [
-      { uid: 1, id: 'C11', pos: 8, summonKind: 'fire', stats: { RNG: 2 } },
-      { uid: 2, pos: 9, team: 'enemy', stats: { RNG: 1 } },
+      { uid: 1, id: 'C11', pos: 14, summonKind: 'fire', stats: { RNG: 2 } },
+      { uid: 2, pos: 22, team: 'enemy', stats: { RNG: 1 } },
     ],
   );
   a.equal(out[0].sourceTrait, '화염');
 });
 
 test('이벤트 당시 위치와 원거리 회피는 나중에 유닛이 움직여도 유지되고, 적중을 지어내지 않는다', () => {
-  const battle = new VfxBattle([{ id: 'C01', pos: 31 }], [{ id: 'E01', pos: 3 }], { rng: () => 0 });
+  const battle = new VfxBattle([{ id: 'C01', pos: 27 }], [{ id: 'E01', pos: 31 }], {
+    rng: () => 0,
+  });
   const [source, target] = battle.units;
   target.stats.DOD = 100;
   battle.deal(source, target, 100, 'physical', { kind: 'basic' });
   const event = battle.events.find((row) => row.kind === 'evade');
   a.equal(event.visual.source, source.uid);
-  source.pos = 32;
-  target.pos = 4;
+  source.pos = 35;
+  target.pos = 39;
   const command = plan([event], battle.units)[0];
-  a.equal(command.sourcePos, 31);
-  a.equal(command.targetPos, 3);
+  a.equal(command.sourcePos, 27);
+  a.equal(command.targetPos, 31);
   a.deepEqual(pixelMapping(command), { theme: 'gray', flight: true, hit: false });
   // 회피 탄은 날아가지만 도착해도 숫자 외의 적중 연출(번쩍임)은 없다
   const tl = createTimeline({ random: () => 0.5 });
@@ -658,23 +660,38 @@ test('이벤트 당시 위치와 원거리 회피는 나중에 유닛이 움직�
   a.equal(tl.frame(1300).units.get(target.uid), undefined);
 });
 
-test('보드 그림은 원본 PNG 그대로를 무손실 WebP로 바꾼 것이고, 잰 선으로 만든 56칸 중심이 칸 안에 있다', async () => {
+test('보드 그림(v0.18.0 좌우 대치)은 원본 PNG를 무손실 WebP로 바꾼 것이고, 잰 격자의 56칸 좌표 변환이 서로 맞다', async () => {
   const fs = await import('node:fs');
   const crypto = await import('node:crypto');
-  const { boardArt } = await import('../../src/ui/art/board.ts');
-  const { cellCenters } = await import('../../src/ui/render/battlefield.ts');
-  // 원본 PNG: 칸을 잰 그림과 해시가 같다
-  const record = JSON.parse(fs.readFileSync('docs/specs/images.json', 'utf8'))['board-7x8.webp'];
+  const B = await import('../../src/ui/art/board.ts');
+  const { boardArt } = B;
+  const near = (x, y) => a(Math.abs(x - y) < 1e-6, `${x} != ${y}`);
+  // 원본 PNG: 격자를 잰 그림(docs/specs/BOARD_SIDE_8X7_CALIBRATION.json)과 해시가 같다
+  const record = JSON.parse(fs.readFileSync('docs/specs/images.json', 'utf8'))[
+    'board-side-8x7.webp'
+  ];
   a.equal(record.mode, 'lossless', '무손실 변환(tools/convert-images.py가 픽셀 동일을 확인)');
   const png = fs.readFileSync(record.source);
   a.equal(png.readUInt32BE(16), boardArt.source.width);
   a.equal(png.readUInt32BE(20), boardArt.source.height);
   const sha = crypto.createHash('sha256').update(png).digest('hex');
-  a.equal(
-    sha,
-    JSON.parse(fs.readFileSync('docs/specs/BOARD_01512_CALIBRATION.json', 'utf8')).sha256,
+  const calibration = JSON.parse(
+    fs.readFileSync('docs/specs/BOARD_SIDE_8X7_CALIBRATION.json', 'utf8'),
   );
+  a.equal(sha, calibration.sha256);
   a.equal(sha, record.sourceSha256);
+  a.deepEqual(
+    [boardArt.grid.left, boardArt.grid.top, boardArt.grid.right, boardArt.grid.bottom],
+    [calibration.grid.left, calibration.grid.top, calibration.grid.right, calibration.grid.bottom],
+  );
+  // 잰 이음선이 균등 격자선과 1.5px 안에서 맞는다
+  const t = B.tileSize();
+  calibration.measured.verticalSeams.forEach((x, i) =>
+    a(Math.abs(boardArt.grid.left + (i + 1) * t.w - x) <= 1.5, `세로선 ${x}`),
+  );
+  calibration.measured.horizontalSeams.forEach((y, i) =>
+    a(Math.abs(boardArt.grid.top + (i + 1) * t.h - y) <= 1.5, `가로선 ${y}`),
+  );
   // 배포하는 WebP의 크기도 같다
   const webp = fs.readFileSync('public/' + boardArt.board);
   a.equal(webp.subarray(8, 12).toString('latin1'), 'WEBP');
@@ -684,18 +701,25 @@ test('보드 그림은 원본 PNG 그대로를 무손실 WebP로 바꾼 것이�
       ? [(webp.readUInt32LE(21) & 0x3fff) + 1, ((webp.readUInt32LE(21) >> 14) & 0x3fff) + 1]
       : [webp.readUIntLE(24, 3) + 1, webp.readUIntLE(27, 3) + 1];
   a.deepEqual(size, [boardArt.source.width, boardArt.source.height]);
-  const { columns, rows } = boardArt;
-  a.equal(columns.length, 8);
-  a.equal(rows.length, 9);
-  a(columns.every((v, i) => !i || v > columns[i - 1]));
-  a(rows.every((v, i) => !i || v > rows[i - 1]));
-  const centers = cellCenters();
-  a.equal(centers.length, 56);
-  centers.forEach((c, pos) => {
-    const col = pos % 7;
-    const row = Math.floor(pos / 7);
-    a(c.x > columns[col] && c.x < columns[col + 1], `${pos} x`);
-    a(c.y > rows[row] && c.y < rows[row + 1], `${pos} y`);
-    a(c.w / c.h > 1.6, '가로로 긴 직사각형 칸');
-  });
+  // contain: 비율 그대로, 가운데 정렬
+  const board = B.fitBoard({ left: 218, top: 94, width: 1164, height: 650 });
+  near(board.width / board.height, 1.5);
+  a(board.width <= 1164 && board.height <= 650);
+  near(board.left + board.width / 2, 218 + 1164 / 2);
+  // cover: 화면을 다 덮는다
+  const bg = B.coverBackground(1761, 832);
+  a(bg.width >= 1761 && bg.height >= 832);
+  near(bg.width / bg.height, 1672 / 941);
+  // 56칸 중심 → 칸 번호, 칸 경계 안쪽 끝도 같은 칸
+  for (let pos = 0; pos < 56; pos++) {
+    const c = B.tileOnScreen(pos, board);
+    a.equal(B.pointerToPos(c.x, c.y, board), pos, `${pos} 중심`);
+    a.equal(B.pointerToPos(c.x - c.w / 2 + 0.5, c.y - c.h / 2 + 0.5, board), pos, `${pos} 왼쪽 위`);
+    a.equal(
+      B.pointerToPos(c.x + c.w / 2 - 0.5, c.y + c.h / 2 - 0.5, board),
+      pos,
+      `${pos} 오른쪽 아래`,
+    );
+  }
+  a.equal(B.pointerToPos(board.left + 2, board.top + 2, board), null, '프레임은 칸이 아님');
 });

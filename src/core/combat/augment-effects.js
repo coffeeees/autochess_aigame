@@ -1,10 +1,12 @@
 // 증강의 전투 효과. 증강 ID가 아니라 effect 필드로 판정한다.
 // 기본안(사용자 승인 2026-11-18):
 //  - 능력치 %: 현재 값에 곱하기. GD +n: 고정값. 피해량 +%끼리는 더한 뒤 곱한다.
-//  - 앞줄·뒷줄: 전투 시작 때 아군이 서 있는 가장 앞(적과 가까운) 줄 / 가장 뒷줄. 전방 2줄 = 아군 4줄 중 앞 2줄.
+//  - 앞줄·뒷줄: 전투 시작 때 아군이 서 있는 가장 앞(적과 가까운) 열 / 가장 뒤 열(v0.18.0 좌우 대치: 행이 아니라 열).
+//    전방 2열 = 아군 col 2~3, 후방 2열 = col 0~1.
 //  - 동률: 코스트 → 성급 → 앞쪽 칸(번호가 작은 칸).
 //  - 소환수·분신: 처치는 주인 몫. 아군 사망·생존 판정에서는 뺀다.
 import A from '../augments.js';
+import B from '../board.js';
 import D from '../data/units.js';
 import { distance } from './geometry.ts';
 
@@ -12,7 +14,8 @@ const alive = (u) => u && !u.dead && u.hp > 0;
 const list = (b, key) => A.effects(b.augmentIds, key);
 const first = (b, key) => list(b, key)[0];
 const cost = (u) => D.byId(u.id)?.cost ?? 0;
-const rowOf = (b, u) => Math.floor(u.pos / b.config.board.columns);
+/** 진영 기준 앞쪽 정도(0 = 후열, 3 = 전열). 좌우 대치 전장(v0.18.0)이라 행이 아니라 열로 판정 */
+const depthOf = (b, u) => B.depth(u.pos, u.team);
 /** 아군 중 소환수·분신이 아닌 유닛 */
 const crew = (b, all = false) =>
   b.units.filter((u) => u.team === 'ally' && !u.summon && (all || alive(u)));
@@ -131,10 +134,11 @@ function start(b) {
   for (const u of b.units) u.augmentState = {};
   const allies = crew(b);
   if (!allies.length) return;
-  const rows = allies.map((u) => rowOf(b, u)),
-    front = Math.min(...rows),
-    back = Math.max(...rows),
-    allyTop = b.config.board.rows / 2; // 아군 4줄의 첫 줄 번호
+  // 앞줄 = 아군이 실제로 선 가장 앞(적에 가까운) 열, 뒷줄 = 가장 뒤 열
+  const depths = allies.map((u) => depthOf(b, u)),
+    front = Math.max(...depths),
+    back = Math.min(...depths),
+    frontTwo = b.config.board.allyColumns - 2; // 전방 2열 = 앞쪽 정도 2·3(아군 col 2~3)
   const sac = b.augment.sacrifice;
   if (sac)
     for (const u of allies) {
@@ -144,11 +148,11 @@ function start(b) {
       scaleStat(u, 'HP', m);
     }
   for (const e of list(b, 'frontRow'))
-    for (const u of allies.filter((u) => rowOf(b, u) === front)) scaleStat(u, 'HP', 1 + e.hp);
+    for (const u of allies.filter((u) => depthOf(b, u) === front)) scaleStat(u, 'HP', 1 + e.hp);
   for (const e of list(b, 'backRow'))
-    for (const u of allies.filter((u) => rowOf(b, u) === back)) scaleStat(u, 'AS', 1 + e.as);
+    for (const u of allies.filter((u) => depthOf(b, u) === back)) scaleStat(u, 'AS', 1 + e.as);
   for (const e of list(b, 'twinGuard')) {
-    const line = allies.filter((u) => rowOf(b, u) === front);
+    const line = allies.filter((u) => depthOf(b, u) === front);
     if (line.length === 2) for (const u of line) u.stats.GD += e.gd;
   }
   // 쌍둥이 전술(G13): 같은 캐릭터가 정확히 2명이면 두 명 모두 AD·AP·GD 배율
@@ -196,8 +200,8 @@ function start(b) {
       for (const u of allies) scaleStat(u, 'HP', 1 + e.hp);
     }
   for (const e of list(b, 'command')) {
-    const frontCount = allies.filter((u) => rowOf(b, u) < allyTop + 2).length;
-    for (const u of allies.filter((u) => rowOf(b, u) >= allyTop + 2))
+    const frontCount = allies.filter((u) => depthOf(b, u) >= frontTwo).length;
+    for (const u of allies.filter((u) => depthOf(b, u) < frontTwo))
       extraDamage(u, Math.min(e.max, e.per * frontCount));
   }
   for (const e of list(b, 'clone')) {

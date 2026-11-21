@@ -17,8 +17,8 @@ function state() {
     health: 100,
     gold: 12,
     units: [
-      { uid: 1, id: 'C03', location: 'board', pos: 38, star: 1 },
-      { uid: 2, id: 'C05', location: 'board', pos: 53, star: 1 },
+      { uid: 1, id: 'C03', location: 'board', pos: 26, star: 1 },
+      { uid: 2, id: 'C05', location: 'board', pos: 32, star: 1 },
     ],
     shop: D.playableIds.slice(0, 5),
   });
@@ -45,6 +45,11 @@ test('이전 버전 저장(버전 1~3)은 이관하지 않는다(v0.17.0, save.t
   for (const version of [1, 2, 3])
     assert.throws(() => P.migrate({ version, wave: 6, units: [], shop: [] }), /이전 버전 저장/);
   const now = P.initialize({ units: [], shop: [], gold: 7, health: 100 });
-  assert.equal(now.version, 4);
-  assert.equal(P.migrate(clone(now)).version, 4);
+  assert.equal(now.version, 5);
+  assert.equal(P.migrate(clone(now)).version, 5);
+  // 버전 4(v0.17.x, 7열)는 전장 칸을 회전해 5로 올린다(v0.18.0)
+  const v4 = Object.assign(clone(now), { version: 4, boardColumns: 7 });
+  v4.units = [{ uid: 1, id: 'C03', location: 'board', pos: 28, star: 1 }];
+  const up = P.migrate(v4);
+  assert.deepEqual([up.version, up.boardColumns, up.units[0].pos], [5, 8, 3]);
 });

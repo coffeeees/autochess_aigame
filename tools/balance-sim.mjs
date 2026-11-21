@@ -18,6 +18,7 @@ const D = await load('data/units.js');
 const P = await load('progression.js');
 const V = await load('preparation.js');
 const W = await load('encounters.js');
+const Bd = await load('board.js');
 const Engine = await load('combat/battle.js');
 const { newRun, battleSetup } = await import(new URL('run.ts', root));
 const { buyUnit, sellUnit } = await import(new URL('shop.ts', root));
@@ -203,8 +204,9 @@ function deploy(s) {
   const chosen = team(s);
   for (const u of s.units.filter((u) => u.location === 'board' && !chosen.includes(u)))
     V.moveUnit(s, u.uid, { location: 'bench' });
-  const front = [31, 30, 32, 29, 33, 28, 34, 38, 37, 39],
-    back = [52, 51, 53, 45, 44, 46, 50, 54, 43, 47];
+  // 예전 상하 대치 좌표로 적은 배치 순서를 좌우 대치 전장(v0.18.0)으로 회전
+  const front = [31, 30, 32, 29, 33, 28, 34, 38, 37, 39].map(Bd.rotateOldPos),
+    back = [52, 51, 53, 45, 44, 46, 50, 54, 43, 47].map(Bd.rotateOldPos);
   for (const u of chosen) {
     if (u.location === 'board') continue;
     const melee = D.byId(u.id).stats.RNG <= 1;

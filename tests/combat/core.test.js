@@ -14,7 +14,7 @@ $bondEffects.init = (b) => {
 let passed = 0;
 const near = (a, b) => assert(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 const basicBattle = (id = 'C01', enemy = 'C03') =>
-  new Battle([{ id, pos: 31 }], [{ id: enemy, pos: 24 }], { rng: () => 0.99 });
+  new Battle([{ id, pos: 27 }], [{ id: enemy, pos: 28 }], { rng: () => 0.99 });
 test('physical and magical damage use same GD formula', () => {
   near(mitigatedDamage(100, 100), 50);
   for (const damageType of ['physical', 'magic']) {
@@ -59,8 +59,8 @@ test('headless simulated battles finish, conserve occupancy, and use every one-c
   for (let group = 0; group < 3; group++) {
     const allies = D.playableIds
         .slice(group * 4, group * 4 + 4)
-        .map((id, i) => ({ id, pos: 28 + i })),
-      enemies = ['C03', 'C09', 'C10', 'C12'].map((id, i) => ({ id, pos: 21 + i, scale: 2 })),
+        .map((id, i) => ({ id, pos: 3 + 8 * i })),
+      enemies = ['C03', 'C09', 'C10', 'C12'].map((id, i) => ({ id, pos: 4 + 8 * i, scale: 2 })),
       b = new Battle(allies, enemies, { quickMana: true, rng: () => 0.85 });
     let ticks = 0;
     while (!b.result && ticks++ < 1000) {

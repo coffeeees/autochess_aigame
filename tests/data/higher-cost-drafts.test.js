@@ -77,8 +77,8 @@ test('cost4+ entries now enter both battle constructors with preserved IDs', () 
   assert.equal(D.roster.filter((u) => !u.playable).length, 0);
   for (const u of D.roster.filter((u) => u.cost > 3)) {
     assert(D.playableIds.includes(u.id));
-    assert(new Battle([{ id: u.id, pos: 35 }], [{ id: 'C01', pos: 0 }]));
-    assert(new Battle([{ id: 'C01', pos: 35 }], [{ id: u.id, pos: 0 }]));
+    assert(new Battle([{ id: u.id, pos: 2 }], [{ id: 'C01', pos: 7 }]));
+    assert(new Battle([{ id: 'C01', pos: 2 }], [{ id: u.id, pos: 7 }]));
   }
 });
 test('HP consumption metadata uses current HP for C17/C20/C37', () => {

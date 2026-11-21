@@ -32,7 +32,7 @@ test('스킬 파일마다 해당 코스트 캐릭터만 들어 있다', () => {
 });
 
 test('cast는 등록된 스킬을 this = 전투로 실행한다', () => {
-  const b = new Engine.Battle([{ id: 'C01', pos: 38 }], [{ id: 'E01', pos: 31 }], {
+  const b = new Engine.Battle([{ id: 'C01', pos: 26 }], [{ id: 'E01', pos: 27 }], {
     rng: () => 0.5,
   });
   const caster = b.units.find((u) => u.team === 'ally'),

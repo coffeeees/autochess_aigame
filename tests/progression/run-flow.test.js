@@ -103,7 +103,7 @@ test('6-5 settlement gates advance only after rewards; pending choice survives r
 });
 test('continue preserves all progress, enters7-1 once and never prompts again', () => {
   const s = state(6, 5);
-  s.units = [{ id: 'C24', uid: 1, star: 2, location: 'board', pos: 31 }];
+  s.units = [{ id: 'C24', uid: 1, star: 2, location: 'board', pos: 27 }];
   s.augments = ['S01'];
   combat(s);
   s.shopLocked = true;

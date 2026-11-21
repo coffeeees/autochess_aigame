@@ -17,23 +17,31 @@ const a = require('node:assert/strict'),
   { Battle, distance } = $engine;
 let count = 0;
 const clone = (x) => JSON.parse(JSON.stringify(x));
-// v0.17.0: 이전 버전(8열) 저장을 P.migrate로 이관하던 테스트는 이전 저장 삭제와 함께 지웠다.
-// 아래 B.migrate 테스트는 전장 모듈의 열 변환 함수 자체를 확인한다.
-test('migration prioritizes surviving columns and moves removed last column to nearest vacancy', () => {
+// v0.18.0: 상하 대치(7열×8행) 저장을 좌우 대치(8열×7행)로 한 번 회전 이관한다(board.migrate)
+test('7열 저장의 전장 아군·적 편성 칸을 시계 방향으로 한 번 회전하고, 다시 불러도 두 번 돌리지 않는다', () => {
   const s = {
+    boardColumns: 7,
     units: [
-      { uid: 1, location: 'board', pos: 39 },
-      { uid: 2, location: 'board', pos: 38 },
-      { uid: 3, location: 'board', pos: 63 },
+      { uid: 1, location: 'board', pos: 28 }, // 예전 아군 전열 왼쪽 끝 → col 3, row 0
+      { uid: 2, location: 'board', pos: 55 }, // 예전 아군 후열 오른쪽 끝 → col 0, row 6
+      { uid: 3, location: 'bench', pos: -1, benchSlot: 0 },
     ],
+    enemyEncounter: { key: '1-4', units: [{ pos: 17 }, { pos: 3 }] },
   };
   B.migrate(s);
-  a.equal(s.units[1].pos, 34);
-  a.equal(s.units[0].pos, 33);
-  a.equal(s.units[2].pos, 55);
+  a.equal(s.boardColumns, 8);
+  a.deepEqual(
+    s.units.map((u) => u.pos),
+    [3, 48, -1],
+  );
+  a.deepEqual(
+    s.enemyEncounter.units.map((u) => u.pos),
+    [29, 31],
+  );
   const before = clone(s);
   B.migrate(s);
-  a.deepEqual(s, before);
+  a.deepEqual(s, before, '이미 8열이면 그대로');
+  a.throws(() => B.migrate({ boardColumns: 9, units: [] }), /지원하지 않는/);
 });
 test('cached bonus encounter remains identical on restore and never rerolls', () => {
   const s = P.initialize({ units: [], gold: 7, health: 100 });
@@ -49,21 +57,14 @@ test('cached bonus encounter remains identical on restore and never rerolls', ()
   );
   a.deepEqual(s.enemyEncounter, snap);
 });
-test('legacy corner migrations are deterministic and source marker prevents second conversion', () => {
-  for (let n = 1; n <= 11; n++) {
-    const source = [38, 39, 46, 47, 54, 55, 62, 63, 32, 40, 48].slice(0, n),
-      make = () => ({
-        units: source.map((pos, i) => ({ uid: i + 1, location: 'board', pos })),
-        enemyEncounter: { key: '1-4', units: [{ pos: 6 }, { pos: 7 }, { pos: 14 }, { pos: 15 }] },
-      }),
-      one = make(),
-      two = make();
-    B.migrate(one);
-    B.migrate(two);
-    a.deepEqual(one, two);
-    a.equal(new Set(one.units.map((u) => u.pos)).size, n);
-    const before = clone(one);
-    B.migrate(one);
-    a.deepEqual(one, before);
-  }
+test('예전 아군 28칸·적 28칸 전부가 서로 다른 새 칸으로 가고 진영이 바뀌지 않는다', () => {
+  const s = {
+    boardColumns: 7,
+    units: Array.from({ length: 28 }, (_, i) => ({ uid: i + 1, location: 'board', pos: 28 + i })),
+    enemyEncounter: { key: '1-4', units: Array.from({ length: 28 }, (_, i) => ({ pos: i })) },
+  };
+  B.migrate(s);
+  a.equal(new Set(s.units.map((u) => u.pos)).size, 28);
+  a(s.units.every((u) => B.isAllyCell(u.pos)));
+  a(s.enemyEncounter.units.every((u) => u.pos % 8 >= 4));
 });
