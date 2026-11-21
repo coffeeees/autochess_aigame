@@ -539,10 +539,13 @@ export async function createBattlefield(scene: Scene, options: BattlefieldOption
     destroy() {
       offLayout();
       document.removeEventListener('visibilitychange', onVisibility);
-      app.ticker.remove(tick);
-      if (paused) app.ticker.start();
+      // 화면을 나갈 때 장면(app)이 먼저 정리됐으면 ticker가 없다. 그때는 장면이 이미 다 지웠다
+      const ticker = app.ticker as typeof app.ticker | null;
+      ticker?.remove(tick);
+      if (paused) ticker?.start();
       // 이 전투가 장면에 붙인 것만 뗀다(배경·보드는 장면 것)
       for (const c of [under, unitsLayer, lightLayer, over, textLayer]) {
+        if (c.destroyed) continue;
         c.removeFromParent();
         c.destroy({ children: true });
       }
