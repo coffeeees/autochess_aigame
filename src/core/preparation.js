@@ -191,11 +191,8 @@ function drawShop(s, rng = runRng(s)) {
 }
 function enterShop(s, rng = runRng(s)) {
   if (s.shopCarry?.node === P.label(s)) {
-    s.shop = s.shopCarry.offers.map((id) =>
-      id && D.playableIds.includes(id) && !s.units.some((u) => u.id === id && u.star === 3)
-        ? id
-        : null,
-    );
+    // 잠근 후보는 그대로 넘긴다. v0.18.3부터 3성 보유 캐릭터 후보도 지우지 않는다(사용자 요청: 3성 보유만으로 후보를 바꾸지 않음)
+    s.shop = s.shopCarry.offers.map((id) => (id && D.playableIds.includes(id) ? id : null));
     s.shopCarry = null;
     return s.shop;
   }
@@ -212,11 +209,6 @@ function manualReroll(s, rng = runRng(s)) {
 function rollShop(s, rng = runRng(s)) {
   s.shop = Array.from({ length: D.prototypeConfig.economy.shopSlots }, () => drawShop(s, rng));
   P.guaranteeShop(s, rng); // 운명의 상점(P10)
-  return s.shop;
-}
-function refreshShop(s, rng = runRng(s)) {
-  const pool = shopPool(s);
-  s.shop = s.shop.map((id) => (id && !pool.includes(id) ? drawShop(s, rng) : id));
   return s.shop;
 }
 function transferItem(s, itemUid, unitUid) {
@@ -311,7 +303,6 @@ const api = {
   shopOdds,
   drawShop,
   rollShop,
-  refreshShop,
   transferItem,
   damageRows,
 };

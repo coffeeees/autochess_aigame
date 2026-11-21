@@ -40,7 +40,7 @@ test('새 원정: 7G, 레벨 3, 1코스트 2명·2코스트 1명, 고정된 첫 
   );
 });
 
-test('구매하면 골드를 내고 대기석에 넣고 상점 칸을 비운 뒤 상점을 갱신한다', () => {
+test('구매하면 골드를 내고 대기석에 넣고 구매한 상점 칸만 비운다', () => {
   const s = run();
   s.shop = ['C01', 'C02', 'C03', 'C04', 'C05'];
   const result = buyUnit(s, 'C01', { uid: 10, slot: 0 });
@@ -158,14 +158,19 @@ test('판매가는 모든 캐릭터에서 코스트 × 3^(성급-1)', () => {
       a.equal(salePrice({ id, star }), D.byId(id).cost * 3 ** (star - 1), `${id} ${star}성`);
 });
 
-test('3성을 가진 캐릭터는 상점에서 빠지고, 팔면 다시 나온다(T04)', () => {
+test('3성을 가진 캐릭터는 새 후보로 뽑히지 않고 상점 칸 밖 영입은 거절(T04), 팔면 다시 나온다', () => {
   const s = run();
   const id = s.units[0].id;
   s.units[0].star = 3;
   a(!V.shopPool(s).includes(id));
-  s.shop = [id, null, null, null, null];
+  s.shop = [null, null, null, null, null];
   s.gold = 50;
-  a.deepEqual(buyUnit(s, id, { uid: 99, slot: 0 }), { ok: false, notice: 'T04' });
+  a.deepEqual(
+    buyUnit(s, id, { uid: 99, slot: 0 }),
+    { ok: false, notice: 'T04' },
+    '그 칸에 없는 후보',
+  );
+  a.deepEqual(buyUnit(s, id, { uid: 99 }), { ok: false, notice: 'T04' }, '도감 무료 영입');
   a(sellUnit(s, s.units[0].uid).ok);
   a(V.shopPool(s).includes(id), '판매 뒤 다시 후보');
 });
@@ -203,4 +208,50 @@ test('B1: 퍼센트 표기는 소수점 오차 없이 둘째 자리까지, 뒤�
   const s = run();
   s.level = 4;
   for (const p of V.shopOdds(s)) a(/^\d+(\.\d{1,2})?$/.test(percentNumber(p)));
+});
+
+// v0.18.3 사용자 요청 2: 같은 캐릭터 후보 여러 장 중 한 장으로 3성이 돼도 나머지 후보는 그대로 살 수 있다
+test('같은 캐릭터 후보 2장 중 1장 구매로 3성이 돼도 남은 후보는 이름·칸·가격 그대로 다시 살 수 있다', () => {
+  const s = run();
+  const id = 'C03';
+  const cost = D.byId(id).cost;
+  s.units = s.units.filter((u) => u.id !== id);
+  // 2성 2명 + 1성 2명: 1장 더 사면 1성 3명 → 2성, 2성 3명 → 3성
+  s.units.push(
+    { uid: 50, id, location: 'bench', pos: -1, star: 2 },
+    { uid: 51, id, location: 'bench', pos: -1, star: 2 },
+    { uid: 52, id, location: 'bench', pos: -1, star: 1 },
+    { uid: 53, id, location: 'bench', pos: -1, star: 1 },
+  );
+  V.normalize(s);
+  s.gold = 20;
+  s.shopLocked = true;
+  s.shop = ['C01', id, 'C02', id, id];
+  const first = buyUnit(s, id, { uid: 60, slot: 1 });
+  a.equal(first.ok, true);
+  a.equal(first.merges.at(-1).star, 3, '3성 달성');
+  a.equal(s.units.filter((u) => u.id === id && u.star === 3).length, 1);
+  a.deepEqual(
+    s.shop,
+    ['C01', null, 'C02', id, id],
+    '구매한 칸만 비고 남은 같은 캐릭터 후보 2장과 다른 후보는 그대로',
+  );
+  a.equal(s.shopLocked, true, '잠금 상태 그대로');
+  a(!V.shopPool(s).includes(id), '새로 뽑는 후보에는 여전히 나오지 않음');
+  // 남은 후보 다시 구매: 가격 그대로, 1성 한 명이 대기석에 들어오고 합성은 없음
+  const gold = s.gold;
+  const second = buyUnit(s, id, { uid: 61, slot: 3 });
+  a.equal(second.ok, true);
+  a.equal(s.gold, gold - cost);
+  a.equal(s.units.find((u) => u.uid === 61).star, 1);
+  a.deepEqual(second.merges, []);
+  a.deepEqual(s.shop, ['C01', null, 'C02', null, id]);
+  // 3장째도 살 수 있다(1성 2명)
+  a.equal(buyUnit(s, id, { uid: 62, slot: 4 }).ok, true);
+  a.equal(s.units.filter((u) => u.id === id && u.star === 1).length, 2);
+  // 상점 칸이 아닌 곳(도감 무료 영입)에서는 3성 보유 캐릭터를 여전히 거절
+  a.deepEqual(buyUnit(s, id, { uid: 63, free: true }), { ok: false, notice: 'T04' });
+  // 다른 후보 구매는 그대로
+  a.equal(buyUnit(s, 'C01', { uid: 64, slot: 0 }).ok, true);
+  a.deepEqual(s.shop, [null, null, 'C02', null, null]);
 });

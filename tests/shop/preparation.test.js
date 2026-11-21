@@ -68,13 +68,14 @@ test('owned3star excluded on bench or field, lower copies eligible, sale restore
   s.units[0].star = 2;
   a(V.shopPool(s).includes(s.units[0].id));
 });
-test('3star sanitizes current offers only, all-complete pool returns empty safely', () => {
+test('3성 보유는 새로 뽑을 때만 제외하고 이미 뜬 후보와 잠근 후보는 그대로 둔다(v0.18.3), 전원 3성이면 빈 상점', () => {
   const s = state();
   s.units[0].star = 3;
-  const rest = s.shop.slice(1);
-  V.refreshShop(s, () => 0);
-  a(!s.shop.includes('C03'));
-  a.deepEqual(s.shop.slice(1), rest);
+  const before = s.shop.slice();
+  a(!V.shopPool(s).includes('C03'));
+  a.deepEqual(s.shop, before, '지금 후보는 바뀌지 않음');
+  s.shopCarry = { node: P.label(s), offers: ['C03', 'C03', null, 'C01', 'C02'] };
+  a.deepEqual(V.enterShop(s), ['C03', 'C03', null, 'C01', 'C02'], '잠근 후보도 그대로');
   s.units = D.playableIds.map((id, i) => ({ uid: i, id, star: 3, location: 'bench', pos: -1 }));
   a.deepEqual(V.rollShop(s), [null, null, null, null, null]);
 });

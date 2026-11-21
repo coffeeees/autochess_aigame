@@ -2,6 +2,9 @@
 // - 맨 위 팝업 안쪽(data-popup="이름")과 팝업을 여는 버튼(data-popup-trigger)은 바깥으로 보지 않는다.
 // - 바깥을 누르면 팝업만 닫고, 그 누름은 배경(배치·판매·아이템 이동·버튼)에 전달하지 않는다.
 //   예외: 캐릭터 상세가 맨 위일 때 다른 캐릭터를 누르면 그 캐릭터로 바꿔 보여 준다(원본과 같음).
+// - 드래그할 수 있는 캐릭터·아이템(data-drag-source)을 누르면(v0.18.3 사용자 요청 3): 맨 위 팝업을 닫되 누름은 막지 않아
+//   같은 누름에서 드래그가 이어진다. 움직이지 않고 떼면 그 click만 막아 팝업 닫기로만 쓴다(상세 열기·구매 같은 부작용 없음).
+//   실제로 끌기 시작하면 저장소(dragMove)가 남은 일반 팝업을 모두 닫는다.
 // - Esc는 드래그 중이면 드래그 취소만, 아니면 맨 위 팝업 하나를 닫는다.
 // - 보급·증강·결과 같은 확인 창은 저장소의 topPopup()이 null을 돌려주므로 닫히지 않는다.
 import { useEffect } from 'preact/hooks';
@@ -25,6 +28,7 @@ export function usePopupDismiss(store: Store) {
       if (top === 'unit' && target.closest('[data-unit-uid]')) return;
       store.actions.dismissTop();
       swallowUntil = performance.now() + 700;
+      if (target.closest('[data-drag-source]')) return; // 같은 누름으로 드래그 시작(아래 요소가 pointerdown을 받음)
       e.preventDefault();
       e.stopPropagation();
     };

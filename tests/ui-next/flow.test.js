@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.18.2');
+  a.equal(notes.current, '0.18.3');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -347,5 +347,15 @@ test('시각 개선 기록(v0.18.1): 적용 수치·창 크기별 확대율·실
       word,
     );
   a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 패널 테두리'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 패널 테두리'));
+});
+
+test('상호작용 기록(v0.18.3): 요청서 확인 항목마다 예상·실제·판정, 팝업 종류, 실행하지 않은 항목', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.interaction;
+  a.equal(t.cases.length, 14);
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.growth.some((x) => x.includes('확인 창')) && t.growth.some((x) => x.includes('일반 팝업')));
+  a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 영입창 자동 열기'));
 });

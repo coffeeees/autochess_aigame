@@ -18,6 +18,7 @@ export function ItemSlot({ item, ui, actions }: GameProps & { item: RunItem }) {
       data-tier={def.tier}
       data-selected={ui.selectedItem === item.uid}
       data-popup-trigger="item"
+      data-drag-source="item"
       aria-label={`${def.name} · ${def.tier}티어 · ${def.statsText}`}
       title={`${def.name} · ${def.statsText}`}
       onClick={() => actions.selectItem(item.uid)}
