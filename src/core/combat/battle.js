@@ -5,6 +5,7 @@ import AF from './augment-effects.js';
 import I from '../items.js';
 import Bonds from './bond-effects.js';
 import F from './item-effects.js';
+import MF from './meta-effects.js';
 import { storedRng } from '../rng.ts';
 import { enableHooks } from './hooks.ts';
 import { distance } from './geometry.ts';
@@ -679,6 +680,7 @@ Battle.use(F.extension);
 Battle.use(AF.setupExtension);
 Battle.use(AF.extension);
 Battle.use(Bonds.extension);
+Battle.use(MF.extension); // 메타 영구 강화(v0.19.0, 전투 옵션에 meta가 있을 때만)
 const api = { Battle, distance, mitigatedDamage };
 
 export default api;

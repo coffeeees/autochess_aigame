@@ -5,6 +5,7 @@ import D from './data/units.js';
 import P from './progression.js';
 import V from './preparation.js';
 import W from './encounters.js';
+import U from './meta-upgrades.ts';
 
 const C = D.prototypeConfig;
 /** 모든 원정의 첫 상점은 고정. */
@@ -15,10 +16,18 @@ export interface NewRunOptions {
   difficulty: number; // 1..10
   firstUid?: number; // 첫 시작 캐릭터의 uid(번호는 UI가 관리)
   runId?: string; // 원정 ID(메타 XP 중복 지급 방지). 없으면 시드로 만든다
+  /** 메타 영구 강화 단계(프로필의 upgrades). 주면 원정에 복사하고 시작 보너스(E1·G1·S1)를 준다 */
+  metaLevels?: Record<string, number>;
 }
 
 /** 새 원정: 7G, 레벨 3, 무작위 1코스트 2명·2코스트 1명, 고정된 첫 상점. */
-export function newRun({ seed, difficulty, firstUid = 1, runId }: NewRunOptions): RunState {
+export function newRun({
+  seed,
+  difficulty,
+  firstUid = 1,
+  runId,
+  metaLevels,
+}: NewRunOptions): RunState {
   const seedHolder: Pick<RunState, 'rngState'> = { rngState: seed };
   let uid = firstUid;
   const units: RunUnit[] = V.startingRoster(P.runRng(seedHolder)).map((id: string) => ({
@@ -38,6 +47,16 @@ export function newRun({ seed, difficulty, firstUid = 1, runId }: NewRunOptions)
   state.runId = runId ?? `run-${seed >>> 0}`;
   W.configureNewRun(state, difficulty);
   V.normalize(state);
+  if (metaLevels) {
+    U.attachToRun(state, metaLevels);
+    // 시작 보너스(v0.19.0 메타 강화): 기본값 위에 더한다
+    state.gold += U.value(state, 'E1'); // 출발 자금
+    const hp = U.value(state, 'S1'); // 원정의 가호: 시작 HP와 HP 상한
+    state.health += hp;
+    state.maxHealth = U.healthCap(state);
+    const xp = U.value(state, 'G1'); // 출발 경험(기존 레벨업 규칙으로)
+    if (xp) P.addXp(state, xp);
+  }
   return state;
 }
 
@@ -57,7 +76,7 @@ export function battleSetup(state: RunState): BattleSetup {
     .filter((u) => u.location === 'board')
     .map((u) => ({
       ...u,
-      bonuses: P.unitBonuses(state, u.uid),
+      bonuses: P.unitBonuses(state, u.uid), // S3 장비 숙련 반영
       itemIds: P.unitItemIds(state, u.uid),
     }));
   const enemies = W.encounter(state);

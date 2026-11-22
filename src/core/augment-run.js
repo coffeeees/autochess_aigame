@@ -11,6 +11,7 @@ import P from './progression.js';
 import V from './preparation.js';
 import { mergeAll } from './merge.ts';
 import { runRng } from './rng.ts';
+import U from './meta-upgrades.ts';
 
 const C = D.prototypeConfig;
 const unitCost = (id) => D.byId(id)?.cost ?? 0;
@@ -107,6 +108,8 @@ function onRoundStart(state, rng = runRng(state)) {
       state.gold += g;
       note(state, `황금의 흐름 +${g}G`);
     }
+  // G5 성장 가속(메타): 새 라운드(2-1부터) 시작의 첫 n번 인게임 XP +1. 같은 라운드에 두 번 주지 않음(위 lastRoundStart)
+  if (state.round === 1 && state.stage > 1 && U.take(state, 'G5')) P.addXp(state, 1);
   if (r.valueUnitId && r.valuePickNode !== key && A.hasEffect(state.augments, 'valueInvest')) {
     // 이미 3성이면 더 받아도 쓸 수 없으므로 1성 판매가만큼 골드(대기석 만석 규칙과 같은 방식)
     if (state.units.some((u) => u.id === r.valueUnitId && u.star >= 3)) {
@@ -164,6 +167,7 @@ function rerollCost(state) {
   if (A.hasEffect(state.augments, 'freeRerollPerStage') && r.freeStageUsed !== state.stage)
     return 0;
   if (r.freeRerolls > 0) return 0;
+  if (U.left(state, 'E4') > 0) return 0; // 새로고침 지원(메타): 원정당 무료 n회
   const reroll = A.effects(state.augments, 'reroll');
   return reroll.length ? Math.min(...reroll) : C.economy.rerollCost;
 }
@@ -178,6 +182,7 @@ function useReroll(state) {
     r.freeRerolls--;
     return 0;
   }
+  if (U.take(state, 'E4')) return 0;
   const cost = rerollCost(state);
   state.gold -= cost;
   return cost;

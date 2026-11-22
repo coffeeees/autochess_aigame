@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.18.4');
+  a.equal(notes.current, '0.19.0');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -357,5 +357,16 @@ test('상호작용 기록(v0.18.3): 요청서 확인 항목마다 예상·실제
   for (const c of t.cases) a.equal(c.length, 4, c[0]);
   a(t.growth.some((x) => x.includes('확인 창')) && t.growth.some((x) => x.includes('일반 팝업')));
   a(t.notRun.length > 0 && t.issues.every((x) => x.status && x.repro));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 영입창 자동 열기'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 영입창 자동 열기'));
+});
+
+test('영구 강화 기록(v0.19.0): 실행 방법 구분, 플레이 결과, 임시값 결정, 실행하지 않은 항목', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.metaUpgrades;
+  const kinds = new Set(t.runs.map((r) => r.kind));
+  for (const k of ['단위 테스트', '브라우저 조작', '플레이 봇']) a(kinds.has(k), k);
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.decisions.some((x) => x.includes('전열·후열')) && t.decisions.some((x) => x.includes('S4')));
+  a(t.notRun.some((x) => x.includes('사람이 직접')));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 메타 영구 강화'));
 });

@@ -4,6 +4,7 @@ import I from './items.js';
 import A from './augments.js';
 import B from './board.js';
 import { runRng } from './rng.ts';
+import U from './meta-upgrades.ts';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
 function normalize(s) {
@@ -171,7 +172,11 @@ function shopOdds(s) {
     pool = shopPool(s),
     available = [1, 2, 3, 4, 5].map((cost) => pool.some((id) => D.byId(id).cost === cost)),
     sum = base.reduce((n, w, i) => n + (available[i] ? w : 0), 0);
-  return base.map((w, i) => (sum && available[i] ? (w / sum) * 100 : 0));
+  // S5 행운의 영입(메타): 나올 수 있는 4~5코스트 합 +x%p, 나머지에서 비율대로 뺌(강화가 없으면 그대로)
+  return U.shopOdds(
+    base.map((w, i) => (sum && available[i] ? (w / sum) * 100 : 0)),
+    s,
+  );
 }
 function drawShop(s, rng = runRng(s)) {
   const pool = shopPool(s),

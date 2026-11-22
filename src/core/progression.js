@@ -3,6 +3,7 @@ import D from './data/units.js';
 import A from './augments.js';
 import I from './items.js';
 import R from './augment-run.js';
+import U from './meta-upgrades.ts';
 import { runRng, nextSeed } from './rng.ts';
 
 const config = {
@@ -155,6 +156,7 @@ function buyXp(state) {
     return false;
   state.gold -= config.level.xpPurchaseGold;
   addXp(state, config.level.xpPurchaseAmount);
+  if (state.level < config.level.max && U.take(state, 'G4')) addXp(state, 1); // 경험 축적(메타)
   return true;
 }
 function addItem(state, id) {
@@ -280,7 +282,13 @@ function releaseEquipment(state, uids) {
   for (const item of state.inventory) if (uids.includes(item.equippedTo)) item.equippedTo = null;
 }
 function unitBonuses(state, uid) {
-  return I.bonuses(state.inventory.filter((i) => i.equippedTo === uid));
+  const b = I.bonuses(state.inventory.filter((i) => i.equippedTo === uid));
+  // S3 장비 숙련(메타): 장착 아이템의 수치 보너스만 +x%(고유 효과·발동은 그대로). 반올림하지 않는다
+  const s3 = U.value(state, 'S3');
+  if (s3 > 0)
+    for (const key of Object.keys(b))
+      b[key] = key === 'ASMultiplier' ? 1 + (b[key] - 1) * (1 + s3) : b[key] * (1 + s3);
+  return b;
 }
 function unitItemIds(state, uid) {
   return state.inventory.filter((i) => i.equippedTo === uid).map((i) => i.id);
@@ -289,6 +297,8 @@ function allyModifiers(state) {
   return {
     augmentIds: state.augments.filter((id) => A.byId(id)),
     cloneTarget: state.augmentRun?.cloneTarget ?? null,
+    // 메타 영구 강화(v0.19.0). 강화가 없으면 넣지 않아 전투 입력이 예전과 같다
+    ...(U.combatInfo(state) ? { meta: U.combatInfo(state) } : {}),
   };
 }
 function previewStats(state, u) {
@@ -422,6 +432,22 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
   const monsterLoot = state.bonusLootLedger?.[key] || null,
     monsterGold = monsterLoot?.kind === 'gold' ? monsterLoot.amount : 0;
   const fight = type !== 'SUPPLY';
+  // 메타 영구 강화(v0.19.0): 기본 보상은 그대로 두고 추가분만. 횟수는 원정마다(state.metaRun.used)
+  const normal = type === 'BATTLE',
+    metaParts = {},
+    addMeta = (id, n = 1) => (metaParts[id] = (metaParts[id] || 0) + n);
+  if (normal && win && U.take(state, 'E2')) addMeta('E2');
+  if (normal && !win && U.take(state, 'E3')) addMeta('E3');
+  if (type === 'SUPPLY' && U.take(state, 'E6')) addMeta('E6');
+  if (type === 'BOSS' && win && U.take(state, 'E7')) addMeta('E7');
+  if (interest > 0 && U.take(state, 'E8')) addMeta('E8');
+  // S4 보급 전문가: 보급 완료마다 독립 확률(강화가 있을 때만 난수를 뽑아 예전 원정과 같은 난수 흐름 유지)
+  const s4 = U.value(state, 'S4');
+  if (type === 'SUPPLY' && s4 > 0 && rng() * 100 < s4) addMeta('S4');
+  const metaGold = Object.values(metaParts).reduce((n, v) => n + v, 0);
+  const metaXp =
+    (normal && win && U.take(state, 'G2') ? 1 : 0) +
+    (normal && !win && U.take(state, 'G3') ? 1 : 0);
   const augmentRun = R.settle(state, {
     fight,
     win,
@@ -432,7 +458,7 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
   const survivors = outcome.survivingEnemies || 0,
     legacyDamage =
       D.prototypeConfig.run.lossBase + ordinal(state) * D.prototypeConfig.run.lossPerWave,
-    loss =
+    rawLoss =
       type === 'SUPPLY' || win
         ? 0
         : Math.min(
@@ -441,19 +467,22 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
               ? Math.max(1, survivors) * config.loss.survivorDamage
               : legacyDamage,
           ),
-    total = base + interest + bonusGold + streakBonus + augmentGold;
+    // S8 원정 보험(메타): HP를 잃는 패배의 첫 n번은 손실 −1(최소 0). 한 패배에 한 번
+    insured = rawLoss > 0 && U.take(state, 'S8') ? 1 : 0,
+    loss = rawLoss - insured,
+    total = base + interest + bonusGold + streakBonus + augmentGold + metaGold;
+  // HP 상한: 원정의 maxHealth(S1 원정의 가호로 늘어남, 없으면 기본 100). S2는 일반 전투 승리 회복에만 더한다
+  const healthCap = Math.max(config.rewards.maxHealth, U.healthCap(state)),
+    winHeal = config.rewards.winHealth + (normal ? U.value(state, 'S2') : 0);
   const healthBefore = state.health,
-    healthAfterWin =
-      type !== 'SUPPLY' && win
-        ? Math.min(config.rewards.maxHealth, state.health + config.rewards.winHealth)
-        : null,
+    healthAfterWin = type !== 'SUPPLY' && win ? Math.min(healthCap, state.health + winHeal) : null,
     healing = healthAfterWin === null ? 0 : Math.max(0, healthAfterWin - state.health);
   state.gold += total;
   state.health = healthAfterWin === null ? state.health - loss : healthAfterWin;
   const levelBefore = state.level,
     stageXp =
       state.round === 5 ? A.effects(state.augments, 'stageXp').reduce((n, v) => n + v, 0) : 0,
-    xpGained = config.level.roundXp + stageXp;
+    xpGained = config.level.roundXp + stageXp + metaXp;
   addXp(state, xpGained);
   state.done = state.health <= 0;
   state.roundPhase = state.done ? 'gameover' : 'result';
@@ -472,6 +501,7 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
     streakBonus,
     augmentGold,
     augmentParts: augmentRun.parts,
+    ...(metaGold || metaXp || insured ? { metaGold, metaParts, metaXp, insured } : {}),
     winStreak: state.winStreak || 0,
     monsterLoot,
     bossItem,

@@ -41,6 +41,9 @@
   보드 그림 위치는 DOM 입력 칸 컨테이너(`Board.tsx`의 `.art`) 사각형을 장면이 읽어 맞춘다. 전투 기준선 도구는 로그 칸 번호를 예전 번호로 되돌려 비교한다.
 - 메타 레벨(v0.17.2): `meta.ts`(곡선·원정 보상·레벨업·중복 방지), 수치는 `data/meta.js`(임시값). 프로필 저장 키 `autochess-meta-v1`은 원정 저장과 별도이고,
   저장소(`store.ts`의 `settleMeta`)가 원정이 끝날 때(`run.done`) 원정 ID(`runId`)마다 한 번 지급한다.
+- 메타 영구 강화(v0.19.0): `meta-upgrades.ts`(레벨 보상 P·티켓 원장, 구매, 원정 스냅샷 `state.metaRun`, 횟수 `take`), 수치 `data/meta-upgrades.js`(임시값),
+  전투 `combat/meta-effects.js`(전투 옵션 `allyModifiers.meta`가 있을 때만). 강화가 없으면 원정·전투가 예전과 같아야 한다(기준선).
+  화면 `components/Abilities.tsx`. 개발용 테스트 프로필은 주소 `?metadev`(저장 키 `autochess-meta-dev-v1`).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
 - 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).

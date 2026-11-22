@@ -8,6 +8,7 @@ import V from '../../core/preparation.js';
 import I from '../../core/items.js';
 import A from '../../core/augments.js';
 import M from '../../core/meta.ts';
+import U from '../../core/meta-upgrades.ts';
 import { itemIconSvg } from '../art/items.js';
 import { itemDef } from './Items.tsx';
 import { DamageChart } from './DamageChart.tsx';
@@ -171,6 +172,11 @@ interface Receipt {
   winStreak?: number;
   streakBonus?: number;
   augmentGold?: number;
+  /** 메타 영구 강화 추가분(v0.19.0): 골드(강화 ID별), 인게임 XP, 원정 보험으로 줄인 HP */
+  metaGold?: number;
+  metaParts?: Record<string, number>;
+  metaXp?: number;
+  insured?: number;
   before: number;
   interest: number;
   bonusGold?: number;
@@ -287,6 +293,17 @@ function Result({ ui, actions }: GameProps) {
             tone="gold"
           />
           {!!r.augmentGold && <Row label="증강 승리 보너스" value={`+${r.augmentGold} G`} />}
+          {!!r.metaGold && (
+            <Row
+              label={`영구 강화 · ${Object.keys(r.metaParts || {})
+                .map((id) => U.byId(id)?.name ?? id)
+                .join(' · ')}`}
+              value={`+${r.metaGold} G`}
+              tone="gold"
+            />
+          )}
+          {!!r.metaXp && <Row label="영구 강화 인게임 XP" value={`+${r.metaXp} XP`} />}
+          {!!r.insured && <Row label="원정 보험 · 손실 HP 감소" value={`−${r.insured} HP`} />}
           <Row label={`이자 · 보상 전 ${r.before}G / 최대 5G`} value={`+${r.interest} G`} />
           {supply && (
             <Row label="보급 추가 골드" value={r.bonusGold ? `+${r.bonusGold} G` : '미획득'} />

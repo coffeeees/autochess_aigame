@@ -1,12 +1,15 @@
 // 메타 레벨(원정 사이에 이어지는 영구 성장). 인게임 레벨·XP와 완전히 분리된다.
 // 기준: AUTOCHESS 메타 레벨 1~100 구현 및 테스트 요청서(v0.17.2). 최대 레벨 100은 확정,
 // 필요 XP 곡선과 원정 보상 수치는 테스트용 임시값(사용자 승인 없이 바꾸지 않는다).
-// 레벨업 보상·영구 강화는 아직 없다(growthEnabled: false).
+// v0.19.0: 레벨업 보상(성장 포인트·뽑기 티켓)과 영구 강화 40종은 meta-upgrades.ts(프로필 필드를 여기서 함께 저장).
 // 프로필은 원정 저장과 다른 키(META_KEY)에 저장한다. 저장소 읽기·쓰기는 UI가 한다.
 import type { RunState } from './types.ts';
 import data from './data/meta.js';
+import U, { type UpgradeProfile } from './meta-upgrades.ts';
 
 export const META_KEY = 'autochess-meta-v1';
+/** 개발용 테스트 프로필(주소에 ?metadev). 정식 프로필과 섞이지 않는다 */
+export const META_DEV_KEY = 'autochess-meta-dev-v1';
 
 /** 수치는 data/meta.js(임시값). 원정 보상: 5 + 정규 구간 완료 스테이지 × 2 + 6-5 클리어 시 15(최대 80) */
 export const config = {
@@ -43,21 +46,35 @@ export interface MetaPayment {
   reason?: MetaReason;
   before: { level: number; xp: number };
   after: { level: number; xp: number };
+  /** 이번 지급으로 오른 레벨의 보상(v0.19.0) */
+  rewards?: { points: number; tickets: number };
 }
 
 export type MetaReason = 'end' | 'continue' | 'abandon';
 
-export interface MetaProfile {
-  version: 1;
+export interface MetaProfile extends UpgradeProfile {
+  /** 2: 성장 포인트·티켓·영구 강화(v0.19.0). 1(예전)도 읽어서 2로 올린다(소급 지급) */
+  version: 2;
   metaLevel: number;
   metaXp: number; // 현재 레벨에서 쌓은 XP
   totalXp: number; // 지금까지 실제로 반영된 메타 XP 합(최대 레벨 뒤로는 늘지 않음)
-  growthEnabled: false; // 레벨업 보상·영구 강화(미구현)
+  growthEnabled: true; // 레벨업 보상·영구 강화 사용(v0.19.0)
   payments: MetaPayment[]; // 최근 지급 기록(원정 ID로 중복 지급 방지)
 }
 
 export function newProfile(): MetaProfile {
-  return { version: 1, metaLevel: 1, metaXp: 0, totalXp: 0, growthEnabled: false, payments: [] };
+  return {
+    version: 2,
+    metaLevel: 1,
+    metaXp: 0,
+    totalXp: 0,
+    growthEnabled: true,
+    payments: [],
+    growthPoints: 0,
+    tickets: 0,
+    upgrades: {},
+    rewards: { level: 1, points: 0, tickets: 0 },
+  };
 }
 
 /** 저장에서 읽은 값을 정리한다. 이상한 값은 새 프로필 기준으로 되돌린다. */
@@ -80,6 +97,8 @@ export function normalizeProfile(raw: unknown): MetaProfile {
     p.payments = (r.payments as MetaPayment[])
       .filter((x) => x && typeof x.runId === 'string' && Number.isInteger(x.xp))
       .slice(-config.keepPayments);
+  // 성장 포인트·티켓·강화 단계(원장이 없는 예전 프로필은 지금 레벨까지 한 번 소급)
+  U.normalizeUpgradeFields(p, r);
   return p;
 }
 
@@ -166,6 +185,7 @@ export function settleRun(
   if (reason === 'continue' && run.completionChoice !== 'continue') return null;
   const reward = runReward(run, reason);
   const { before, after } = addXp(profile, reward.xp);
+  const rewards = U.syncLevelRewards(profile); // 오른 레벨마다 성장 포인트·티켓
   const payment: MetaPayment = {
     runId: run.runId,
     xp: reward.xp,
@@ -174,6 +194,7 @@ export function settleRun(
     reason,
     before,
     after,
+    rewards,
   };
   profile.payments = [...profile.payments, payment].slice(-config.keepPayments);
   return payment;
@@ -181,6 +202,7 @@ export function settleRun(
 
 export default {
   META_KEY,
+  META_DEV_KEY,
   config,
   requiredXp,
   cumulativeXp,

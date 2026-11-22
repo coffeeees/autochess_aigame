@@ -1,0 +1,298 @@
+/* 능력치 화면(v0.19.0). 짙은 남색·금색 기본 스타일에 계열 색(--branch)만 더한다 */
+.view {
+  min-height: 100vh;
+  padding: 20px clamp(16px, 3vw, 40px) 28px;
+  background: radial-gradient(ellipse at 65% 20%, #262239 0, transparent 60%), var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.header h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 2px;
+}
+.back {
+  padding: 8px 14px;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-md);
+  background: var(--panel-bg);
+}
+.wallet {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 0 auto;
+  flex-wrap: wrap;
+}
+.wallet div {
+  padding: 8px 14px;
+  border: 1px solid #4c425c;
+  border-radius: var(--radius-md);
+  background: #1c1824;
+  min-width: 150px;
+}
+.wallet dt {
+  font-size: var(--text-xs);
+  color: #a99bbb;
+}
+.wallet dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #e6d4ab;
+}
+.wallet div[data-kind='points'] dd {
+  color: #ffd54a;
+}
+.wallet div[data-kind='tickets'] dd {
+  color: #d9c2ff;
+}
+.wallet small {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #a99bbb;
+}
+.rule {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: #b3a8c3;
+}
+.rule b {
+  color: #e6d4ab;
+}
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+.tabs button {
+  flex: 1;
+  padding: 10px 8px;
+  border: 1px solid #3c4257;
+  border-radius: var(--radius-md);
+  background: #151a28;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 8px;
+}
+.tabs button small {
+  font-size: 11px;
+  color: #a99bbb;
+}
+.tabs button[aria-selected='true'] {
+  border-color: var(--tab);
+  color: var(--tab);
+  box-shadow: inset 0 -3px 0 var(--tab);
+  background: #1b2133;
+}
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 65fr) minmax(300px, 35fr);
+  gap: 14px;
+  min-height: 430px;
+}
+.tree {
+  position: relative;
+  border: 1px solid #2f3650;
+  border-radius: var(--radius-lg);
+  background: radial-gradient(
+      ellipse at 50% 50%,
+      color-mix(in srgb, var(--branch) 10%, transparent),
+      transparent 70%
+    ),
+    #10141f;
+  min-height: 430px;
+}
+.links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.links line {
+  stroke: #3a4058;
+  stroke-width: 3;
+}
+.links line[data-lit='true'] {
+  stroke: var(--branch);
+  stroke-opacity: 0.7;
+}
+.node {
+  position: absolute;
+  translate: -50% -50%;
+  width: clamp(104px, 14%, 140px);
+  min-height: 96px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid #3c4257;
+  border-radius: var(--radius-lg);
+  background: #161b29;
+  text-align: center;
+  line-height: 1.2;
+}
+.node b {
+  font-size: 13px;
+}
+.node small {
+  font-size: 11px;
+  color: #a99bbb;
+}
+.node .icon {
+  font-size: 22px;
+}
+.node[data-state='ready'],
+.node[data-state='short'] {
+  border-color: var(--branch);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--branch) 45%, transparent);
+}
+.node[data-state='ready'] .icon,
+.node[data-state='short'] .icon {
+  color: var(--branch);
+}
+.node[data-state='locked'] {
+  /* 배경은 불투명하게 두어 연결선이 비치지 않게 하고, 글자·아이콘만 어둡게 */
+  border-color: #2c3142;
+  background: #121622;
+  color: #6d7183;
+}
+.node[data-state='locked'] small {
+  color: #6d7183;
+}
+.node[data-state='max'] {
+  border-color: #ffd54a;
+  box-shadow: 0 0 14px #ffd54a77;
+}
+.node[data-state='max'] small {
+  color: #ffd54a;
+  font-weight: 800;
+}
+.node[data-selected='true'] {
+  outline: 2px solid #fff4c9;
+  outline-offset: 3px;
+}
+/* 강화 직후 짧은 발광(0.6초) */
+.node[data-flash='true'] {
+  animation: upgradeFlash 600ms ease-out;
+}
+@keyframes upgradeFlash {
+  from {
+    box-shadow:
+      0 0 0 0 #fff4c9,
+      0 0 28px 10px var(--branch);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .node[data-flash='true'] {
+    animation: none;
+  }
+}
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  box-shadow: var(--panel-shadow);
+}
+.detailHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.detailHead .icon {
+  font-size: 30px;
+  color: var(--branch);
+}
+.detailHead small {
+  font-size: 11px;
+  color: #a99bbb;
+}
+.detailHead h2 {
+  margin: 2px 0 0;
+  font-size: 20px;
+}
+.level {
+  margin-left: auto;
+  font-size: 18px;
+  color: #e6d4ab;
+}
+.effects {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+.effects dt {
+  color: #a99bbb;
+}
+.effects dd {
+  margin: 0;
+}
+.steps {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #8f87a2;
+}
+.steps li[data-done='true'] {
+  color: var(--branch);
+}
+.temp {
+  margin: 0;
+  font-size: 12px;
+  color: #ffb36b;
+}
+.reason {
+  margin: auto 0 0;
+  font-size: var(--text-sm);
+  color: #b3a8c3;
+}
+.buy {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--branch);
+  background: color-mix(in srgb, var(--branch) 22%, #161b29);
+  font-weight: 800;
+  font-size: 15px;
+}
+.buy:disabled {
+  border-color: #3c4257;
+  background: #1a1f2c;
+  color: #7b7f8e;
+  cursor: not-allowed;
+}
+.dev {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border: 1px dashed #ff8a8a;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+}
+.dev button {
+  padding: 4px 8px;
+  border: 1px solid #555;
+  border-radius: var(--radius-sm);
+}
+@media (max-width: 900px) {
+  .body {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,6 +7,7 @@ import Engine from '../../src/core/combat/battle.js';
 import { AROUND } from '../../src/core/combat/hooks.ts';
 import F from '../../src/core/combat/item-effects.js';
 import AF from '../../src/core/combat/augment-effects.js';
+import MF from '../../src/core/combat/meta-effects.js';
 import Bonds from '../../src/core/combat/bond-effects.js';
 import Vfx from '../../src/core/combat/vfx-events.js';
 
@@ -17,9 +18,11 @@ const fight = (Class = Battle) =>
 test('기본 확장과 문서에 적은 순서', () => {
   a.deepEqual(
     Battle.extensions.map((e) => e.name),
-    ['item-effects', 'augment-setup', 'augment-effects', 'bond-effects'],
+    ['item-effects', 'augment-setup', 'augment-effects', 'bond-effects', 'meta-effects'],
   );
   a.equal(F.extension.order, 10);
+  a.equal(MF.extension.order, 15); // 메타 영구 강화(v0.19.0): 아이템과 증강 사이
+  a.equal(MF.extension.on.start.order, 7); // 증강 준비(5) 뒤, 유대(10) 앞
   a.equal(AF.extension.order, 20);
   a.equal(Vfx.extension.order, 90);
   a.deepEqual(

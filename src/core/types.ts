@@ -149,6 +149,8 @@ export interface RunState {
   runId?: string;
   /** 증강의 원정 진행 상태(augment-run.js) */
   augmentRun?: AugmentRun | null;
+  /** 메타 영구 강화(v0.19.0): 원정 시작 때 복사한 단계와 횟수 제한 효과 사용량(meta-upgrades.ts). 예전 저장에는 없음 */
+  metaRun?: { version: 1; levels: Record<string, number>; used: Record<string, number> } | null;
 }
 
 /** 증강 원정 상태: 늦게 받는 보상, 맡긴 골드, 무료 새로고침, 가치 투자 동료, 분신 지정 */

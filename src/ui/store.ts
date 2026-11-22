@@ -11,10 +11,11 @@ import Engine from '../core/combat/battle.js';
 import type { CombatRunner, LiveBattle } from './combat/runner.ts';
 import W from '../core/encounters.js';
 import M, { type MetaProfile, type MetaReason } from '../core/meta.ts';
+import U from '../core/meta-upgrades.ts';
 import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
-export type View = 'home' | 'difficulty' | 'game';
+export type View = 'home' | 'difficulty' | 'game' | 'abilities';
 
 export interface Notice {
   id: string;
@@ -73,6 +74,14 @@ export interface UiState {
   lastBattle: LiveBattle | null;
   /** 메타 레벨 프로필(원정 사이에 이어짐, 저장 키 autochess-meta-v1) */
   meta: MetaProfile;
+  /** 개발용 메타 테스트 프로필 사용 중(주소에 ?metadev, 저장 키 autochess-meta-dev-v1). 정식 UI에는 표시 안 함 */
+  metaDev: boolean;
+  /** 능력치 화면: 고른 계열·노드, 방금 강화한 노드(짧은 발광) */
+  abilities: {
+    branch: 'A' | 'D' | 'E' | 'G' | 'S';
+    node: string;
+    flash: { id: string; key: number } | null;
+  };
   speed: 1 | 2 | 4;
   overlay: Overlay | null;
   /** HUD 메뉴의 작은 창 */
@@ -149,6 +158,8 @@ export interface StoreEnv {
    * reduced: 움직임 줄이기 설정
    */
   presentation?: { reduced: () => boolean };
+  /** 개발용 메타 테스트 프로필(별도 저장 키, 전투 로그에 메타 강화 전후 수치). 정식 화면에서는 끔 */
+  metaDev?: boolean;
 }
 
 export function createStore(env: StoreEnv) {
@@ -158,6 +169,8 @@ export function createStore(env: StoreEnv) {
     view: 'home',
     difficulty: 1,
     run: null,
+    metaDev: !!env.metaDev,
+    abilities: { branch: 'A', node: 'A1', flash: null },
     hasSave: false,
     selected: null,
     shopOpen: false,
@@ -183,6 +196,8 @@ export function createStore(env: StoreEnv) {
     version: 0,
   };
   let clickGuardUntil = 0;
+  let buyGuardUntil = 0;
+  let flashKey = 0;
   /**
    * 다음 라운드 준비에 들어갈 때마다 동료 영입창을 한 번 자동으로 연다(v0.18.3 요청, v0.18.4에서 사용자가
    * "다음 라운드로 넘어갈 때마다"로 정정: 같은 구간 안 이동 2-1 → 2-2도, 증강 선택 뒤도 연다).
@@ -236,23 +251,51 @@ export function createStore(env: StoreEnv) {
     settleMeta();
   }
 
-  /** 메타 XP 알림 문구: "이전 원정을 포기해 메타 XP +13 · Lv.2 (5 / 10 XP)" */
-  function metaText(prefix: string, p: { xp: number; after: { level: number; xp: number } }) {
-    return `${prefix} 메타 XP +${p.xp} · Lv.${p.after.level} (${M.progressLabel(p.after.level, p.after.xp)})`;
+  /** 메타 XP 알림 문구: "이전 원정을 포기해 메타 XP +13 · Lv.2 (5 / 10 XP) · 성장 포인트 +2 · 뽑기 티켓 +2" */
+  function metaText(
+    prefix: string,
+    p: {
+      xp: number;
+      after: { level: number; xp: number };
+      rewards?: { points: number; tickets: number };
+    },
+  ) {
+    const gain = p.rewards?.points
+      ? ` · 성장 포인트 +${p.rewards.points} · 뽑기 티켓 +${p.rewards.tickets}`
+      : '';
+    return `${prefix} 메타 XP +${p.xp} · Lv.${p.after.level} (${M.progressLabel(p.after.level, p.after.xp)})${gain}`;
   }
 
-  /** 메타 프로필을 읽는다. 읽을 수 없거나 잘못된 값이면 새 프로필(저장은 지우지 않음). */
+  /** 정식 프로필 키, 개발 모드(?metadev)면 따로 쓰는 테스트 프로필 키 */
+  const metaKey = env.metaDev ? M.META_DEV_KEY : M.META_KEY;
+  /**
+   * 메타 프로필을 읽는다. 읽을 수 없거나 잘못된 값이면 새 프로필(저장은 지우지 않음).
+   * 예전 프로필(성장 포인트 원장 없음)은 normalizeProfile이 지금 레벨까지의 보상을 한 번 소급하고, 바로 저장해
+   * 다시 열어도 원장 기준으로 중복 지급하지 않는다. 읽기에 실패하면 원본을 백업 키에 남긴다.
+   */
   function loadMeta(): MetaProfile {
+    let raw: string | null = null;
     try {
-      const raw = env.storage.getItem(M.META_KEY);
-      return M.normalizeProfile(raw === null ? null : JSON.parse(raw));
-    } catch {
+      raw = env.storage.getItem(metaKey);
+      const profile = M.normalizeProfile(raw === null ? null : JSON.parse(raw));
+      if (raw !== null && JSON.stringify(profile) !== raw) {
+        state = { ...state, meta: profile };
+        saveMeta();
+      }
+      return profile;
+    } catch (error) {
+      console.error('메타 프로필을 읽지 못했습니다(원본은 백업 키에 보관):', error);
+      try {
+        if (raw !== null) env.storage.setItem(`${metaKey}-backup-${clock()}`, raw);
+      } catch {
+        /* 백업도 못 하면 원본 키를 덮어쓰지 않도록 아래에서 새 프로필만 메모리에 둔다 */
+      }
       return M.newProfile();
     }
   }
   function saveMeta() {
     try {
-      env.storage.setItem(M.META_KEY, JSON.stringify(state.meta));
+      env.storage.setItem(metaKey, JSON.stringify(state.meta));
     } catch {
       if (!saveFailed)
         notify('T42', '진행 상황을 저장하지 못했습니다. 저장 공간이나 브라우저 설정을 확인하세요.');
@@ -375,6 +418,9 @@ export function createStore(env: StoreEnv) {
     const r = run();
     prepareFormation();
     const setup = battleSetup(r);
+    // 개발 모드: 메타 강화 전후 수치를 전투 로그('meta')로 남겨 콘솔에서 비교
+    const metaInfo = (setup.options.allyModifiers as { meta?: { debug?: boolean } }).meta;
+    if (env.metaDev && metaInfo) metaInfo.debug = true;
     const battle = new Engine.Battle(setup.allies, setup.enemies, {
       quickMana: state.quickMana,
       experimental: state.experimental,
@@ -520,6 +566,59 @@ export function createStore(env: StoreEnv) {
 
   const actions = {
     showDifficulty: () => publish({ view: 'difficulty' }),
+    /** 시작 화면 → 능력치(메타 영구 강화 트리) */
+    showAbilities: () => publish({ view: 'abilities' }),
+    pickBranch(branch: UiState['abilities']['branch']) {
+      publish({ abilities: { ...state.abilities, branch, node: `${branch}1` } });
+    },
+    /** 노드 누르기: 상세만 바꾼다(구매하지 않음) */
+    pickNode(id: string) {
+      if (U.byId(id)) publish({ abilities: { ...state.abilities, node: id } });
+    },
+    /**
+     * 강화하기(상세 패널의 버튼에서만): 해금·비용·최대 단계 확인 → P 차감과 단계 +1을 한 번에 → 저장.
+     * 버튼 연타·중복 이벤트로 두 번 사지 않게 350ms 안의 다음 요청은 무시한다.
+     */
+    buyUpgrade(id: string) {
+      if (clock() < buyGuardUntil) return false;
+      const next = M.normalizeProfile(JSON.parse(JSON.stringify(state.meta)));
+      if (!U.buy(next, id)) return false;
+      buyGuardUntil = clock() + 350;
+      state = { ...state, meta: next };
+      saveMeta();
+      publish({ abilities: { ...state.abilities, flash: { id, key: ++flashKey } } });
+      return true;
+    },
+    /**
+     * 개발용(?metadev 테스트 프로필에서만): 메타 레벨·P·티켓·강화 단계 설정. 레벨을 바꾸면 보상 원장을 그 레벨로 다시 맞춘다.
+     */
+    devSetMeta(patch: {
+      level?: number;
+      points?: number;
+      tickets?: number;
+      upgrades?: Record<string, number>;
+    }) {
+      if (!env.metaDev) return;
+      const p = M.normalizeProfile(JSON.parse(JSON.stringify(state.meta)));
+      if (patch.level) {
+        p.metaLevel = Math.max(1, Math.min(M.config.maxLevel, patch.level));
+        p.metaXp = 0;
+        p.totalXp = M.cumulativeXp(p.metaLevel);
+        const earned = U.cumulativeReward(p.metaLevel);
+        p.rewards = { level: p.metaLevel, ...earned };
+        p.tickets = earned.tickets;
+        p.growthPoints = Math.max(0, earned.points - U.usedPoints(p));
+      }
+      if (patch.upgrades) {
+        p.upgrades = { ...patch.upgrades };
+        p.growthPoints = Math.max(0, p.rewards.points - U.usedPoints(p));
+      }
+      if (patch.points !== undefined) p.growthPoints = Math.max(0, patch.points);
+      if (patch.tickets !== undefined) p.tickets = Math.max(0, patch.tickets);
+      state = { ...state, meta: p };
+      saveMeta();
+      publish();
+    },
     showHome() {
       // 전투 중이면 멈춰 두고, 이어하기로 돌아오면 다시 진행한다
       if (state.battle) env.combat?.pause();
@@ -544,6 +643,8 @@ export function createStore(env: StoreEnv) {
         difficulty: state.difficulty,
         firstUid: nextUid + 1,
         runId: `run-${clock()}-${seed >>> 0}`,
+        // 메타 영구 강화: 지금 구매한 단계를 이 원정에 고정(원정 도중 구매는 다음 원정부터)
+        metaLevels: state.meta.upgrades,
       });
       nextUid += created.units.length;
       autoShopCue = null;

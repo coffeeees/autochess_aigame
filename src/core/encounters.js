@@ -1,3 +1,4 @@
+import U from './meta-upgrades.ts';
 import D from './data/units.js';
 import P from './progression.js';
 import M from './meta.ts';
@@ -56,7 +57,7 @@ const difficulty = (level) =>
   difficulties.find((d) => d.level === Number(level)) || difficulties[0];
 function ensureRunDefaults(state) {
   state.difficulty = difficulty(state.difficulty).level;
-  state.maxHealth = 100;
+  state.maxHealth = U.healthCap(state); // 100, S1 원정의 가호(메타)가 있으면 그만큼 높음
   state.winStreak = state.winStreak || 0;
   state.bonusLootLedger = state.bonusLootLedger || {};
   return state;
