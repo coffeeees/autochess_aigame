@@ -316,6 +316,23 @@ rows.push(
     repeat: '원정마다 한 번(같은 원정 ID로는 다시 지급·표시하지 않음).',
     status: '추가 · v0.17.3',
   },
+  {
+    id: 'T47',
+    condition:
+      '기본 장비 두 개를 조합(보관함의 기본 장비 위, 또는 기본 장비를 든 캐릭터에 기본 장비를 놓음)',
+    message: '장비 조합 · 완성 장비 이름(캐릭터에 놓았으면 바로 착용)',
+    source: 'store.ts: dropItem → core/equipment.ts: dropOnUnit · combineInInventory',
+    repeat: '조합할 때마다 1회.',
+    status: '추가 · v0.20.0',
+  },
+  {
+    id: 'T48',
+    condition: '회수기를 장비를 든 캐릭터에 놓아 장비 전부를 보관함으로 되찾음',
+    message: '회수기 사용 · 장비 N개 회수(남은 회수기 M개)',
+    source: 'store.ts: dropRecovery → core/equipment.ts: recover',
+    repeat: '사용할 때마다 1회.',
+    status: '추가 · v0.20.0',
+  },
 );
 rows.find((r) => r.id === 'T38').repeat =
   '이번부터 아군0명은 시작을 차단하며 기존 즉시 패배 경로/알림은 실행하지 않음.';
@@ -341,7 +358,7 @@ function toHTML() {
     escape(behavior) +
     '</p><p>총 ' +
     rows.length +
-    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가5(T42~T46). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
+    '개 처리 결과 · 유지12 / 표시 삭제28 / T28 승인 수정1 / 재구축 추가7(T42~T48). 삭제 행의 조건·문구·연속성 설명은 v0.15.7 조사 이력이며 현재는 표시하지 않습니다.</p><div class="audit-table-scroll"><table><thead><tr>' +
     ['조건 / 사용자 행동', '화면 문구', '관련 코드', '중복·연속 발생 가능성', '현재 상태']
       .map((x) => '<th scope="col">' + x + '</th>')
       .join('') +

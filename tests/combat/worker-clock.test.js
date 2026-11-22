@@ -42,7 +42,7 @@ test('worker normal/boss,1/2/4x, hidden catch-up and manual pause match determin
       });
       installCombatWorker(context);
       const initial = new Battle(
-        [{ id: 'C01', uid: 1, pos: 27, itemIds: ['I28', 'I28'], bonuses: { HP: 800 } }],
+        [{ id: 'C01', uid: 1, pos: 27, itemIds: ['IB04', 'IB04'], bonuses: { HP: 800 } }],
         [{ id: 'E01', pos: 31, star: boss ? 3 : 1, boss }],
         { rng: () => 0.99 },
       );

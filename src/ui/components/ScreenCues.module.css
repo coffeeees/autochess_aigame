@@ -247,3 +247,20 @@
     animation: none;
   }
 }
+/* 회수기로 되찾은 장비가 보관함으로 날아가는 아이콘(v0.20.0) */
+.itemFlight {
+  position: fixed;
+  z-index: 36;
+  padding: 3px;
+  border: 2px solid #6fd3c7;
+  border-radius: var(--radius-md);
+  background: #181d2c;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  box-shadow: 0 0 10px #6fd3c799;
+}
+.itemFlight :global(svg) {
+  width: 100%;
+  height: 100%;
+}

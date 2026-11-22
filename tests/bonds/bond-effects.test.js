@@ -140,15 +140,7 @@ test('성약 post-mitigation transfer is once, no second mitigation/difficulty/o
   near(u.mp, mp);
   a.equal(b.logs.filter((e) => e.attackKind === 'bondTransfer').length, 1);
 });
-test('성약 routed lethal respects I28 then P04 then 윤회 and never loops', () => {
-  const [b, u, x, t] = setup('성약');
-  u.itemIds = ['I28'];
-  u.hp = 1;
-  b.deal(t, x, 100, 'physical', { kind: 'basic' });
-  a.equal(u.hp, 1);
-  a(u.itemState.immortalUsed);
-  a(!u.dead);
-});
+// v0.20.0: 성약 경로의 I28(치명상 방지 장비) 순서 테스트는 그 장비를 지우며 함께 지웠다(P04·윤회 순서는 아래 윤회 테스트)
 test('생명 one pulse per team every5s, lowest ratio+UID and source healing/shield power once', () => {
   const [b, u, x] = setup('생명', 3);
   u.hp = u.stats.HP * 0.5;
@@ -283,7 +275,7 @@ test('old experimental toggle cannot restore28 effects; new combat per battle st
   const z = new Battle(...args, { rng: () => 0.99 });
   a.equal(z.units[0].bondState.attacks, 0);
 });
-test('혈광 includes attributed proc/transfer damage once; 금단 excludes I27 costs/charges', () => {
+test('혈광 includes attributed proc/transfer damage once; 금단 cost/charge once(v0.20.0: I27 장비 지움)', () => {
   const [b, u, x, t] = setup('혈광', 3);
   u.hp = 100;
   t.bondRules.성약 = { share: 0.15 };
@@ -301,7 +293,6 @@ test('혈광 includes attributed proc/transfer damage once; 금단 excludes I27 
   a(u.hp > before);
   const [f, a1, other, e] = setup('금단', 3);
   a1.hp = 500;
-  a1.itemIds = ['I27'];
   f.rng = () => 0;
   e.hp = e.stats.HP = 1e6;
   f.cast(a1, e);
@@ -310,5 +301,5 @@ test('혈광 includes attributed proc/transfer damage once; 금단 excludes I27 
     .filter((l) => l.kind === 'heal' && l.source === a1.uid)
     .reduce((n, l) => n + l.amount, 0);
   near(a1.hp, 475 + ownHeals);
-  a.equal(f.skillUses.C01, 2);
+  a.equal(f.skillUses.C01, 1); // v0.20.0: 예전 I27(무료 추가 스킬) 장비가 없어 한 번
 });

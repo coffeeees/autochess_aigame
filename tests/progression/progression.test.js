@@ -90,7 +90,7 @@ test('미리보기와 전투 능력치가 같고, 명단·적은 바뀌지 않�
   const before = clone(D.roster),
     s = state();
   s.augments = ['training', 'mana'];
-  const item = P.addItem(s, 'I01');
+  const item = P.addItem(s, 'IB01');
   P.equip(s, item.uid, 1);
   const mods = P.allyModifiers(s);
   assert.deepEqual(mods.augmentIds, [], '지운 증강 ID는 전투에 넘기지 않음');
@@ -101,7 +101,7 @@ test('미리보기와 전투 능력치가 같고, 명단·적은 바뀌지 않�
     [{ id: 'C10', pos: 29 }],
     { allyModifiers: mods },
   );
-  near(b.units[0].stats.AD, D.byId('C03').stats.AD + 12);
+  near(b.units[0].stats.AD, D.byId('C03').stats.AD * 1.1); // v0.20.0 낡은 검 AD +10%
   assert.equal(b.units[0].mp, 0);
   const quick = new Battle(s.units, [{ id: 'C10', pos: 29 }], {
     quickMana: true,

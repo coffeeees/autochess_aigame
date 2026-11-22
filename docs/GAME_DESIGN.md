@@ -1,6 +1,6 @@
 # AUTOCHESS 전체 게임 기획·현재 실행 명세
 
-기준 버전: **0.19.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
+기준 버전: **0.20.0**. 0.16.0은 코드 구조(재구축)와 화면 표시를 바꿨고, 0.17.0은 증강을 54종 1차 후보안으로 바꾸고 이전 증강·0.17.0 이전 저장을 지웠고, 0.18.0은 전장을 좌우 대치 8열×7행으로 바꿨고, 0.18.1은 패널 테두리·보드 크기·그림자만 다듬었습니다. 그 밖의 게임 규칙·수치·밸런스는 **0.15.18**과 같습니다(화면·동작 차이는 패치노트의 "재구축 변경 사항" 탭). 원래 조사 기준: **0.15.18** (package.json / dist/patch-notes.js / 화면 표기 대조). 조사 기준 소스는 v0.15.12 커밋 4fc1087634a3743c0459438d9ebd20bb372b3b3c에서 이어진 현재 작업 트리입니다. 작성 기준일: 2026-11-15 (Asia/Seoul). 이번 0.15.18은 상점·보관함·도감의 UI/이미지 표시만 변경했습니다. 보드 이미지와 좌표는 유지합니다. 게임 규칙·밸런스는 유지합니다.
 
 **구분:** [확정 기획] 원문에 명시되거나 이후 사용자 요청으로 승인한 구조/정책. [구현] 현재 실행 경로 존재. [임시] 실행되지만 최종 밸런스 미확정. [미구현] 데이터/계획만 존재. [확인 필요] 승인·의도 또는 현재 검증으로 확정할 수 없는 부분. 구현되었다고 모든 숫자가 최종 확정인 것은 아닙니다.
 
@@ -21,7 +21,7 @@
 
 시작화면→난이도1~10→새원정. 시작7G,Lv3/XP0,무작위서로다른1코스트2명+2코스트1명은 대기석. 초기상점은 무작위가 아니라C02/C04/C09/C10/C11 고정후보입니다. 다음상점부터 레벨확률 사용.
 
-[src/core/run.ts:24](../src/core/run.ts#L24) · `function newRun`, [src/core/preparation.js:268](../src/core/preparation.js#L268) · `function startingRoster`.
+[src/core/run.ts:24](../src/core/run.ts#L24) · `function newRun`, [src/core/preparation.js:262](../src/core/preparation.js#L262) · `function startingRoster`.
 
 | 계층/필드 | 의미 |
 | --- | --- |
@@ -40,7 +40,7 @@
 
 6-5 정산후HP>0이면 종료/계속 선택.종료는complete 상태로기록보존,계속은7-1. HP0은gameover가우선. 이미7+구간인기존세이브는소급팝업없음.7+는동일패턴기록용이며 메타XP미지급을안내하지만 실제메타XP지급은1~6을포함해모두비활성입니다.
 
-[src/core/progression.js:530](../src/core/progression.js#L530) · `function advanceRound`, [src/core/progression.js:553](../src/core/progression.js#L553) · `function chooseCompletion`.
+[src/core/progression.js:535](../src/core/progression.js#L535) · `function advanceRound`, [src/core/progression.js:558](../src/core/progression.js#L558) · `function chooseCompletion`.
 
 ## 3. 난이도·플레이어 체력
 
@@ -62,7 +62,7 @@
 
 적피해배율은적의기본/스킬/DOT/소환공격에적용되며 플레이어패배HP손실배율은아닙니다. 난이도는시작HP가낮아져도최대HP100을유지합니다.
 
-[src/core/encounters.js:14](../src/core/encounters.js#L14) · `const difficulties=`, [src/core/progression.js:459](../src/core/progression.js#L459) · `legacyDamage=`.
+[src/core/encounters.js:15](../src/core/encounters.js#L15) · `const difficulties=`, [src/core/progression.js:463](../src/core/progression.js#L463) · `legacyDamage=`.
 
 ## 4. 전장·준비 조작
 
@@ -70,7 +70,7 @@
 
 동일캐릭터ID는전장1명.클릭정보/드래그이동·교환.빈아군이면실제전투시작차단.1명이상이고정원미달이면확인창과이번원정다시묻지않음.보급/증강/결과확인은이차단대상이아닙니다. 장비는준비단계만조작,캐릭터실제드래그(7px초과)에서양쪽판매영역. v0.18.3: 일반 팝업(영입창·설정·더보기·유대/증강 미리보기·아이템·캐릭터 상세)이 열린 채 대기석·전장 캐릭터나 아이템을 누르고 끌면 팝업을 닫고 같은 누름으로 바로 드래그한다(끌기 시작 때 남은 일반 팝업도 모두 닫음). 움직이지 않고 떼면 팝업 닫기로만 쓰고, 팝업 밖 버튼 클릭도 닫기로만 쓴다. 보급·증강·결과·배치 확인 같은 확인 창은 뒤쪽 입력을 계속 막는다.
 
-[src/core/board.js:5](../src/core/board.js#L5) · `const config=`, [src/core/preparation.js:76](../src/core/preparation.js#L76) · `function moveUnit`, [src/ui/store.ts:417](../src/ui/store.ts#L417) · `function beginBattle`.
+[src/core/board.js:5](../src/core/board.js#L5) · `const config=`, [src/core/preparation.js:77](../src/core/preparation.js#L77) · `function moveUnit`, [src/ui/store.ts:425](../src/ui/store.ts#L425) · `function beginBattle`.
 
 ## 5. 경제·상점·합성
 
@@ -99,7 +99,7 @@
 
 보유3성ID는상점풀에서제외(새로 뽑을 때만),판매후복귀. v0.18.3(사용자 요청): 구매로 3성이 돼도 이미 떠 있는 같은 캐릭터 후보와 잠근 후보는 바꾸지 않고 그대로 살 수 있다(1성으로 들어옴, 구매한 칸만 빈칸). 상점 칸 밖의 영입(도감 무료 영입)은 3성 보유면 T04로 거절. 다음 라운드 준비에 들어갈 때마다 영입창을 한 번 자동으로 연다(v0.18.4 사용자 정정: 같은 구간 안 이동·증강 선택 뒤 포함. ROUND·STAGE 안내 뒤, 새 원정 1-1·원정 종료·불러오기·화면 복귀로는 열지 않음). 영입창은 0.2초 동안 위에서 아래로 펼쳐지며 열린다(카드는 왼쪽부터 25ms 간격). 1회성잠금은다음노드의후보/매진빈칸유지후해제.수동리롤성공시해제,돈부족등실패시상태유지.증강이끼면shopCarry로목적지까지이월.추천은최대3개,확률에는영향없음.
 
-[src/core/progression.js:381](../src/core/progression.js#L381) · `function settleRound`, [src/core/shop.ts:61](../src/core/shop.ts#L61) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:197](../src/core/preparation.js#L197) · `function enterShop`.
+[src/core/progression.js:382](../src/core/progression.js#L382) · `function settleRound`, [src/core/shop.ts:61](../src/core/shop.ts#L61) · `function salePrice`, [src/core/merge.ts:29](../src/core/merge.ts#L29) · `function mergeAll`, [src/core/preparation.js:198](../src/core/preparation.js#L198) · `function enterShop`.
 
 ### 레벨별 원본 코스트 가중치와 현재 출현율
 
@@ -119,7 +119,7 @@
 | 10 | 5 | 10 | 20 | 40 | 25 | 5 | 10 | 20 |
 
 
-[src/core/preparation.js:158](../src/core/preparation.js#L158) · `const baseOdds=`.
+[src/core/preparation.js:159](../src/core/preparation.js#L159) · `const baseOdds=`.
 
 ## 6. 인게임 레벨·메타 레벨
 
@@ -192,7 +192,7 @@
 | S7 | 전투의 축복 | Lv.50 | 5 | 매 전투 동안 모든 아군 GD +2 | 매 전투 동안 모든 아군 GD +10 |
 | S8 | 원정 보험 | Lv.70 | 4 | 원정마다 HP를 잃는 첫 1번의 패배에서 손실 HP −1 (캐릭터 부활 아님) | 원정마다 HP를 잃는 첫 4번의 패배에서 손실 HP −1 (캐릭터 부활 아님) |
 
-[src/core/progression.js:132](../src/core/progression.js#L132) · `function addXp`, [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY`, [src/core/meta.ts:178](../src/core/meta.ts#L178) · `export function settleRun`.
+[src/core/progression.js:147](../src/core/progression.js#L147) · `function addXp`, [src/core/meta.ts:5](../src/core/meta.ts#L5) · `META_KEY`, [src/core/meta.ts:178](../src/core/meta.ts#L178) · `export function settleRun`.
 
 ## 7. 전투 판정 상세(구현된 임시 수치 포함)
 
@@ -219,7 +219,7 @@
 
 DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시간갱신(일부amount갱신),다른시전자DOT중첩.시전자사망후에도units에남아있어기존DOT는지속할수있습니다. harmful상태하나정화는배열의첫항목.
 
-[src/core/combat/battle.js:571](../src/core/combat/battle.js#L571) · `tick(dt=`, [src/core/combat/battle.js:242](../src/core/combat/battle.js#L242) · `deal(source,target`, [src/core/combat/battle.js:211](../src/core/combat/battle.js#L211) · `heal(target,amount`, [src/core/items.js:561](../src/core/items.js#L561) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
+[src/core/combat/battle.js:572](../src/core/combat/battle.js#L572) · `tick(dt=`, [src/core/combat/battle.js:243](../src/core/combat/battle.js#L243) · `deal(source,target`, [src/core/combat/battle.js:212](../src/core/combat/battle.js#L212) · `heal(target,amount`, [src/core/items.js:565](../src/core/items.js#L565) · `function applyStats`, [src/core/augments.js:349](../src/core/augments.js#L349) · `function applyStats`.
 
 ### 전투 공통 임시 설정 원문값
 
@@ -249,7 +249,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 보스노드의첫유닛에boss표시가붙지만전용HP/AD배율이나별도보스스킬분기는확인되지않습니다. 적배치는고정전열/후열목록. encounter는키당캐시해리렌더/재접속시재추첨하지않습니다.
 
-전투마다10%로적1명이E99보물슬라임으로교체.처치관여source가아군일때1회만장부지급:40%전체40종균등아이템/60%3~5G균등.보급의티어분포와다른추첨입니다. 소환수사망은보너스제외.
+전투마다10%로적1명이E99보물슬라임으로교체.처치관여source가아군일때1회만장부지급:40%기본 장비 8종 균등(v0.20.0)/60%3~5G균등. 소환수사망은보너스제외.
 
 | 적ID | 이름 | 재사용스킬 | HP | MP | AD | AP | GD |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -264,7 +264,7 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 | E99 | 보물 슬라임 | C10 | 650 | 100 | 35 | 20 | 20 |
 
 
-[src/core/encounters.js:83](../src/core/encounters.js#L83) · `function encounter`, [src/core/encounters.js:76](../src/core/encounters.js#L76) · `function stageStars`, [src/core/encounters.js:112](../src/core/encounters.js#L112) · `function claimBonusLoot`.
+[src/core/encounters.js:84](../src/core/encounters.js#L84) · `function encounter`, [src/core/encounters.js:77](../src/core/encounters.js#L77) · `function stageStars`, [src/core/encounters.js:113](../src/core/encounters.js#L113) · `function claimBonusLoot`.
 
 ## 9. 테마 유대16종 · 임시 밸런스 v1
 
@@ -314,9 +314,9 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:144](../src/core/data/units.js#L144) · `C01:`, [src/core/combat/skills/cost1.js:6](../src/core/combat/skills/cost1.js#L6) · `C01(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:196](../src/core/data/units.js#L196) · `C01:`, [src/core/combat/skills/cost1.js:6](../src/core/combat/skills/cost1.js#L6) · `C01(u, target, s)`.
 
-### C02 · 아즈칼
+### C02 · 아젤리아
 
 - 1G · 마족 / 소환사 / 독
 - 유대: 심연 / 금단
@@ -332,9 +332,9 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 역병충 HP180×성급배율,AS0.8,RNG1,8초,최대2,AD=시전자AP×0.4. 독=AP×0.12/초×3초(임시).
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:149](../src/core/data/units.js#L149) · `C02:`, [src/core/combat/skills/cost1.js:10](../src/core/combat/skills/cost1.js#L10) · `C02(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:201](../src/core/data/units.js#L201) · `C02:`, [src/core/combat/skills/cost1.js:10](../src/core/combat/skills/cost1.js#L10) · `C02(u, target, s)`.
 
-### C03 · 태건
+### C03 · 하린
 
 - 1G · 인간 / 전사 / 암흑
 - 유대: 철혈 / 윤회
@@ -350,9 +350,9 @@ DOT는대체로1초간격,마지막유효틱포함.같은key+source는지속시�
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:154](../src/core/data/units.js#L154) · `C03:`, [src/core/combat/skills/cost1.js:13](../src/core/combat/skills/cost1.js#L13) · `C03(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:206](../src/core/data/units.js#L206) · `C03:`, [src/core/combat/skills/cost1.js:13](../src/core/combat/skills/cost1.js#L13) · `C03(u, target, s)`.
 
-### C04 · 리엔
+### C04 · 시온
 
 - 1G · 엘프 / 암살자 / 번개
 - 유대: 월하 / 무극
@@ -368,9 +368,9 @@ AD 200% 물리 피해, 이 공격의 치명타 확률 +20%p. 치명타 시 AD 50
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:159](../src/core/data/units.js#L159) · `C04:`, [src/core/combat/skills/cost1.js:17](../src/core/combat/skills/cost1.js#L17) · `C04(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:211](../src/core/data/units.js#L211) · `C04:`, [src/core/combat/skills/cost1.js:17](../src/core/combat/skills/cost1.js#L17) · `C04(u, target, s)`.
 
-### C05 · 루아
+### C05 · 수련
 
 - 1G · 엘프 / 주술사 / 물
 - 유대: 생명 / 운명
@@ -386,9 +386,9 @@ HP 비율이 가장 낮은 아군 AP 180% 회복. 해로운 상태이상 1개 �
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:164](../src/core/data/units.js#L164) · `C05:`, [src/core/combat/skills/cost1.js:24](../src/core/combat/skills/cost1.js#L24) · `C05(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:216](../src/core/data/units.js#L216) · `C05:`, [src/core/combat/skills/cost1.js:24](../src/core/combat/skills/cost1.js#L24) · `C05(u, target, s)`.
 
-### C06 · 카인
+### C06 · 카즈하
 
 - 1G · 마족 / 암살자 / 바람
 - 유대: 월하 / 무극
@@ -404,9 +404,9 @@ HP 비율이 가장 낮은 아군 AP 180% 회복. 해로운 상태이상 1개 �
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:169](../src/core/data/units.js#L169) · `C06:`, [src/core/combat/skills/cost1.js:37](../src/core/combat/skills/cost1.js#L37) · `C06(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:221](../src/core/data/units.js#L221) · `C06:`, [src/core/combat/skills/cost1.js:37](../src/core/combat/skills/cost1.js#L37) · `C06(u, target, s)`.
 
-### C07 · 유하
+### C07 · 서아
 
 - 1G · 인간 / 궁수 / 번개
 - 유대: 아르카나 / 운명
@@ -422,9 +422,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 사용자승인:전장내주대상거리/UID순다른적최대2,각AD70%마법.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:174](../src/core/data/units.js#L174) · `C07:`, [src/core/combat/skills/cost1.js:50](../src/core/combat/skills/cost1.js#L50) · `C07(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:226](../src/core/data/units.js#L226) · `C07:`, [src/core/combat/skills/cost1.js:50](../src/core/combat/skills/cost1.js#L50) · `C07(u, target, s)`.
 
-### C08 · 벨모르
+### C08 · 벨로아
 
 - 1G · 언데드 / 마법사 / 물
 - 유대: 심연 / 금단
@@ -440,9 +440,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:179](../src/core/data/units.js#L179) · `C08:`, [src/core/combat/skills/cost1.js:86](../src/core/combat/skills/cost1.js#L86) · `C08(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:231](../src/core/data/units.js#L231) · `C08:`, [src/core/combat/skills/cost1.js:86](../src/core/combat/skills/cost1.js#L86) · `C08(u, target, s)`.
 
-### C09 · 라칸
+### C09 · 류화
 
 - 1G · 용족 / 전사 / 바람
 - 유대: 천명 / 무극
@@ -458,9 +458,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 기존BFS돌진,칸당시전지연0.12초.막히면인접도달한경우만공격.
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:184](../src/core/data/units.js#L184) · `C09:`, [src/core/combat/skills/cost1.js:90](../src/core/combat/skills/cost1.js#L90) · `C09(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:236](../src/core/data/units.js#L236) · `C09:`, [src/core/combat/skills/cost1.js:90](../src/core/combat/skills/cost1.js#L90) · `C09(u, target, s)`.
 
-### C10 · 울프릭
+### C10 · 발테른
 
 - 1G · 수인 / 기사 / 대지
 - 유대: 철혈 / 왕권
@@ -476,9 +476,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:189](../src/core/data/units.js#L189) · `C10:`, [src/core/combat/skills/cost1.js:108](../src/core/combat/skills/cost1.js#L108) · `C10(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:241](../src/core/data/units.js#L241) · `C10:`, [src/core/combat/skills/cost1.js:108](../src/core/combat/skills/cost1.js#L108) · `C10(u, target, s)`.
 
-### C11 · 둔가르
+### C11 · 브린다
 
 - 1G · 드워프 / 소환사 / 화염
 - 유대: 공명 / 심연
@@ -494,9 +494,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 화염정령 HP220×성급배율,AS0.7,RNG3,8초,최대1.소멸폭발반경2(임시).
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:194](../src/core/data/units.js#L194) · `C11:`, [src/core/combat/skills/cost1.js:123](../src/core/combat/skills/cost1.js#L123) · `C11(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:246](../src/core/data/units.js#L246) · `C11:`, [src/core/combat/skills/cost1.js:123](../src/core/combat/skills/cost1.js#L123) · `C11(u, target, s)`.
 
-### C12 · 엘리엘
+### C12 · 에르시아
 
 - 1G · 천족 / 기사 / 독
 - 유대: 성약 / 천명
@@ -512,9 +512,9 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 
 
-근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:199](../src/core/data/units.js#L199) · `C12:`, [src/core/combat/skills/cost1.js:126](../src/core/combat/skills/cost1.js#L126) · `C12(u, target, s)`.
+근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/units.js:251](../src/core/data/units.js#L251) · `C12:`, [src/core/combat/skills/cost1.js:126](../src/core/combat/skills/cost1.js#L126) · `C12(u, target, s)`.
 
-### C13 · 브룬
+### C13 · 브리엘
 
 - 2G · 드워프 / 마법사 / 빙결
 - 유대: 공명 / 왕권
@@ -532,7 +532,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:4](../src/core/data/higher-cost-drafts.js#L4) · `"id": "C13"`, [src/core/combat/skills/cost2.js:6](../src/core/combat/skills/cost2.js#L6) · `C13(u, target, s)`.
 
-### C14 · 적호
+### C14 · 연호
 
 - 2G · 용족 / 무도가 / 화염
 - 유대: 혈광 / 무극
@@ -550,7 +550,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:33](../src/core/data/higher-cost-drafts.js#L33) · `"id": "C14"`, [src/core/combat/skills/cost2.js:13](../src/core/combat/skills/cost2.js#L13) · `C14(u, target, s)`.
 
-### C15 · 베스퍼
+### C15 · 베스페라
 
 - 2G · 드워프 / 사제 / 암흑
 - 유대: 성약 / 윤회
@@ -568,7 +568,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:62](../src/core/data/higher-cost-drafts.js#L62) · `"id": "C15"`, [src/core/combat/skills/cost2.js:17](../src/core/combat/skills/cost2.js#L17) · `C15(u, target, s)`.
 
-### C16 · 토비
+### C16 · 코하루
 
 - 2G · 수인 / 소환사 / 번개
 - 유대: 공명 / 운명
@@ -586,7 +586,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:91](../src/core/data/higher-cost-drafts.js#L91) · `"id": "C16"`, [src/core/combat/skills/cost2.js:32](../src/core/combat/skills/cost2.js#L32) · `C16(u, target, s)`.
 
-### C17 · 이그니스
+### C17 · 이그니아
 
 - 2G · 엘프 / 전사 / 혈마법
 - 유대: 혈광 / 금단
@@ -604,7 +604,7 @@ AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:123](../src/core/data/higher-cost-drafts.js#L123) · `"id": "C17"`, [src/core/combat/skills/cost2.js:35](../src/core/combat/skills/cost2.js#L35) · `C17(u, target, s)`.
 
-### C18 · 아우라
+### C18 · 아리에
 
 - 2G · 정령 / 사제 / 신성
 - 유대: 생명 / 윤회
@@ -622,7 +622,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:153](../src/core/data/higher-cost-drafts.js#L153) · `"id": "C18"`, [src/core/combat/skills/cost2.js:40](../src/core/combat/skills/cost2.js#L40) · `C18(u, target, s)`.
 
-### C19 · 설아
+### C19 · 유키
 
 - 2G · 천족 / 주술사 / 빙결
 - 유대: 생명 / 왕권
@@ -640,7 +640,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:182](../src/core/data/higher-cost-drafts.js#L182) · `"id": "C19"`, [src/core/combat/skills/cost2.js:47](../src/core/combat/skills/cost2.js#L47) · `C19(u, target, s)`.
 
-### C20 · 진무
+### C20 · 현무
 
 - 2G · 인간 / 무도가 / 혈마법
 - 유대: 혈광 / 금단
@@ -658,7 +658,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:214](../src/core/data/higher-cost-drafts.js#L214) · `"id": "C20"`, [src/core/combat/skills/cost2.js:57](../src/core/combat/skills/cost2.js#L57) · `C20(u, target, s)`.
 
-### C21 · 오르페
+### C21 · 오필리아
 
 - 2G · 마족 / 마법사 / 신성
 - 유대: 아르카나 / 심연
@@ -676,7 +676,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:244](../src/core/data/higher-cost-drafts.js#L244) · `"id": "C21"`, [src/core/combat/skills/cost2.js:69](../src/core/combat/skills/cost2.js#L69) · `C21(u, target, s)`.
 
-### C22 · 골룸바
+### C22 · 초아
 
 - 2G · 정령 / 전사 / 대지
 - 유대: 철혈 / 천명
@@ -694,7 +694,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:273](../src/core/data/higher-cost-drafts.js#L273) · `"id": "C22"`, [src/core/combat/skills/cost2.js:77](../src/core/combat/skills/cost2.js#L77) · `C22(u, target, s)`.
 
-### C23 · 로제트
+### C23 · 로젤린
 
 - 2G · 엘프 / 기사 / 화염
 - 유대: 철혈 / 왕권
@@ -712,7 +712,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:302](../src/core/data/higher-cost-drafts.js#L302) · `"id": "C23"`, [src/core/combat/skills/cost2.js:89](../src/core/combat/skills/cost2.js#L89) · `C23(u, target, s)`.
 
-### C24 · 유키나
+### C24 · 설린
 
 - 3G · 엘프 / 사제 / 빙결
 - 유대: 성약 / 흑월
@@ -730,7 +730,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:334](../src/core/data/higher-cost-drafts.js#L334) · `"id": "C24"`, [src/core/combat/skills/cost3.js:6](../src/core/combat/skills/cost3.js#L6) · `C24(u, target, s)`.
 
-### C25 · 지그
+### C25 · 제르온
 
 - 3G · 정령 / 마법사 / 번개
 - 유대: 아르카나 / 공명
@@ -748,7 +748,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:366](../src/core/data/higher-cost-drafts.js#L366) · `"id": "C25"`, [src/core/combat/skills/cost3.js:16](../src/core/combat/skills/cost3.js#L16) · `C25(u, target, s)`.
 
-### C26 · 흐로드
+### C26 · 모르가나
 
 - 3G · 언데드 / 전사 / 빙결
 - 유대: 흑월 / 윤회
@@ -766,7 +766,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:395](../src/core/data/higher-cost-drafts.js#L395) · `"id": "C26"`, [src/core/combat/skills/cost3.js:29](../src/core/combat/skills/cost3.js#L29) · `C26(u, target, s)`.
 
-### C27 · 비올라
+### C27 · 비엘라
 
 - 3G · 엘프 / 궁수 / 독
 - 유대: 월하 / 종언
@@ -784,7 +784,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:424](../src/core/data/higher-cost-drafts.js#L424) · `"id": "C27"`, [src/core/combat/skills/cost3.js:34](../src/core/combat/skills/cost3.js#L34) · `C27(u, target, s)`.
 
-### C28 · 시그룬
+### C28 · 사야
 
 - 3G · 언데드 / 암살자 / 암흑
 - 유대: 종언 / 흑월
@@ -802,7 +802,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:453](../src/core/data/higher-cost-drafts.js#L453) · `"id": "C28"`, [src/core/combat/skills/cost3.js:38](../src/core/combat/skills/cost3.js#L38) · `C28(u, target, s)`.
 
-### C29 · 카르도
+### C29 · 카르디아
 
 - 3G · 마족 / 궁수 / 대지
 - 유대: 종언 / 천명
@@ -820,7 +820,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:485](../src/core/data/higher-cost-drafts.js#L485) · `"id": "C29"`, [src/core/combat/skills/cost3.js:54](../src/core/combat/skills/cost3.js#L54) · `C29(u, target, s)`.
 
-### C30 · 네레이드
+### C30 · 네리온
 
 - 3G · 마족 / 기사 / 물
 - 유대: 성약 / 생명
@@ -838,7 +838,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:514](../src/core/data/higher-cost-drafts.js#L514) · `"id": "C30"`, [src/core/combat/skills/cost3.js:58](../src/core/combat/skills/cost3.js#L58) · `C30(u, target, s)`.
 
-### C31 · 홍련
+### C31 · 홍아
 
 - 3G · 수인 / 암살자 / 화염
 - 유대: 혈광 / 월하
@@ -856,7 +856,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:543](../src/core/data/higher-cost-drafts.js#L543) · `"id": "C31"`, [src/core/combat/skills/cost3.js:66](../src/core/combat/skills/cost3.js#L66) · `C31(u, target, s)`.
 
-### C32 · 제피로
+### C32 · 청하
 
 - 3G · 인간 / 마법사 / 바람
 - 유대: 아르카나 / 공명
@@ -874,7 +874,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:572](../src/core/data/higher-cost-drafts.js#L572) · `"id": "C32"`, [src/core/combat/skills/cost3.js:70](../src/core/combat/skills/cost3.js#L70) · `C32(u, target, s)`.
 
-### C33 · 아그니
+### C33 · 아그란
 
 - 3G · 인간 / 주술사 / 화염
 - 유대: 아르카나 / 운명
@@ -892,7 +892,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:604](../src/core/data/higher-cost-drafts.js#L604) · `"id": "C33"`, [src/core/combat/skills/cost3.js:82](../src/core/combat/skills/cost3.js#L82) · `C33(u, target, s)`.
 
-### C34 · 아스텔
+### C34 · 아스테리아
 
 - 4G · 인간 / 사제 / 물
 - 유대: 생명 / 윤회
@@ -910,7 +910,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:636](../src/core/data/higher-cost-drafts.js#L636) · `"id": "C34"`, [src/core/combat/skills/cost4.js:6](../src/core/combat/skills/cost4.js#L6) · `C34(u, target, s)`.
 
-### C35 · 메두라
+### C35 · 미호
 
 - 4G · 수인 / 마법사 / 독
 - 유대: 심연 / 금단
@@ -928,7 +928,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:665](../src/core/data/higher-cost-drafts.js#L665) · `"id": "C35"`, [src/core/combat/skills/cost4.js:14](../src/core/combat/skills/cost4.js#L14) · `C35(u, target, s)`.
 
-### C36 · 참월
+### C36 · 월영
 
 - 4G · 드워프 / 암살자 / 대지
 - 유대: 철혈 / 성약
@@ -946,7 +946,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:694](../src/core/data/higher-cost-drafts.js#L694) · `"id": "C36"`, [src/core/combat/skills/cost4.js:20](../src/core/combat/skills/cost4.js#L20) · `C36(u, target, s)`.
 
-### C37 · 카르미나
+### C37 · 카르넬리아
 
 - 4G · 천족 / 궁수 / 혈마법
 - 유대: 월하 / 천명
@@ -964,7 +964,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:723](../src/core/data/higher-cost-drafts.js#L723) · `"id": "C37"`, [src/core/combat/skills/cost4.js:24](../src/core/combat/skills/cost4.js#L24) · `C37(u, target, s)`.
 
-### C38 · 오르딘
+### C38 · 오르델리아
 
 - 4G · 언데드 / 소환사 / 신성
 - 유대: 윤회 / 금단
@@ -982,7 +982,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:753](../src/core/data/higher-cost-drafts.js#L753) · `"id": "C38"`, [src/core/combat/skills/cost4.js:28](../src/core/combat/skills/cost4.js#L28) · `C38(u, target, s)`.
 
-### C39 · 글라시아
+### C39 · 글라디온
 
 - 4G · 정령 / 기사 / 빙결
 - 유대: 생명 / 왕권
@@ -1000,7 +1000,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:785](../src/core/data/higher-cost-drafts.js#L785) · `"id": "C39"`, [src/core/combat/skills/cost4.js:32](../src/core/combat/skills/cost4.js#L32) · `C39(u, target, s)`.
 
-### C40 · 월하
+### C40 · 카구야
 
 - 4G · 엘프 / 무도가 / 암흑
 - 유대: 종언 / 흑월
@@ -1018,7 +1018,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:817](../src/core/data/higher-cost-drafts.js#L817) · `"id": "C40"`, [src/core/combat/skills/cost4.js:36](../src/core/combat/skills/cost4.js#L36) · `C40(u, target, s)`.
 
-### C41 · 뇌진
+### C41 · 뇌화
 
 - 4G · 마족 / 전사 / 번개
 - 유대: 혈광 / 무극
@@ -1036,7 +1036,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:846](../src/core/data/higher-cost-drafts.js#L846) · `"id": "C41"`, [src/core/combat/skills/cost4.js:44](../src/core/combat/skills/cost4.js#L44) · `C41(u, target, s)`.
 
-### C42 · 바하무트
+### C42 · 바하리아
 
 - 5G · 드워프 / 주술사 / 바람
 - 유대: 공명 / 운명
@@ -1054,7 +1054,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:878](../src/core/data/higher-cost-drafts.js#L878) · `"id": "C42"`, [src/core/combat/skills/cost5.js:6](../src/core/combat/skills/cost5.js#L6) · `C42(u, target, s)`.
 
-### C43 · 라이진
+### C43 · 라이카
 
 - 5G · 언데드 / 무도가 / 번개
 - 유대: 무극 / 금단
@@ -1072,7 +1072,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:907](../src/core/data/higher-cost-drafts.js#L907) · `"id": "C43"`, [src/core/combat/skills/cost5.js:12](../src/core/combat/skills/cost5.js#L12) · `C43(u, target, s)`.
 
-### C44 · 백야
+### C44 · 백련
 
 - 5G · 인간 / 암살자 / 빙결
 - 유대: 혈광 / 흑월
@@ -1090,7 +1090,7 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:936](../src/core/data/higher-cost-drafts.js#L936) · `"id": "C44"`, [src/core/combat/skills/cost5.js:17](../src/core/combat/skills/cost5.js#L17) · `C44(u, target, s)`.
 
-### C45 · 아바돈
+### C45 · 아바르크
 
 - 5G · 용족 / 궁수 / 암흑
 - 유대: 종언 / 흑월
@@ -1108,89 +1108,67 @@ HP 비율이 가장 낮은 아군에게 180% AP 회복과 120% AP 보호막(4초
 
 근거: [src/core/data/units.js:68](../src/core/data/units.js#L68) · `const roster=`, [src/core/data/higher-cost-drafts.js:968](../src/core/data/higher-cost-drafts.js#L968) · `"id": "C45"`, [src/core/combat/skills/cost5.js:39](../src/core/combat/skills/cost5.js#L39) · `C45(u, target, s)`.
 
-## 11. 장비40종·획득·장착
+## 11. 장비(기본 8종 + 완성 36종)·획득·조합·회수기
 
-일반보관함기본12칸(2열6행),초과시행추가·스크롤,별도고정상한없음.특수2칸은예약UI/실제아이템기능없음.캐릭터당3칸. T1/T2/T3모두동일ID중복가능. 같은ID 고유효과는 장착자당 기존1회 판정,기본수치는개수만큼합산. 장착·이동·무료회수는준비단계만.합성소모/판매장비는반환.휴지통은미장착만삭제,마지막삭제1개복원가능.
+v0.20.0 장비 개편(요청서 AUTOCHESS_ITEM_REWORK_AND_RENAME_2026-11-23). 예전 1~3티어 40종(I01~I40)은 지웠다. **이름·수치·고유 효과는 모두 1차 테스트안(임시값)**이다.
 
-보급4개서로다른ID제시→슬롯2개선택→확정. 각후보는독립티어추첨후이미뽑은ID제외. 보스승리확정아이템1개(stage1T1,2~4T2,5+T3),패배없음.
+- 체계: 기본 장비 8종(IB01~IB08)과, 기본 장비 두 개를 합친 완성 장비 36종(IC01~IC36). 같은 기본 장비끼리도 조합되고 재료 순서와 무관. 완성 장비는 다시 조합하지 않음. 완성 장비는 두 재료 능력치를 100% 이어받고 고유 효과 1개(일부는 추가 능력치)를 더한다.
+- 능력치: HP·AD·AP·AS는 %(같은 능력치끼리 더해 성급 배율 뒤 한 번 곱함), GD는 고정값, CTC·DOD·CTH는 %p, MP 획득량은 %(최대 MP는 그대로). 메타 강화 S3(장비 숙련)는 이 수치들에 +x%.
+- 장착: 캐릭터당 3칸. 한 캐릭터에 기본 장비는 최대 1개 — 기본 장비를 든 캐릭터에 기본 장비를 놓으면 그 자리에서 완성 장비로 합쳐져 바로 착용(빈 칸이 없어도 됨). 완성 3개면 더 못 놓음. 보관함의 기본 장비 위에 기본 장비를 놓으면 보관함에서 조합(보관함 빈 곳은 그대로). 드래그 중 조합할 자리 위에서는 결과 장비의 이름·능력치·고유 효과를 미리 보여 주고, 놓을 때만 조합한다. 같은 완성 장비 여러 개 착용 허용, 효과는 개수만큼 더함(사용자 결정 2026-11-23). 회피·치명타 확률 상한은 따로 없음(치명타는 전투 기본 규칙대로 100%까지). 장착·조합·회수는 준비 단계에서만.
+- 회수: 장착한 장비를 떼는 무료 회수는 없다. 특수 칸의 **회수기** 1개를 장비를 든 캐릭터에 놓으면 그 캐릭터의 장비 전부(1~3개)를 그대로(ID·UID 유지, 분해 없음) 보관함으로 되찾는다. 장비 없는 캐릭터에 놓거나 취소하면 소모 없음. 회수기는 새 원정 2개, 보스 승리마다 장비·골드 보상과 따로 40% 확률로 추가(얻으면 1개 75% / 2개 25%, 사용자 결정 2026-11-23, 테스트용 임시값). 회수 때 장비 아이콘이 캐릭터에서 보관함 칸으로 100ms 간격·개당 500ms로 날아가고 도착 칸이 빛난다(움직임 줄이기면 생략, 저장은 즉시).
+- 캐릭터가 판매되거나 합성 재료로 사라지면 장착 장비는 예전처럼 보관함으로(사용자 결정 2026-11-23).
+- 보관함: 일반 12칸(2열 6행), 넘치면 스크롤. 특수 2칸 중 첫 칸이 회수기(수량 표시), 둘째 칸은 확장용(비어 있음). 휴지통은 보관함 장비만, 마지막 1개 되돌리기.
+- 획득: 보급은 매번 기본 장비 8종 중 서로 다른 4개 제시 → 2개 선택(완성 장비 직접 지급 없음). 보스 승리 확정 장비 1개(기본 장비), 패배는 없음. 증강·보너스 몬스터의 장비 지급은 경로·조건·개수 그대로, 지급 장비만 기본 장비. 정규 1~6라운드 보급 7회 14개 + 보스 6개 = 20개.
+- 고유 효과 판정(1차 테스트안): 추가 공격·추가 피해(장비 발동)는 다시 추가 공격·추가 피해를 만들지 않음. 보호막·회복의 지속 시간과 발동 간격은 정해지지 않아 보호막은 전투 끝까지로 둠. 소환수에는 장비 효과 없음. 기본 공격/스킬의 물리·마법 구분과 GD 계산식은 그대로.
 
-| stage | T1% | T2% | T3% |
-| --- | --- | --- | --- |
-| 1 | 100 | 0 | 0 |
-| 2 | 70 | 30 | 0 |
-| 3 | 50 | 40 | 10 |
-| 4 | 30 | 50 | 20 |
-| 5 | 0 | 30 | 70 |
-| 6이후 | 0 | 0 | 100 |
-
-
-| ID | 이름 | 티어 | 능력치 | 고유효과 |
+| ID | 이름 | 종류(재료) | 능력치 | 고유 효과 |
 | --- | --- | --- | --- | --- |
-| I01 | 강철 장검 | 1 | AD +12 | 고유효과없음(스탯만) |
-| I02 | 견고한 흉갑 | 1 | GD +12 | 고유효과없음(스탯만) |
-| I03 | 마력 수정구 | 1 | AP +15 | 고유효과없음(스탯만) |
-| I04 | 생명의 목걸이 | 1 | HP +150 | 고유효과없음(스탯만) |
-| I05 | 신속의 장갑 | 1 | AS +12% | 고유효과없음(스탯만) |
-| I06 | 정밀한 조준경 | 1 | CTC +10%p | 고유효과없음(스탯만) |
-| I07 | 현자의 부적 | 1 | 최대 MP +20 | 고유효과없음(스탯만) |
-| I08 | 회피의 망토 | 1 | DOD +8%p | 고유효과없음(스탯만) |
-| I09 | 파괴자의 반지 | 1 | CTH +25%p (예: 150%→175%) | 고유효과없음(스탯만) |
-| I10 | 장거리 사수의 깃털 | 1 | RNG +1칸 | 고유효과없음(스탯만) |
-| I11 | 광전사의 도끼 | 2 | AD +18, AS +15% | 고유효과없음(스탯만) |
-| I12 | 룬 각인 지팡이 | 2 | AP +25, 최대 MP +20 | 고유효과없음(스탯만) |
-| I13 | 수호자의 판금갑옷 | 2 | HP +220, GD +18 | 고유효과없음(스탯만) |
-| I14 | 그림자 단검 | 2 | AD +20, CTC +12%p | 고유효과없음(스탯만) |
-| I15 | 폭풍의 활 | 2 | AD +15, RNG +1칸 | 고유효과없음(스탯만) |
-| I16 | 비전의 로브 | 2 | AP +20, GD +15 | 고유효과없음(스탯만) |
-| I17 | 불굴의 방패 | 2 | HP +300, DOD +5%p | 고유효과없음(스탯만) |
-| I18 | 치유사의 성배 | 2 | AP +25, HP +150 | 고유효과없음(스탯만) |
-| I19 | 질풍의 장화 | 2 | AS +18%, DOD +8%p | 고유효과없음(스탯만) |
-| I20 | 처형자의 가면 | 2 | AD +20, CTH +30%p | 고유효과없음(스탯만) |
-| I21 | 마나 증폭기 | 2 | AP +30, 최대 MP +30 | 고유효과없음(스탯만) |
-| I22 | 용비늘 갑주 | 2 | GD +22, HP +200 | 고유효과없음(스탯만) |
-| I23 | 독사의 송곳니 | 2 | AD +15, AP +20 | 고유효과없음(스탯만) |
-| I24 | 전장의 휘장 | 2 | AD +15, GD +15 | 고유효과없음(스탯만) |
-| I25 | 별빛의 관 | 2 | AP +20, CTC +10%p | 고유효과없음(스탯만) |
-| I26 | 뇌신의 심장 | 3 | AD +25, AS +15% | 기본 공격 적중 시 25% 확률로 대상 주변의 다른 적 최대 2명에게 **장착자 AD의 60%** 마법 피해. |
-| I27 | 대마법사의 왕관 | 3 | AP +40, 최대 MP +20 | 스킬 사용 시 25% 확률로 동일 스킬을 마나 소모 없이 1회 추가 발동. 추가 발동은 이 효과를 다시 발동시키지 않음. |
-| I28 | 불멸자의 갑옷 | 3 | HP +350, GD +25 | 전투당 1회, 치명적 피해를 받을 때 HP 1로 생존하고 최대 HP 30%의 보호막을 4초 획득. |
-| I29 | 피의 계약검 | 3 | AD +30, HP +200 | 기본 공격으로 실제 입힌 피해의 20%만큼 장착자 HP 회복. |
-| I30 | 시간의 모래시계 | 3 | AP +30, 최대 MP +30 | 스킬 사용 3초 후 최대 MP의 30% 회복. 발동 재사용 대기시간 8초. |
-| I31 | 망령 군주의 인장 | 3 | AP +35, HP +150 | 장착자가 소환한 유닛의 공격 피해량 +30%, 지속시간 +40%. |
-| I32 | 지옥불의 검 | 3 | AD +30, AP +25 | 기본 공격 적중 시 대상에게 4초 동안 매초 장착자 AP의 25% 마법 피해를 주는 화상 부여. |
-| I33 | 영원의 서리 | 3 | AP +35, GD +20 | 스킬로 피해를 입힌 적의 AS 3초간 -25%. 같은 대상에게 이 효과 3회 적용 시 1초 기절. |
-| I34 | 사신의 조준경 | 3 | AD +35, CTC +15%p | 기본 공격 적중 대상의 HP가 25% 이하일 때 해당 공격 피해량 +50%. |
-| I35 | 성자의 축복 | 3 | AP +35, HP +250 | 장착자의 치유 스킬 효과 +30%. 아군을 치유하면 대상에게 실제 치유량의 25%만큼 3초 보호막 부여. |
-| I36 | 폭풍 군주의 망토 | 3 | AS +25%, DOD +12%p | 공격 회피 성공 시 4초간 AS +20%. 재사용 대기시간 6초. |
-| I37 | 대지 수호자의 방패 | 3 | HP +400, GD +30 | 전투 시작 시 자신과 인접한 아군에게 장착자 최대 HP 15%의 보호막을 6초 부여. |
-| I38 | 광란의 쌍검 | 3 | AD +25, AS +20% | 동일 적을 연속 기본 공격할 때마다 AS +5%, 최대 8중첩. 공격 대상 변경 시 중첩 초기화. |
-| I39 | 공허의 구슬 | 3 | AP +45, 최대 MP +20 | 스킬로 피해를 입히면 피격 대상 주변 1칸 내 다른 적에게 해당 스킬 피해량의 35%를 추가 마법 피해로 적용. |
-| I40 | 전쟁 군주의 왕관 | 3 | HP +300, AD +25, AP +25 | 장착자가 적 처치 시 전투 종료까지 AD와 AP 각각 +5%, 최대 5중첩. |
+| IB01 | 낡은 검 | 기본 | AD +10% | 고유 효과 없음(재료) |
+| IB02 | 마력 지팡이 | 기본 | AP +10% | 고유 효과 없음(재료) |
+| IB03 | 사냥꾼의 활 | 기본 | AS +10% | 고유 효과 없음(재료) |
+| IB04 | 생명의 수정 | 기본 | 최대 HP +15% | 고유 효과 없음(재료) |
+| IB05 | 철갑 조각 | 기본 | GD +10 | 고유 효과 없음(재료) |
+| IB06 | 마나 결정 | 기본 | MP 획득량 +15% | 고유 효과 없음(재료) |
+| IB07 | 정밀 장갑 | 기본 | CTC +10%p | 고유 효과 없음(재료) |
+| IB08 | 바람의 깃털 | 기본 | DOD +8%p | 고유 효과 없음(재료) |
+| IC01 | 광전사의 대검 | 완성 · 검+검 | AD +20% | 기본 공격 피해 +20% |
+| IC02 | 룬검 | 완성 · 검+지팡이 | AD +10%, AP +10% | 기본 공격 시 AP의 20%만큼 추가 마법 피해 |
+| IC03 | 폭풍의 검 | 완성 · 검+활 | AD +10%, AS +10% | 기본 공격 4회마다 추가 공격 1회(추가 공격은 다시 추가 공격을 만들지 않음) |
+| IC04 | 흡혈검 | 완성 · 검+수정 | AD +10%, 최대 HP +15% | 가한 실제 피해의 12%만큼 HP 회복 |
+| IC05 | 수호자의 검 | 완성 · 검+갑옷 | AD +10%, GD +10 | 전투 시작 시 최대 HP의 15% 보호막 획득 |
+| IC06 | 마력 절단검 | 완성 · 검+마나 | AD +10%, MP 획득량 +15% | 스킬 사용 후 다음 기본 공격 피해 +35% |
+| IC07 | 처형자의 검 | 완성 · 검+장갑 | AD +10%, CTC +10%p | HP 30% 이하인 적에게 주는 피해 +20% |
+| IC08 | 질풍검 | 완성 · 검+깃털 | AD +10%, DOD +8%p | 회피 성공 후 3초간 AS +20% |
+| IC09 | 대마법사의 관 | 완성 · 지팡이+지팡이 | AP +20% | 스킬 피해 +20% |
+| IC10 | 주문궁 | 완성 · 지팡이+활 | AP +10%, AS +10% | 기본 공격 3회마다 AP의 35%만큼 추가 마법 피해 |
+| IC11 | 생명의 지팡이 | 완성 · 지팡이+수정 | AP +10%, 최대 HP +15% | 스킬 사용 시 자신과 HP 비율이 가장 낮은 아군 1명에게 각자 최대 HP의 5% 회복 |
+| IC12 | 마도 방패 | 완성 · 지팡이+갑옷 | AP +10%, GD +10 | 스킬 사용 후 4초간 받는 피해 -15% |
+| IC13 | 대마법사의 서 | 완성 · 지팡이+마나 | AP +10%, MP 획득량 +15% | 스킬 사용 후 최대 MP의 15% 회복 |
+| IC14 | 비전의 눈 | 완성 · 지팡이+장갑 | AP +10%, CTC +10%p | 스킬이 치명타를 발생시킬 수 있음 |
+| IC15 | 바람술사의 지팡이 | 완성 · 지팡이+깃털 | AP +10%, DOD +8%p | 스킬 사용 후 3초간 AS +25% |
+| IC16 | 속사의 활 | 완성 · 활+활 | AS +20% | 기본 공격 5회마다 3초간 AS +25% |
+| IC17 | 생명력의 활 | 완성 · 활+수정 | AS +10%, 최대 HP +15% | 기본 공격 시 자신의 최대 HP 1%만큼 HP 회복 |
+| IC18 | 철벽의 활 | 완성 · 활+갑옷 | AS +10%, GD +10 | 기본 공격 4회마다 최대 HP의 5% 보호막 획득 |
+| IC19 | 마력의 활 | 완성 · 활+마나 | AS +10%, MP 획득량 +15% | 기본 공격 시 획득하는 MP +20% |
+| IC20 | 암살자의 장갑 | 완성 · 활+장갑 | AS +10%, CTC +10%p | 기본 공격 치명타 피해 +30%p |
+| IC21 | 환영궁 | 완성 · 활+깃털 | AS +10%, DOD +8%p | 회피 성공 후 다음 기본 공격이 확정 치명타 |
+| IC22 | 거인의 심장 | 완성 · 수정+수정 | 최대 HP +50% | 추가 최대 HP +20% |
+| IC23 | 불멸의 갑옷 | 완성 · 수정+갑옷 | 최대 HP +15%, GD +10 | 받는 피해 -12% |
+| IC24 | 생명의 샘 | 완성 · 수정+마나 | 최대 HP +15%, MP 획득량 +15% | 스킬 사용 시 자신의 최대 HP 8% 회복 |
+| IC25 | 생존자의 표식 | 완성 · 수정+장갑 | 최대 HP +15%, CTC +10%p | HP 30% 이하가 되면 전투당 1회, 최대 HP 20% 보호막 획득 |
+| IC26 | 재생의 망토 | 완성 · 수정+깃털 | 최대 HP +15%, DOD +8%p | 5초마다 잃은 HP의 8% 회복 |
+| IC27 | 요새의 갑옷 | 완성 · 갑옷+갑옷 | GD +35 | 추가 GD +15 |
+| IC28 | 마나 장벽 | 완성 · 갑옷+마나 | GD +10, MP 획득량 +15% | 스킬 사용 후 최대 HP의 10% 보호막 획득 |
+| IC29 | 반격의 갑주 | 완성 · 갑옷+장갑 | GD +10, CTC +10%p | 기본 공격을 받으면 공격자에게 자신의 GD 50%만큼 물리 피해 반사 |
+| IC30 | 환영의 갑옷 | 완성 · 갑옷+깃털 | GD +10, DOD +8%p | 회피 성공 후 3초간 GD +15 |
+| IC31 | 마력의 심장 | 완성 · 마나+마나 | MP 획득량 +30% | 전투 시작 시 최대 MP의 30% 획득 |
+| IC32 | 집중의 결정 | 완성 · 마나+장갑 | MP 획득량 +15%, CTC +10%p | 스킬 치명타 발생 시 최대 MP 10% 회복(스킬 1회당 한 번) |
+| IC33 | 유동의 수정 | 완성 · 마나+깃털 | MP 획득량 +15%, DOD +8%p | 회피 성공 시 최대 MP 10% 획득 |
+| IC34 | 급소의 장갑 | 완성 · 장갑+장갑 | CTC +20%p, CTH +40%p | 모든 치명타 피해 +40%p |
+| IC35 | 그림자 장갑 | 완성 · 장갑+깃털 | CTC +10%p, DOD +8%p | 회피 성공 후 4초간 치명타 확률 +20%p |
+| IC36 | 유령의 망토 | 완성 · 깃털+깃털 | DOD +28%p | 추가 회피 확률 +12%p |
 
-
-T1/T2는스탯만,T3 I26~I40 효과가실행됩니다.장비고정수치는성급배율후가산. 소환은 engine.summon → 아이템래퍼 → 증강래퍼 순으로 연결되며 아군 소환수는 증강 적용 뒤 현재HP도 최종 최대HP로 맞춥니다. 내부 한 함수만 보고 최종 소환HP를 판단하지 않습니다.
-
-### 고유효과 구현 세부
-
-- I26:현재피격대상주변맨해튼1칸의다른적최대2,25%각기본공격기회.실제피해0흡수타도비회피면분기로진입.
-- I27:기존스킬1회추가,ITEM_PROC로재귀억제.기존마나스냅샷보존.
-- I28/P04:독립전투당1회,I28먼저.아이템파생피해에서I28죽음방지를제외하는가드가있고P04는독립적으로검사.
-- I29/G06/P05:실제HP피해기준흡혈,방어/보호막/초과피해제외.흡혈은I35치유스킬보호막을유발하지않음.
-- I30:장착자별8초쿨다운,시전3초후MP30%회복.시전재귀로예약중복안함.
-- I31:소환수AD×1.3,수명×1.4.스킬폭발AP계수에는AD증가를직접적용하지않음.
-- I32:4초AP25% DOT,같은시전자갱신/타시전자중첩,ITEM_PROC표시.
-- I33:직접스킬실제HP피해>0일때3초AS−25%,동일시전자/대상카운트3회면1초기절후카운트0.다단히트스킬은각피해호출을셈.
-- I34:기본공격전대상HP비율25%이하이면그공격×1.5.
-- I35:해당아이템장착자의정상시전프레임내heal을30%강화,실제회복량25%보호막3초.
-- I36:회피성공시4초AS20%,쿨다운6초.
-- I37:전투시작명단의자신/상하좌우인접아군,장착자최대HP15%,6초.
-- I38:동일대상기본공격마다AS5%,최대8.대상변경초기화.회피판정전에카운트가진행되는코드동작은의도확인필요.
-- I39:첫대상의**실제HP피해**35%를추가마법원시값으로사용한후2차대상의GD로다시감소.주변1칸,시전프레임별대상중복/재귀억제.
-- I40:직접처치시AD/AP5%,최대5;아이템파생처치는적용제외.전투종료시초기화.
-
-모든아이템고유효과는비소환수장착자만(has가summon제외).피해출처ITEM_PROC와itemProcDepth가다른고유효과연쇄재귀를차단합니다. 세부확정여부는원문아이템명세의가정과구분해테스트해야합니다.
-
-[src/core/items.js:1](../src/core/items.js#L1) · `const items=`, [src/core/combat/item-effects.js:272](../src/core/combat/item-effects.js#L272) · `function install`, [src/core/progression.js:318](../src/core/progression.js#L318) · `function beginSupply`.
+[src/core/items.js:1](../src/core/items.js#L1) · `// 장비(v0.20.0 아이템 개편`, [src/core/equipment.ts:1](../src/core/equipment.ts#L1) · `// 장비 조합·장착·회수`, [src/core/combat/item-effects.js:1](../src/core/combat/item-effects.js#L1) · `// 완성 장비 36종의 고유 효과`.
 
 ## 12. 증강 — 54종(1차 후보안, 임시값)
 
@@ -1220,7 +1198,7 @@ v0.17.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종
 | S07 | 실버 | 작은 행운 | 선택 즉시 8G 획득 | `{"gold":8}` |
 | S08 | 실버 | 경험의 지혜 | 선택 즉시 10XP 획득 | `{"xp":10}` |
 | S09 | 실버 | 절약 정신 | 상점 새로고침 비용 2G → 1G | `{"reroll":1}` |
-| S10 | 실버 | 무기 거래상 | 무작위 1티어 아이템 1개와 3G 획득 | `{"items":{"tier":1,"count":1},"gold":3}` |
+| S10 | 실버 | 무기 거래상 | 무작위 기본 장비 1개와 3G 획득 | `{"items":{"tier":1,"count":1},"gold":3}` |
 | S11 | 실버 | 완벽한 승리 | 아군이 한 명도 쓰러지지 않고 전투에서 이기면 추가 2G(소환수·분신 제외) | `{"flawlessGold":2}` |
 | S12 | 실버 | 미래 투자 | 선택 즉시 5G 획득 · 이후 전투 4회를 마치면 추가 10G | `{"gold":5,"delayed":{"battles":4,"gold":10}}` |
 | S13 | 실버 | 단결된 의지 | 활성화된 조합 하나당 모든 아군 AD·AP +3% | `{"bondPower":{"power":0.03}}` |
@@ -1257,7 +1235,7 @@ v0.17.0에서 증강을 54종 1차 후보안(실버·골드·프리즘 각 18종
 | P08 | 프리즘 | 전설의 영입 | 무작위 5코스트 동료 1명, 4코스트 동료 2명 획득 | `{"units":[{"cost":5,"count":1},{"cost":4,"count":2}]}` |
 | P09 | 프리즘 | 무한한 성장 | 선택 즉시 20XP 획득 · 이후 스테이지를 마칠 때마다 3XP | `{"xp":20,"stageXp":3}` |
 | P10 | 프리즘 | 운명의 상점 | 상점에 현재 레벨에서 등장 가능한 가장 높은 코스트의 동료가 최소 1명 나옴 | `{"shopGuarantee":true}` |
-| P11 | 프리즘 | 위험한 도박 | 현재 플레이어 HP의 30%(내림) 소모, 무작위 3티어 아이템 3개 획득 · HP는 1 아래로 내려가지 않음 | `{"hpCost":{"ratio":0.3},"items":{"tier":3,"count":3}}` |
+| P11 | 프리즘 | 위험한 도박 | 현재 플레이어 HP의 30%(내림) 소모, 무작위 기본 장비 3개 획득 · HP는 1 아래로 내려가지 않음 | `{"hpCost":{"ratio":0.3},"items":{"tier":3,"count":3}}` |
 | P12 | 프리즘 | 복리의 마법 | 이자 상한 5G → 10G · 전투 승리 시 보유 골드의 10%(내림, 최대 5G) 추가 | `{"interestCap":10,"winInterest":{"ratio":0.1,"max":5}}` |
 | P13 | 프리즘 | 초월의 군세 | 배치 한도 +1 · 최대 11명 | `{"capacity":1}` |
 | P14 | 프리즘 | 이중 조합 | 전투 시작 시 활성 조합 중 무작위 1개의 단계를 한 단계 올림(최고 단계 제외, 인원 수는 그대로) | `{"bondBoost":1}` |
@@ -1276,7 +1254,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투 중 새로고침·종료 후 다시 열면 그 라운드의 준비 단계로 돌아갑니다(D4 결정 a). 취소된 전투에서 받은 보너스 몬스터 보상(골드 또는 아이템)은 회수하고 장부에서 지워, 다시 싸우면 다시 얻을 수 있습니다. 적 encounter 캐시는 유지되고, 전투 중간 상태는 저장하지 않습니다. 알림 T44.
 - 저장 실패(저장 공간 부족·비공개 모드)는 T42로 알립니다. 불러온 저장이 손상되었거나 검증에 실패하면 원본을 `starlight-onecost-v1-backup-<시각>` 키에 백업하고 새 원정을 시작하며 T43으로 알립니다(시작 화면에도 표시).
 
-[src/core/save.ts:186](../src/core/save.ts#L186) · `function loadSave`, [src/core/save.ts:148](../src/core/save.ts#L148) · `function revertInterruptedBattle`, [src/ui/store.ts:240](../src/ui/store.ts#L240) · `function save`.
+[src/core/save.ts:191](../src/core/save.ts#L191) · `function loadSave`, [src/core/save.ts:153](../src/core/save.ts#L153) · `function revertInterruptedBattle`, [src/ui/store.ts:248](../src/ui/store.ts#L248) · `function save`.
 
 - completedRounds,lastResult,supplyOffer,augmentState,shopLocked/shopCarry,completionChoice를저장. 종료/계속선택과보상은분리.저장실패는catch되며사용자경고가없는기존동작(확인필요).
 - 도감4종/추천최대3/장착툴팁/피해막대/장비아이콘/패치노트복사·MD저장/글꼴5종. 일반/특수보관함36×36px. 상점은코스트그라데이션/추천노랑글씨·청록발광/기존보유·합성예고. 도감1~5코스트구분선/C01원본이미지. C01대기석·상점에는재전달투명PNG를CSS코스트배경위에표시하며도감상세는별도원본PNG.다른캐릭터는기존SVG유지.
@@ -1287,7 +1265,7 @@ G13 예외(사용자 결정 2026-11-18): G13을 고른 원정에서만 같은 �
 - 전투마무리·화면전환·리사이즈·탭숨김등의연출제거는게임진행/보상취소가아님. HP연출취소후결과확인버튼/이어하기로결과재개.
 - 공통알림41개는13유지/27표시삭제/T28원인별승인수정. 재구축 4단계에서 저장 관련 T42~T44를 추가. 툴팁/결과/중앙연출은이토스트목록과별개.
 
-[src/ui/store.ts:276](../src/ui/store.ts#L276) · `function load`, [src/core/board.js:44](../src/core/board.js#L44) · `function migrate`, [src/ui/components/ScreenCues.tsx:76](../src/ui/components/ScreenCues.tsx#L76) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
+[src/ui/store.ts:284](../src/ui/store.ts#L284) · `function load`, [src/core/board.js:44](../src/core/board.js#L44) · `function migrate`, [src/ui/components/ScreenCues.tsx:82](../src/ui/components/ScreenCues.tsx#L82) · `function HealthImpact`, [src/ui/notices.ts:5](../src/ui/notices.ts#L5) · `const RETAINED`.
 
 ## 14. 남은 결정과 불일치
 

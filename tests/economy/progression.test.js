@@ -109,7 +109,7 @@ test('boss roll and payment occur exactly once after repeated callbacks / reload
     before = clone(s);
   P.settleRound(s, { winner: 'ally' }, rng);
   P.settleRound(clone(s), { winner: 'ally' }, rng);
-  assert.equal(rolls, 2);
+  assert.equal(rolls, 3); // 추가 골드·확정 장비·회수기 확률(v0.20.0, 0.9라 회수기 없음)
   assert.deepEqual(s, before);
   assert(P.advanceRound(s));
   assert.equal(s.stage, 2);

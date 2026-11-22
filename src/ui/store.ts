@@ -12,6 +12,7 @@ import type { CombatRunner, LiveBattle } from './combat/runner.ts';
 import W from '../core/encounters.js';
 import M, { type MetaProfile, type MetaReason } from '../core/meta.ts';
 import U from '../core/meta-upgrades.ts';
+import E from '../core/equipment.ts';
 import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
@@ -39,8 +40,8 @@ export function parseDrop(value: string | null | undefined): DropTarget | null {
 }
 
 export interface DragState {
-  /** 'unit': 캐릭터(uid 숫자), 'item': 아이템(uid 문자열 'I12') */
-  kind: 'unit' | 'item';
+  /** 'unit': 캐릭터(uid 숫자), 'item': 아이템(uid 문자열 'I12'), 'recovery': 회수기(특수 칸, uid 'recovery') */
+  kind: 'unit' | 'item' | 'recovery';
   uid: number | string;
   pointerId: number;
   startX: number;
@@ -122,6 +123,13 @@ export type Overlay =
 export type Cue =
   | { key: number; kind: 'round' | 'stage'; stage: number; round: number }
   | { key: number; kind: 'health'; before: number; after: number; win: boolean }
+  | {
+      key: number;
+      kind: 'recovery';
+      /** 장비를 되찾은 캐릭터 uid와 회수한 장비(캐릭터 → 보관함으로 날아감) */
+      unit: number;
+      items: { uid: string; id: string }[];
+    }
   | {
       key: number;
       kind: 'merge';
@@ -539,28 +547,55 @@ export function createStore(env: StoreEnv) {
   }
 
   /** 아이템 놓기: 캐릭터에 장착, 보관함으로 회수, 휴지통에 버리기 */
+  /**
+   * 아이템 놓기(v0.20.0): 캐릭터 → 장착 또는 들고 있던 기본 장비와 조합(바로 착용), 보관함의 기본 장비 → 보관함 조합,
+   * 휴지통 → 버리기, 보관함 빈 곳 → 그대로. 장착한 장비는 끌 수 없다(회수기로만 되찾음).
+   */
   function dropItem(itemUid: string, over: string | null) {
     const [kind, arg] = (over ?? '').split(':');
     let result: { ok: boolean; message?: string } = {
       ok: false,
       message: '아군 캐릭터 또는 보관함에 놓아주세요.',
     };
-    if (state.run && kind === 'unit' && /^\d+$/.test(arg))
-      result = V.transferItem(run(), itemUid, Number(arg));
-    else if (state.run && kind === 'trash')
+    let made: string | null = null;
+    if (state.run && kind === 'unit' && /^\d+$/.test(arg)) {
+      const r = E.dropOnUnit(run(), itemUid, Number(arg));
+      result = r;
+      if (r.ok && r.action === 'combine') made = r.item.id;
+    } else if (state.run && kind === 'item' && arg && arg !== itemUid) {
+      const r = E.combineInInventory(run(), itemUid, arg);
+      result = r;
+      if (r.ok) made = r.item.id;
+    } else if (state.run && kind === 'trash')
       result = {
         ok: P.discardItem(run(), itemUid),
         message: '아이템을 버렸습니다. 되돌리기로 복원할 수 있습니다.',
       };
-    else if (state.run && kind === 'inventory') {
-      const item = run().inventory.find((i) => i.uid === itemUid);
-      result = { ok: item?.equippedTo === null || !!P.unequip(run(), itemUid) };
-    }
+    else if (state.run && (kind === 'inventory' || (kind === 'item' && arg === itemUid)))
+      return publish({ drag: null }); // 보관함 안에서 놓기: 그대로
     if (result.ok) changed({ drag: null });
     else publish({ drag: null });
+    if (made) return notify('T47', `장비 조합 · ${P.itemById(made)?.name ?? made}`);
     notify(
       dragId('item', result),
       result.message || (result.ok ? '아이템 이동 완료' : '아이템을 옮길 수 없습니다.'),
+    );
+  }
+  /** 회수기 놓기: 장비를 든 캐릭터면 장비 전부를 보관함으로(1개 소모), 화면에서는 장비가 보관함으로 날아간다 */
+  function dropRecovery(over: string | null) {
+    const [kind, arg] = (over ?? '').split(':');
+    publish({ drag: null });
+    if (!state.run || kind !== 'unit' || !/^\d+$/.test(arg)) return;
+    const r = E.recover(run(), Number(arg));
+    if (!r.ok) return notify('T25', r.message);
+    const items = r.items.map((uid) => ({
+      uid,
+      id: run().inventory.find((i) => i.uid === uid)!.id,
+    }));
+    changed({ inventoryOpen: true, ...cue({ kind: 'recovery', unit: r.unitUid, items }) });
+    notify(
+      'T48',
+      `회수기 사용 · 장비 ${items.length}개 회수(남은 회수기 ${E.recoveryTools(run())}개)`,
     );
   }
 
@@ -737,6 +772,9 @@ export function createStore(env: StoreEnv) {
     ) {
       clickGuardUntil = 0;
       if (!editable()) return;
+      // 장착한 장비는 끌 수 없다(무료 회수 없음, v0.20.0). 회수기는 남아 있을 때만
+      if (kind === 'item' && run().inventory.find((i) => i.uid === uid)?.equippedTo != null) return;
+      if (kind === 'recovery' && E.recoveryTools(run()) < 1) return;
       publish({
         drag: {
           kind,
@@ -780,6 +818,7 @@ export function createStore(env: StoreEnv) {
       if (!drag.active) return publish({ drag: null });
       clickGuardUntil = clock() + DRAG_CLICK_GUARD_MS;
       if (drag.kind === 'item') return dropItem(drag.uid as string, over);
+      if (drag.kind === 'recovery') return dropRecovery(over);
       const uid = drag.uid as number;
       const target = parseDrop(over);
       if (target?.kind === 'sell') {
@@ -812,11 +851,6 @@ export function createStore(env: StoreEnv) {
       publish({ selectedItem: state.selectedItem === uid ? null : uid });
     },
     /** 장착 중인 아이템을 보관함으로 회수 */
-    unequipItem(uid: string) {
-      if (!state.run || !P.unequip(run(), uid)) return;
-      changed({ selectedItem: null });
-      notify('T31', '아이템을 보관함으로 회수했습니다.');
-    },
     undoDiscard() {
       if (!state.run || !P.undoDiscard(run())) return;
       changed();

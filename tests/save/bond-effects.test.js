@@ -42,7 +42,7 @@ test('legacy recommendation migration drops invalid IDs only, preserves units/it
     units: [{ uid: 1, id: 'C01', star: 2, location: 'bench', benchSlot: 0 }],
     shop: ['C03'],
   });
-  P.addItem(s, 'I01');
+  P.addItem(s, 'IB01');
   s.augments = ['G07'];
   s.recommendedBonds = ['언데드', '흑월', '철혈', '종언', '심연'];
   const before = JSON.stringify({ units: s.units, items: s.inventory, augments: s.augments });

@@ -33,7 +33,7 @@ function setup(id, allies = [], positions = [24, 23, 3, 4, 5]) {
 test('all12 new units run with normal gear/augments and finish finite battles', () => {
   for (const id of D.playableIds.slice(33)) {
     const b = new E.Battle(
-      [{ id, pos: 2, itemIds: ['I27', 'I28', 'I35'] }],
+      [{ id, pos: 2, itemIds: ['IB03', 'IB04', 'IB03'] }],
       [
         { id: 'E01', pos: 7 },
         { id: 'E06', pos: 15 },

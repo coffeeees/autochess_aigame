@@ -5,6 +5,7 @@ import A from './augments.js';
 import B from './board.js';
 import { runRng } from './rng.ts';
 import U from './meta-upgrades.ts';
+import E from './equipment.ts';
 
 const editable = (s) => !s.done && s.roundPhase === 'prepare';
 function normalize(s) {
@@ -216,17 +217,10 @@ function rollShop(s, rng = runRng(s)) {
   P.guaranteeShop(s, rng); // 운명의 상점(P10)
   return s.shop;
 }
+/** 보관함 장비를 캐릭터에 놓기(v0.20.0: 장착 또는 기본 장비 조합, 장착한 장비는 옮길 수 없음). equipment.ts */
 function transferItem(s, itemUid, unitUid) {
-  if (!editable(s)) return { ok: false, message: '아이템은 준비 단계에서 옮길 수 있습니다.' };
-  const item = s.inventory.find((i) => i.uid === itemUid),
-    unit = s.units.find((u) => u.uid === unitUid);
-  if (!item || !unit) return { ok: false, message: '아이템을 아군 캐릭터 위에 놓아주세요.' };
-  if (item.equippedTo === unitUid) return { ok: true };
-  const equipped = s.inventory.filter((i) => i.equippedTo === unitUid);
-  if (equipped.length >= P.config.equipment.slotsPerUnit)
-    return { ok: false, message: '캐릭터당 아이템은 최대 3개입니다.' };
-  item.equippedTo = unitUid;
-  return { ok: true };
+  const r = E.dropOnUnit(s, itemUid, unitUid);
+  return r.ok ? { ok: true, action: r.action, itemUid: r.item.uid } : r;
 }
 function damageRows(b) {
   if (!b) return [];

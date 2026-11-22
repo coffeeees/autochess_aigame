@@ -61,20 +61,15 @@ function Supply({ ui, actions }: GameProps) {
   const run = ui.run!;
   const offer = run.supplyOffer;
   if (!offer || run.roundPhase !== 'supply') return null;
-  const odds: number[] = (I.tierOdds as Record<number, number[]>)[Math.min(6, run.stage)];
   return (
     <Shell label="보급 선택" onClose={actions.closeModal}>
       <span class={styles.eyebrow}>{P.label(run)} · 안전 보급</span>
       <h2>보급품 2개를 선택하세요</h2>
-      <p>서로 다른 슬롯을 선택하면 아이템2개를 받습니다. 제시 목록과 선택은 자동 저장됩니다.</p>
+      <p>
+        기본 장비 4개 중 2개를 고릅니다. 기본 장비 두 개를 겹치면 완성 장비가 됩니다. 제시 목록과
+        선택은 자동 저장됩니다.
+      </p>
       <p class={styles.hint}>확정 시50% 확률로 추가 골드 · 발동 시2G/3G 각각50%</p>
-      <div class={styles.odds}>
-        {odds.map((n, i) => (
-          <span key={i}>
-            {i + 1}티어 {percentNumber(n)}%
-          </span>
-        ))}
-      </div>
       <div class={styles.cards}>
         {offer.options.map((id, index) => {
           const def = itemDef(id);
@@ -83,14 +78,12 @@ function Supply({ ui, actions }: GameProps) {
             <button
               key={index}
               class={styles.card}
-              data-tier={def.tier}
+              data-kind={def.kind}
               aria-pressed={chosen}
               onClick={() => actions.toggleSupply(index)}
             >
               <span class={styles.cardArt} dangerouslySetInnerHTML={{ __html: itemIconSvg(id) }} />
-              <small>
-                {def.tier}티어 · {id}
-              </small>
+              <small>기본 장비 · {id}</small>
               <b>{def.name}</b>
               <span>{def.statsText}</span>
               {def.effect && <p>{def.effect.replace(/\*\*([^*]+)\*\*/g, '$1')}</p>}
@@ -183,6 +176,8 @@ interface Receipt {
   healing?: number;
   extra?: { kind: string; itemIds?: string[]; itemId?: string };
   bossItem?: { itemId: string } | null;
+  /** 보스 승리로 얻은 회수기 수(v0.20.0) */
+  recovery?: number;
   monsterLoot?: { kind: string; itemId?: string; amount?: number } | null;
   gold: number;
   health: number;
@@ -322,6 +317,7 @@ function Result({ ui, actions }: GameProps) {
           {r.bossItem && (
             <div class={styles.loot}>보스 확정 아이템 · {name(r.bossItem.itemId)}</div>
           )}
+          {!!r.recovery && <div class={styles.loot}>보스 추가 보상 · 회수기 +{r.recovery}</div>}
           {r.monsterLoot && (
             <div class={styles.loot}>
               전투 중 보너스 몬스터 ·{' '}

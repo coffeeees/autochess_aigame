@@ -11,7 +11,7 @@ import W from './encounters.js';
 
 export const SAVE_KEY = 'starlight-onecost-v1';
 /** progression.initialize / migrate가 쓰는 현재 RunState.version. */
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 export const BACKUP_PREFIX = SAVE_KEY + '-backup-';
 
 /** UI가 넘겨주는 저장소: window.localStorage 또는 테스트용 대체물. */
@@ -32,10 +32,15 @@ export const MIGRATIONS: readonly { from: number; to: number; note: string }[] =
     to: 5,
     note: 'board.migrate: 상하 대치 7열×8행 → 좌우 대치 8열×7행, 전장 아군·적 편성 칸을 시계 방향 90도 회전(v0.18.0)',
   },
+  {
+    from: 5,
+    to: 6,
+    note: 'progression.migrate: 장비 개편(v0.20.0) — 예전 1~3티어 장비를 보관함·장착에서 지우고 원정은 이어감, 회수기 2개(사용자 결정 2026-11-23)',
+  },
 ];
 /** 버전 4(v0.17.x)는 이관해서 받고, 그보다 오래된 저장은 지운다(v0.17.0 결정) */
 const OLDEST_KEPT = 4;
-const ACCEPTED_VERSIONS = [OLDEST_KEPT, SAVE_VERSION];
+const ACCEPTED_VERSIONS = [OLDEST_KEPT, 5, SAVE_VERSION];
 
 type Raw = Record<string, any>;
 type Check = { id: string; message: string; ok: (s: Raw) => boolean };
@@ -48,7 +53,7 @@ const columns = (s: Raw) => s.boardColumns || 8;
 export const CHECKS: readonly Check[] = [
   {
     id: 'version',
-    message: `저장 버전이 ${OLDEST_KEPT} 또는 ${SAVE_VERSION}이 아닙니다`,
+    message: `저장 버전이 ${ACCEPTED_VERSIONS.join(', ')} 중 하나가 아닙니다`,
     ok: (s) => ACCEPTED_VERSIONS.includes(s?.version),
   },
   {

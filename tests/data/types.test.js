@@ -40,6 +40,7 @@ test('명단 항목이 UnitDef와 맞다', () => {
         job: str,
         trait: str,
         name: str,
+        gender: (v) => ['female', 'male'].includes(v),
         playable: bool,
         provisional: bool,
         stats: (s) => STAT_KEYS.every((k) => isNum(s[k])) && Object.keys(s).length === 10,
@@ -73,19 +74,37 @@ test('유대가 Bond와 맞다', () => {
     });
 });
 
-test('아이템이 Item과 맞다(ItemStats는 AS 대신 ASPercent)', () => {
-  const itemStatKeys = new Set([...STAT_KEYS.filter((k) => k !== 'AS'), 'ASPercent']);
-  for (const item of I.items)
+test('장비가 Item과 맞다(v0.20.0 기본 8종·완성 36종, 능력치 키)', () => {
+  const itemStatKeys = new Set([
+    'ADPercent',
+    'APPercent',
+    'ASPercent',
+    'HPPercent',
+    'GD',
+    'MPGainPercent',
+    'CTC',
+    'DOD',
+    'CTH',
+  ]);
+  for (const item of I.items) {
+    const base = item.kind === 'base';
     fields(item, {
-      id: (v) => /^I\d\d$/.test(v),
+      id: (v) => (base ? /^IB\d\d$/ : /^IC\d\d$/).test(v),
+      kind: (v) => ['base', 'complete'].includes(v),
       name: str,
-      tier: (v) => [1, 2, 3].includes(v),
       stats: (s) => Object.entries(s).every(([k, v]) => itemStatKeys.has(k) && isNum(v)),
       statsText: str,
       effect: str,
       iconKey: str,
-      icon: str,
+      ...(base
+        ? { short: str }
+        : {
+            recipe: (v) => v.length === 2 && v.every((id) => I.isBase(id)),
+            subIconKey: str,
+            effectKey: str,
+          }),
     });
+  }
 });
 
 test('증강이 Augment와 맞다', () => {

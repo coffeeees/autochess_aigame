@@ -102,7 +102,7 @@ test('합성은 전장 캐릭터를 남기고 재료 장비를 돌려주며 3성
     { uid: 2, id: 'C05', location: 'board', pos: 26, star: 1 },
     { uid: 3, id: 'C05', location: 'bench', pos: -1, star: 1, benchSlot: 0 },
   ];
-  const item = P.addItem(s, 'I01');
+  const item = P.addItem(s, 'IB01');
   item.equippedTo = 3;
   a.equal(mergeAnchor(s.units).uid, 2);
   const events = mergeAll(s);
@@ -140,7 +140,7 @@ test('판매하면 코스트 × 3^(성급-1)을 돌려주고 장비를 회수한
   const s = run();
   const unit = s.units[0];
   unit.star = 2;
-  const item = P.addItem(s, 'I01');
+  const item = P.addItem(s, 'IB01');
   item.equippedTo = unit.uid;
   const gold = s.gold;
   a.equal(salePrice(unit), D.byId(unit.id).cost * 3);

@@ -31,7 +31,7 @@ function state() {
 }
 test('board move, same-cell and swaps preserve UID and equipment', () => {
   const s = state(),
-    item = P.addItem(s, 'I02');
+    item = P.addItem(s, 'IB05');
   P.equip(s, item.uid, 1);
   a(V.moveUnit(s, 1, { location: 'board', pos: 18 }).ok);
   a.equal(s.units[0].pos, 18);

@@ -1,4 +1,5 @@
 import U from './meta-upgrades.ts';
+import I from './items.js';
 import D from './data/units.js';
 import P from './progression.js';
 import M from './meta.ts';
@@ -116,8 +117,8 @@ function claimBonusLoot(state, unit, rng = runRng(state)) {
     return null;
   let loot;
   if (rng() < config.bonusItemChance) {
-    const def = P.items[Math.min(P.items.length - 1, Math.floor(rng() * P.items.length))],
-      item = P.addItem(state, def.id);
+    // v0.20.0: 등급 없이 기본 장비 8종 중 하나(난수 한 번, 예전과 같은 횟수)
+    const item = P.addItem(state, I.draw(0, rng));
     loot = { kind: 'item', itemId: item.id, itemUid: item.uid, key };
   } else {
     const amount =

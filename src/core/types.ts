@@ -25,6 +25,8 @@ export interface UnitDef {
   job: string;
   trait: string;
   name: string;
+  /** 성별(v0.20.0, 데이터만·화면 표시 없음) */
+  gender: 'female' | 'male';
   playable: boolean;
   provisional: boolean;
   stats: Stats;
@@ -55,21 +57,37 @@ export interface Bond {
   balanceVersion: number;
 }
 
-export type ItemTier = 1 | 2 | 3;
+/** 장비 종류(v0.20.0): 기본 장비 8종, 기본 장비 2개를 합친 완성 장비 36종 */
+export type ItemKind = 'base' | 'complete';
 
-/** 아이템 능력치: 고정값, 공격 속도만 비율(ASPercent). */
-export type ItemStats = Partial<Omit<Stats, 'AS'>> & { ASPercent?: number };
+/** 장비 능력치: HP·AD·AP·AS는 %(현재 값에 곱함), GD는 고정값, CTC·DOD·CTH는 %p, MP 획득량은 %. */
+export interface ItemStats {
+  ADPercent?: number;
+  APPercent?: number;
+  ASPercent?: number;
+  HPPercent?: number;
+  GD?: number;
+  MPGainPercent?: number;
+  CTC?: number;
+  DOD?: number;
+  CTH?: number;
+}
 
 /** Equipment (items.js `items`). */
 export interface Item {
-  id: string; // I01..I40
+  id: string; // IB01..IB08 기본, IC01..IC36 완성
+  kind: ItemKind;
   name: string;
-  tier: ItemTier;
   stats: ItemStats;
   statsText: string;
-  effect: string; // 능력치만 주는 아이템은 ''
+  effect: string; // 기본 장비는 ''
   iconKey: string;
-  icon: string;
+  /** 기본 장비: 조합표에 쓰는 짧은 이름(검·지팡이…) */
+  short?: string;
+  /** 완성 장비: 재료 기본 장비 두 개, 두 번째 재료 그림, 고유 효과 판정 키(combat/item-effects.js) */
+  recipe?: [string, string];
+  subIconKey?: string;
+  effectKey?: string;
 }
 
 export type AugmentTier = 'silver' | 'gold' | 'prism';
@@ -149,6 +167,8 @@ export interface RunState {
   runId?: string;
   /** 증강의 원정 진행 상태(augment-run.js) */
   augmentRun?: AugmentRun | null;
+  /** 회수기 수(v0.20.0, 장착 장비 전부 회수). 예전 저장은 이관 때 2 */
+  recoveryTools?: number;
   /** 메타 영구 강화(v0.19.0): 원정 시작 때 복사한 단계와 횟수 제한 효과 사용량(meta-upgrades.ts). 예전 저장에는 없음 */
   metaRun?: { version: 1; levels: Record<string, number>; used: Record<string, number> } | null;
 }

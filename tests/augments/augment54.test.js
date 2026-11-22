@@ -432,7 +432,7 @@ test('G18·P15 분신: 지정(없으면 최고 코스트) 원본의 HP·AD·AP �
 });
 
 // ─── 원정 효과 ───
-test('S07·S08·S10·P07: 선택 즉시 골드·XP·1티어 아이템', () => {
+test('S07·S08·S10·P07: 선택 즉시 골드·XP·기본 장비(v0.20.0, 예전 1티어)', () => {
   let s = run();
   a(choose(s, 'S07'));
   a.equal(s.gold, 28);
@@ -445,7 +445,7 @@ test('S07·S08·S10·P07: 선택 즉시 골드·XP·1티어 아이템', () => {
   choose(s, 'S10');
   a.equal(s.gold, 23);
   a.equal(s.inventory.length, 1);
-  a.equal(I.byId(s.inventory[0].id).tier, 1);
+  a.equal(I.byId(s.inventory[0].id).kind, 'base'); // v0.20.0: 등급 대신 기본 장비
   s = run();
   choose(s, 'P07');
   a.equal(s.gold, 45);
@@ -469,12 +469,12 @@ test('S18 위험한 계약: HP 10 소모·3코스트 2명, HP 10 이하면 선�
   a.equal(low.health, before.health);
 });
 
-test('P11 위험한 도박: 현재 HP 30%(내림) 소모·3티어 3개, HP 1 아래로 안 내려감', () => {
+test('P11 위험한 도박: 현재 HP 30%(내림) 소모·기본 장비 3개(예전 3티어), HP 1 아래로 안 내려감', () => {
   let s = run({ health: 77 });
   a(choose(s, 'P11'));
   a.equal(s.health, 77 - 23);
   a.equal(s.inventory.length, 3);
-  a(s.inventory.every((i) => I.byId(i.id).tier === 3));
+  a(s.inventory.every((i) => I.byId(i.id).kind === 'base')); // v0.20.0: 3개 그대로, 기본 장비
   s = run({ health: 1 });
   a(choose(s, 'P11'));
   a.equal(s.health, 1);
@@ -646,7 +646,7 @@ test('저장 복원: augmentRun(지연 보상·투자·무료 새로고침·가�
   s.augmentRun.cloneTarget = 1;
   const restored = P.migrate(JSON.parse(JSON.stringify(s)));
   a.deepEqual(restored.augmentRun, s.augmentRun);
-  a.equal(restored.version, 5);
+  a.equal(restored.version, 6);
 });
 
 test('G13 쌍둥이 전술: 같은 캐릭터 정확히 2명이면 두 명 AD·AP·GD +25%, 1명·다른 캐릭터는 그대로', () => {

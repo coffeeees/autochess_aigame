@@ -4,7 +4,7 @@
 
 ## 현재 진행 상황
 - 0~7단계 완료(재구축 계획 끝). 화면은 `index.html` → `src/ui/`. 기존 화면(legacy.html)은 6단계에서 지웠다. 원본은 `v0.15.18-original` (로컬 태그, GitHub에는 같은 이름의 브랜치).
-- 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건, v0.17.0부터 지운 증강 전투 36건을 뺀 45건만 비교), `docs/archive/screenshots-v0.15.18/`.
+- 기준선: `docs/archive/baseline-tests.txt`, `docs/archive/combat-baseline.json`(시드 전투 81건, v0.17.0부터 지운 증강 전투 36건과 v0.20.0부터 지운 예전 장비 전투 7건을 뺀 38건만 비교, 로그는 예전 캐릭터 이름으로 돌려 비교), `docs/archive/screenshots-v0.15.18/`.
 - 결정: D1 캔버스(PixiJS), D2/D3 Preact + TypeScript(단계적), D4 (a) 전투 중 새로고침은 준비 단계로 되돌리고 보너스 보상 회수,
   D5 Pretendard 하나, D6 (a) 카드·도감은 45명 일러스트 + 전장은 도트 스프라이트(`src/ui/art/characters.ts`), D7 과거 파일은 docs/archive에 보관.
 - 그림: 큰 그림은 WebP로 배포한다. 원본 PNG는 `assets-src/images/`, 변환은 `python3 tools/convert-images.py`(결과 목록 `docs/specs/images.json`).
@@ -39,6 +39,8 @@
 - 전장(v0.18.0): 8열 × 7행 좌우 대치, `pos = 행 × 8 + 열`, 아군 col 0~3 / 적 col 4~7. 좌표 규칙은 `core/board.js`(`isAllyCell`, 앞뒤 판정 `depth`,
   예전 칸 회전 `rotateOldPos`), 화면 좌표 변환은 `ui/art/board.ts` 한 곳(보정값 `docs/specs/BOARD_SIDE_8X7_CALIBRATION.json`).
   보드 그림 위치는 DOM 입력 칸 컨테이너(`Board.tsx`의 `.art`) 사각형을 장면이 읽어 맞춘다. 전투 기준선 도구는 로그 칸 번호를 예전 번호로 되돌려 비교한다.
+- 장비(v0.20.0): 기본 8종(IB01~)·완성 36종(IC01~) `items.js`, 조합·장착·회수기 규칙 `equipment.ts`(무료 회수 없음, 기본 장비는 캐릭터당 1개),
+  완성 장비 고유 효과 `combat/item-effects.js`(effectKey, 개수만큼 합산). 수치·효과는 임시값. 회수 연출은 `ScreenCues`의 `recovery` 신호.
 - 메타 레벨(v0.17.2): `meta.ts`(곡선·원정 보상·레벨업·중복 방지), 수치는 `data/meta.js`(임시값). 프로필 저장 키 `autochess-meta-v1`은 원정 저장과 별도이고,
   저장소(`store.ts`의 `settleMeta`)가 원정이 끝날 때(`run.done`) 원정 ID(`runId`)마다 한 번 지급한다.
 - 메타 영구 강화(v0.19.0): `meta-upgrades.ts`(레벨 보상 P·티켓 원장, 구매, 원정 스냅샷 `state.metaRun`, 횟수 `take`), 수치 `data/meta-upgrades.js`(임시값),
@@ -58,7 +60,7 @@
 - Worker 테스트는 `tests/support/combat-worker.js`로 vm 컨텍스트에 `onmessage`를 붙인다.
 - 문서의 소스 링크(`../src/core/x.js#L<n>`)는 줄 번호 기준이다. 코드를 옮기면 링크를 갱신하고 `tests/docs/`로 확인한다.
 - `docs/specs/CORE_RULES_BASELINE_v0.15.10.json`의 `coreHashes`는 일부 core 모듈의 해시다. 그 모듈을 의도적으로 고쳤을 때만 갱신한다.
-- 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`, 저장 버전 5)다. 버전 4(v0.17.x, 7열 전장)는 `board.migrate`로 칸을 회전해 이관한다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
+- 저장 형식은 RunState JSON 그대로(`starlight-onecost-v1`, 저장 버전 6)다. 버전 4(v0.17.x, 7열 전장)는 `board.migrate`로 칸을 회전해 5로, 버전 5는 예전 장비를 지우고 회수기 2개를 줘 6으로 이관한다. 필드를 바꾸면 `save.ts`의 `SAVE_VERSION`·`MIGRATIONS`와 `types.ts`, `tests/save/save-system.test.js`를 함께 고친다.
   v0.17.0부터 이전 버전 저장(버전 1~3)은 이관하지 않고 지운다(T45, 사용자 결정). `tests/fixtures/v0.15.18-*.json`은 원본 게임에서 받은 실제 저장으로, 지워지는지 확인하는 데 쓴다. 고치지 않는다.
 - 새 알림은 `src/ui/notices.ts`의 `ADDED`(T42~)에 넣고 `src/content/notice-audit.js`에 행을 추가한다. T01~T41 목록은 v0.15.7 조사 기록이라 바꾸지 않는다.
 - `docs/archive/`의 스크립트와 예전 테스트는 실행하지 않는다.

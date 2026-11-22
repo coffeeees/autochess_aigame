@@ -59,26 +59,7 @@ test('새 원정은 8열로 표시하고, 아군은 왼쪽 4열에만 배치할 
   );
   for (const pos of [0, 3, 51]) a(V.moveUnit(s, 1, { location: 'board', pos }).ok, String(pos));
 });
-test('item adjacency shield and chain lightning respect seventh-column edge', () => {
-  const b = new Battle(
-    [
-      { id: 'C03', pos: 51, itemIds: ['I37', 'I26'] },
-      { id: 'C05', pos: 2 },
-    ],
-    [
-      { id: 'E01', pos: 54 },
-      { id: 'E03', pos: 5 },
-    ],
-    { rng: () => 0 },
-  );
-  a.equal(b.units[0].shields.length, 1);
-  a.equal(b.units[1].shields.length, 0);
-  const [u, , first, other] = b.units;
-  first.stats.DOD = 0;
-  const before = other.hp;
-  b.deal(u, first, 10, 'physical', { kind: 'basic', canCrit: false });
-  a.equal(other.hp, before);
-});
+// v0.20.0: 예전 장비(I37 인접 보호막·I26 연쇄 번개) 경계 테스트는 장비를 지우며 함께 지웠다(새 장비에는 인접·연쇄 효과 없음)
 test('summoning and moving from edges never produce outside or overlapping actors', () => {
   const b = new Battle(
     [

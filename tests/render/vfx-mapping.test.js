@@ -30,7 +30,7 @@ function rng() {
 }
 function simulate(id) {
   const battle = new E.Battle(
-    [{ id, pos: 27, itemIds: ['I27', 'I39'], bonuses: { HP: 200 } }],
+    [{ id, pos: 27, itemIds: ['IB03', 'IB07'], bonuses: { HP: 200 } }],
     [
       { id: 'E06', pos: 31, star: 2 },
       { id: 'E01', pos: 39 },
