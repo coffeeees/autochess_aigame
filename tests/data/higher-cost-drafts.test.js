@@ -13,7 +13,7 @@ const baseline = JSON.parse(fs.readFileSync('docs/specs/onecost-baseline.json', 
 let passed = 0;
 test('existing C01-C12 data, skills, pool subset and old metadata unchanged; new bonds explicitly added', () => {
   assert.deepEqual(
-    D.roster.filter((u) => u.cost === 1).map(({ bonds, ...u }) => u),
+    D.roster.filter((u) => u.cost === 1).map(({ bonds, gender, ...u }) => u), // 성별은 v0.20.0에 추가(기준 밖)
     baseline.roster.map((u) => ({ ...u, name: D.byId(u.id).name })),
   );
   assert.deepEqual(

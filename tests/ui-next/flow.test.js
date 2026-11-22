@@ -229,12 +229,12 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.19.0');
+  a.equal(notes.current, '0.20.0');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
     audit.rows.filter((r) => r.status.startsWith('추가')).map((r) => r.id),
-    ['T42', 'T43', 'T44', 'T45', 'T46'],
+    ['T42', 'T43', 'T44', 'T45', 'T46', 'T47', 'T48'],
   );
 });
 
@@ -368,5 +368,14 @@ test('영구 강화 기록(v0.19.0): 실행 방법 구분, 플레이 결과, 임
   for (const c of t.cases) a.equal(c.length, 4, c[0]);
   a(t.decisions.some((x) => x.includes('전열·후열')) && t.decisions.some((x) => x.includes('S4')));
   a(t.notRun.some((x) => x.includes('사람이 직접')));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 메타 영구 강화'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 메타 영구 강화'));
+});
+
+test('장비 개편 기록(v0.20.0): 요청서 최종 체크·사용자 결정·임시값·실행하지 않은 항목', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.itemRework;
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.decisions.some((x) => x.includes('회수기')) && t.growth.some((x) => x.includes('1차 테스트안')));
+  a(t.notRun.some((x) => x.includes('사람이 직접')));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 장비 개편'));
 });

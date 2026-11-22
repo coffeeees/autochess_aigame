@@ -457,7 +457,7 @@ test('14. S1 시작 HP·상한, S2 일반 승리 회복(상한 적용, 보스 �
 
 test('14b. S3 장비 수치 보너스 +10%(고유 효과 제외), S4 보급 추가 골드 확률(통계), S5 상점 확률 합 100', () => {
   const s = battleRun({ S3: 5 }, { roundPhase: 'prepare' });
-  for (const id of ['I01', 'I05']) P.equip(s, P.addItem(s, id).uid, s.units[0].uid);
+  for (const id of ['IB01', 'IB05']) P.equip(s, P.addItem(s, id).uid, s.units[0].uid);
   const plain = clone(s);
   plain.metaRun.levels = {};
   const b1 = P.unitBonuses(plain, s.units[0].uid),

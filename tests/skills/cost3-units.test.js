@@ -206,7 +206,7 @@ test('all10 cost3 skills terminate real battles with gear and augments, both bon
     for (const id of D.playableIds.filter((id) => D.byId(id).cost === 3)) {
       const b = new Battle(
         [
-          { id, pos: 27, itemIds: ['I27', 'I35'] },
+          { id, pos: 27, itemIds: ['IB03', 'IB03'] },
           { id: 'C05', pos: 32 },
         ],
         [

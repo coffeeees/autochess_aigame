@@ -5,7 +5,7 @@ import D from '../../core/data/units.js';
 import V from '../../core/preparation.js';
 import I from '../../core/items.js';
 import A from '../../core/augments.js';
-import type { Augment, Bond, SkillDef, UnitDef } from '../../core/types.ts';
+import type { Augment, Bond, Item, SkillDef, UnitDef } from '../../core/types.ts';
 import { roster, costColor } from '../data.ts';
 import { itemIconSvg } from '../art/items.js';
 import { CharacterImage } from './CharacterImage.tsx';
@@ -297,36 +297,33 @@ function ItemCodex({ ui, actions }: Props) {
       <Back to={{ kind: 'codex', page: 'home' }} actions={actions} />
       <h2>아이템 도감 · {I.items.length}종</h2>
       <p>
-        티어별 능력치와 고유 효과를 확인합니다. 장착·해제는 실제 보관함과 캐릭터 정보창에서
-        진행합니다.
+        기본 장비 8종과, 기본 장비 두 개를 겹쳐 만드는 완성 장비 36종입니다(같은 기본 장비끼리도
+        조합). 장착한 장비는 회수기로만 보관함에 되찾을 수 있습니다.
       </p>
-      {[1, 2, 3].map((tier) => (
-        <section key={tier}>
-          <h3>{tier}티어</h3>
+      {(['base', 'complete'] as const).map((kind) => (
+        <section key={kind}>
+          <h3>{kind === 'base' ? '기본 장비 8종' : '완성 장비 36종(기본 장비 2개 조합)'}</h3>
           <div class={styles.grid}>
-            {(
-              I.items as {
-                id: string;
-                name: string;
-                tier: number;
-                statsText: string;
-                effect: string;
-              }[]
-            )
-              .filter((i) => i.tier === tier)
+            {(I.items as unknown as Item[])
+              .filter((i) => i.kind === kind)
               .map((i) => (
-                <article key={i.id} class={styles.card} data-tier={tier}>
+                <article key={i.id} class={styles.card} data-kind={kind}>
                   <div class={styles.itemHead}>
                     <span dangerouslySetInnerHTML={{ __html: itemIconSvg(i.id) }} />
                     <div>
                       <small>
-                        {i.id} · {tier}티어
+                        {i.id} ·{' '}
+                        {kind === 'base'
+                          ? '기본 장비'
+                          : i
+                              .recipe!.map((id) => (I.byId(id) as unknown as Item).short)
+                              .join(' + ')}
                       </small>
                       <h3>{i.name}</h3>
                     </div>
                   </div>
                   <b>{i.statsText}</b>
-                  {i.effect && <p>{i.effect.replace(/\*\*([^*]+)\*\*/g, '$1')}</p>}
+                  {i.effect && <p>{i.effect}</p>}
                   <small>보유 {inv.filter((x) => x.id === i.id).length}개</small>
                 </article>
               ))}
@@ -409,6 +406,8 @@ interface BalanceApi {
   interaction: BalanceMeta;
   /** 메타 영구 강화(v0.19.0) */
   metaUpgrades: BalanceMeta;
+  /** 장비 개편·개명(v0.20.0) */
+  itemRework: BalanceMeta;
   counts<T>(list: T[], key: keyof T & string): Record<string, number>;
   toMarkdown(): string;
 }
@@ -815,8 +814,15 @@ function ResetConfirm({ actions }: Props) {
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
   const [record, setRecord] = useState<
-    'metaUpgrades' | 'interaction' | 'visual' | 'battlefield' | 'meta' | 'stage2' | 'stage1'
-  >('metaUpgrades');
+    | 'itemRework'
+    | 'metaUpgrades'
+    | 'interaction'
+    | 'visual'
+    | 'battlefield'
+    | 'meta'
+    | 'stage2'
+    | 'stage1'
+  >('itemRework');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -826,6 +832,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'itemRework'} onClick={() => setRecord('itemRework')}>
+          장비 개편 · v0.20.0
+        </button>
         <button aria-pressed={record === 'metaUpgrades'} onClick={() => setRecord('metaUpgrades')}>
           영구 강화 · v0.19.0
         </button>
@@ -855,7 +864,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'metaUpgrades' ? (
+      {record === 'itemRework' ? (
+        <BalanceMetaView t={balance.itemRework} />
+      ) : record === 'metaUpgrades' ? (
         <BalanceMetaView t={balance.metaUpgrades} />
       ) : record === 'interaction' ? (
         <BalanceMetaView t={balance.interaction} />

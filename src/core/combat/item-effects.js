@@ -1,8 +1,20 @@
-import B from '../board.js';
+// 완성 장비 36종의 고유 효과(v0.20.0 아이템 개편, 요청서의 1차 테스트안 그대로·임시값). 장비의 effectKey로 판정한다.
+// 능력치(재료에서 이어받은 % 능력치·추가 능력치)는 items.applyStats가 전투 전에 이미 넣었다. 여기서는 발동 효과만.
+// 사용자 결정(2026-11-23): 같은 완성 장비 중복 착용 허용 → 효과는 개수만큼 더한다(배율은 합산, 추가 타격·보호막은 개수만큼).
+// 회피·치명타 확률 상한은 따로 두지 않는다(치명타는 전투 기본 규칙대로 100%까지). 소환수에는 장비 효과가 없다.
+// 추가 공격·추가 피해(itemProc)는 다시 추가 공격·추가 피해를 만들지 않는다(연쇄 차단).
+// 보호막 지속 시간·발동 간격은 요청서에 정해지지 않아 전투 끝까지(999초)로 둔다(테스트용 임시값).
+import I from '../items.js';
 
-const has = (u, id) => !u.summon && (u.itemIds || []).includes(id);
+const LONG = 999;
 const active = (b, u) => !b.result && u && !u.dead && u.hp > 0;
-const distance = B.distance;
+/** 유닛이 가진 그 효과 장비 수(소환수는 0) */
+function count(u, key) {
+  if (!u || u.summon) return 0;
+  let n = 0;
+  for (const id of u.itemIds || []) if (I.byId(id)?.effectKey === key) n++;
+  return n;
+}
 function proc(b, fn) {
   b.itemProcDepth = (b.itemProcDepth || 0) + 1;
   try {
@@ -11,48 +23,83 @@ function proc(b, fn) {
     b.itemProcDepth--;
   }
 }
-function note(b, u, id, text) {
-  b.log('item', id + ' · ' + text, { source: u.uid, sourceTag: 'ITEM_PROC', itemId: id });
+function note(b, u, key, text) {
+  b.log('item', key + ' · ' + text, { source: u.uid, sourceTag: 'ITEM_PROC', itemEffect: key });
 }
+/** 보호막(보호막 강화 유대 등과 무관하게 장비 수치 그대로) */
+function shield(b, u, amount) {
+  if (amount <= 0 || !active(b, u)) return;
+  u.shields.push({ amount, expires: b.time + LONG, source: u.uid, kind: 'normal' });
+  b.statsTotal.shielding += amount;
+  b.log('shield', `${u.name} 장비 보호막 +${Math.round(amount)}`, {
+    source: u.uid,
+    target: u.uid,
+    amount,
+  });
+}
+function addMana(u, ratio) {
+  if (u.dead || u.summon || ratio <= 0) return;
+  u.mp = Math.min(u.stats.MP, u.mp + u.stats.MP * ratio);
+}
+/** 일정 시간 버프(능력치 배율): 같은 열쇠면 시간만 늘린다 */
+function buff(b, u, key, label, stat, mult, seconds) {
+  b.addStatus(u, {
+    key,
+    label,
+    stat,
+    mult,
+    source: u.uid,
+    expires: b.time + seconds,
+    harmful: false,
+  });
+}
+
 function start(b) {
   for (const u of b.alive()) {
-    if (has(u, 'I37')) {
-      proc(b, () => {
-        for (const ally of b.allies(u).filter((a) => distance(a.pos, u.pos) <= 1))
-          b.shield(ally, u.stats.HP * 0.15, 6, u);
-      });
-      note(b, u, 'I37', '시작 보호막');
-    }
+    const st = (u.itemState ||= {});
+    st.basicCount = 0;
+    const guard = count(u, 'guardianblade');
+    if (guard) shield(b, u, u.stats.HP * 0.15 * guard);
+    const heart = count(u, 'manaheart');
+    if (heart) addMana(u, 0.3 * heart);
   }
 }
+
 function update(b) {
   if (b.result) return;
   for (const u of b.alive()) {
-    const st = u.itemState;
-    if (!st?.manaReturns) continue;
-    st.manaReturns = st.manaReturns.filter((job) => {
-      if (job.due > b.time + 1e-8) return true;
-      u.mp = Math.min(u.stats.MP, u.mp + u.stats.MP * 0.3);
-      note(b, u, 'I30', '최대 MP30% 회복');
-      return false;
-    });
+    const n = count(u, 'regencloak');
+    if (!n) continue;
+    const st = (u.itemState ||= {});
+    st.nextRegen ??= 5;
+    if (b.time + 1e-8 >= st.nextRegen) {
+      st.nextRegen += 5;
+      const missing = Math.max(0, u.stats.HP - u.hp);
+      if (missing > 0) proc(b, () => b.heal(u, missing * 0.08 * n, u));
+    }
   }
 }
-function preventDeath(b, target, source, opts = {}) {
-  if (
-    !active(b, target) ||
-    !has(target, 'I28') ||
-    target.itemState.immortalUsed ||
-    b.itemProcDepth ||
-    opts.itemProc
-  )
-    return false;
-  target.itemState.immortalUsed = true;
-  proc(b, () => b.shield(target, target.stats.HP * 0.3, 4, target));
-  note(b, target, 'I28', '치명상 방지 · HP1 생존');
-  return true;
+
+/** 예전 장비(불사의 갑주)의 치명상 방지 자리. v0.20.0 장비에는 없어 항상 false */
+function preventDeath() {
+  return false;
 }
-/** Battle hooks for item-effects (see combat/hooks.js for ordering). */
+
+/** 회피 성공 뒤 효과(대상 = 회피한 쪽) */
+function afterEvade(b, u) {
+  if (!active(b, u)) return;
+  const st = (u.itemState ||= {});
+  const gale = count(u, 'galeblade');
+  if (gale) buff(b, u, 'itemGale', '질풍검 AS+20%', 'AS', 1 + 0.2 * gale, 3);
+  if (count(u, 'phantombow')) st.guaranteedCrit = true;
+  const armor = count(u, 'phantomarmor');
+  if (armor) st.phantomArmor = { until: b.time + 3, gd: 15 * armor };
+  const flow = count(u, 'flowcrystal');
+  if (flow) addMana(u, 0.1 * flow);
+  const shadow = count(u, 'shadowglove');
+  if (shadow) st.shadowGlove = { until: b.time + 4, ctc: 20 * shadow };
+}
+
 const extension = {
   name: 'item-effects',
   order: 10,
@@ -60,207 +107,172 @@ const extension = {
     stats(inner, u) {
       const s = inner(u),
         st = u.itemState || {};
-      if (st.warStacks) {
-        s.AD *= 1 + st.warStacks * 0.05;
-        s.AP *= 1 + st.warStacks * 0.05;
-      }
-      if (st.frenzyStacks) s.AS *= 1 + st.frenzyStacks * 0.05;
+      if (st.phantomArmor && this.time < st.phantomArmor.until) s.GD += st.phantomArmor.gd;
+      if (st.shadowGlove && this.time < st.shadowGlove.until) s.CTC += st.shadowGlove.ctc;
+      if (st.inBasic) s.CTH += 30 * count(u, 'assassinglove'); // 암살자의 장갑: 기본 공격 치명타 피해만
       return s;
-    },
-    heal(inner, target, amount, source) {
-      const eligible =
-        active(this, source) &&
-        has(source, 'I35') &&
-        this.itemCastFrame?.source === source.uid &&
-        !this.itemProcDepth;
-      if (eligible) amount *= 1.3;
-      const actual = inner(target, amount, source);
-      if (eligible && actual > 0 && active(this, target))
-        proc(this, () => {
-          this.shield(target, actual * 0.25, 3, source);
-        });
-      return actual;
-    },
-    summon(inner, owner, kind) {
-      const pet = inner(owner, kind);
-      if (pet && active(this, owner) && has(owner, 'I31') && !this.itemProcDepth) {
-        pet.stats.AD *= 1.3;
-        pet.expires = this.time + (pet.expires - this.time) * 1.4;
-        note(this, owner, 'I31', '소환수 공격피해+30% · 지속시간+40%');
-      }
-      return pet;
-    },
-    kill(inner, target, source = null, expired = false) {
-      const wasAlive = !target.dead,
-        previous = this.itemSplashFrame;
-      if (!previous) this.itemSplashFrame = { origins: new Set(), recipients: new Set() };
-      try {
-        const result = inner(target, source, expired);
-        if (
-          wasAlive &&
-          target.dead &&
-          !expired &&
-          active(this, source) &&
-          source.team !== target.team &&
-          has(source, 'I40') &&
-          !this.itemProcDepth
-        ) {
-          source.itemState.warStacks = Math.min(5, (source.itemState.warStacks || 0) + 1);
-          note(this, source, 'I40', '처치 중첩 ' + source.itemState.warStacks);
-        }
-        return result;
-      } finally {
-        this.itemSplashFrame = previous;
-      }
     },
     cast(inner, u, target) {
       if (!active(this, u) || !target || target.dead) return;
       const previous = this.itemCastFrame;
-      this.itemCastFrame = { source: u.uid, origins: new Set(), recipients: new Set() };
+      this.itemCastFrame = { source: u.uid, focused: false };
       try {
         inner(u, target);
-        if (this.itemProcDepth || !active(this, u)) return;
-        const st = u.itemState;
-        if (has(u, 'I30') && this.time >= (st.nextManaReturn || 0)) {
-          st.nextManaReturn = this.time + 8;
-          st.manaReturns = st.manaReturns || [];
-          st.manaReturns.push({ due: this.time + 3 });
-          note(this, u, 'I30', '3초 후 마나 회복 예약');
-        }
-        if (has(u, 'I27') && this.enemies(u).length && this.rng() < 0.25) {
-          const next = active(this, target) ? target : this.target(u);
-          if (next) {
-            const mp = u.mp;
-            note(this, u, 'I27', '무료 추가 스킬');
-            proc(this, () => {
-              inner(u, next);
-            });
-            u.mp = mp;
-          }
-        }
       } finally {
         this.itemCastFrame = previous;
       }
+      if (this.itemProcDepth || !active(this, u)) return;
+      const st = (u.itemState ||= {});
+      const cut = count(u, 'spellcutter');
+      if (cut) st.spellcut = 0.35 * cut;
+      proc(this, () => {
+        const life = count(u, 'lifestaff');
+        if (life) {
+          this.heal(u, u.stats.HP * 0.05 * life, u);
+          const low = this.allies(u)
+            .filter((a) => a !== u && !a.summon && active(this, a))
+            .sort((a, c) => a.hp / a.stats.HP - c.hp / c.stats.HP || a.uid - c.uid)[0];
+          if (low) this.heal(low, low.stats.HP * 0.05 * life, u);
+        }
+        const spring = count(u, 'lifespring');
+        if (spring) this.heal(u, u.stats.HP * 0.08 * spring, u);
+        const barrier = count(u, 'manabarrier');
+        if (barrier) shield(this, u, u.stats.HP * 0.1 * barrier);
+      });
+      const tome = count(u, 'archtome');
+      if (tome) addMana(u, 0.15 * tome);
+      const wind = count(u, 'windstaff');
+      if (wind) buff(this, u, 'itemWind', '바람술사 AS+25%', 'AS', 1 + 0.25 * wind, 3);
+      const ward = count(u, 'arcaneshield');
+      if (ward) st.arcaneShield = { until: this.time + 4, cut: 0.15 * ward };
     },
     deal(inner, source, target, amount, type = 'physical', opts = {}) {
       const kind = opts.kind || 'skill',
         valid = active(this, target),
-        external = !!opts.itemProc && !this.itemProcDepth;
-      if (external) this.itemProcDepth = (this.itemProcDepth || 0) + 1;
-      try {
-        const normal = !this.itemProcDepth && active(this, source);
-        if (normal && valid && kind === 'basic') {
-          if (has(source, 'I34') && target.hp / target.stats.HP <= 0.25) amount *= 1.5;
-          if (has(source, 'I38')) {
-            const st = source.itemState;
-            if (st.lastAttackTarget !== target.uid) {
-              st.lastAttackTarget = target.uid;
-              st.frenzyStacks = 0;
-            }
-            st.frenzyStacks = Math.min(8, (st.frenzyStacks || 0) + 1);
-          }
-        }
-        const result = inner(source, target, amount, type, opts);
-        if (!normal || !valid || this.result) return result;
-        if (result.evaded) {
-          if (
-            active(this, target) &&
-            has(target, 'I36') &&
-            this.time >= (target.itemState.nextEvade || 0)
-          ) {
-            target.itemState.nextEvade = this.time + 6;
-            this.addStatus(target, {
-              key: 'itemEvade',
-              label: '폭풍 망토 AS+20%',
-              stat: 'AS',
-              mult: 1.2,
-              source: target.uid,
-              expires: this.time + 4,
-              harmful: false,
-            });
-            note(this, target, 'I36', '회피 후 AS강화');
-          }
-          return result;
-        }
-        if (!active(this, source)) return result;
+        normal =
+          !this.itemProcDepth && !opts.itemProc && !opts.bondTransfer && active(this, source);
+      const st = source ? (source.itemState ||= {}) : {};
+      if (normal && valid) {
+        // 주는 피해
         if (kind === 'basic') {
-          if (has(source, 'I29') && result.damage > 0)
-            proc(this, () => this.heal(source, result.damage * 0.2, source));
-          if (has(source, 'I32') && active(this, target)) {
-            this.dot(
-              target,
-              source,
-              'itemHellfire',
-              '지옥불 화상',
-              this.stats(source).AP * 0.25,
-              4,
-            );
-            const status = target.statuses.find(
-              (s) => s.key === 'itemHellfire' && s.source === source.uid,
-            );
-            if (status) status.itemProc = true;
+          amount *= 1 + 0.2 * count(source, 'berserker');
+          if (st.spellcut && !opts.extraAttack) {
+            amount *= 1 + st.spellcut;
+            st.spellcut = 0;
           }
-          const foes = this.enemies(source)
-            .filter((e) => e !== target && distance(e.pos, target.pos) <= 1)
-            .sort(
-              (a, b) => distance(a.pos, target.pos) - distance(b.pos, target.pos) || a.uid - b.uid,
-            )
-            .slice(0, 2);
-          if (has(source, 'I26') && foes.length && this.rng() < 0.25) {
-            note(this, source, 'I26', '연쇄 번개');
-            proc(this, () => {
-              for (const foe of foes)
-                this.deal(source, foe, this.stats(source).AD * 0.6, 'magic', {
-                  kind: 'item',
-                  canCrit: false,
-                  itemProc: true,
-                });
-            });
+          if (st.guaranteedCrit) {
+            opts = { ...opts, critBonus: (opts.critBonus || 0) + 1000 };
+            st.guaranteedCrit = false;
           }
         }
-        if (kind === 'skill' && result.damage > 0) {
-          if (has(source, 'I33') && active(this, target)) {
-            this.debuff(target, source, 'itemFrost', '영원의 서리 AS−25%', 'AS', 0.75, 3);
-            const st = source.itemState;
-            st.frostCounts = st.frostCounts || {};
-            st.frostCounts[target.uid] = (st.frostCounts[target.uid] || 0) + 1;
-            if (st.frostCounts[target.uid] >= 3) {
-              st.frostCounts[target.uid] = 0;
-              this.addStatus(target, {
-                key: 'stun',
-                label: '서리 기절',
-                source: source.uid,
-                expires: this.time + 1,
-                harmful: true,
-              });
-            }
-          }
-          if (has(source, 'I39')) {
-            const frame = this.itemCastFrame ||
-              this.itemSplashFrame || { origins: new Set(), recipients: new Set() };
-            if (!frame.origins.has(target.uid)) {
-              frame.origins.add(target.uid);
-              const foes = this.enemies(source).filter(
-                (e) =>
-                  e !== target && distance(e.pos, target.pos) <= 1 && !frame.recipients.has(e.uid),
-              );
-              proc(this, () => {
-                for (const foe of foes) {
-                  frame.recipients.add(foe.uid);
-                  this.deal(source, foe, result.damage * 0.35, 'magic', {
-                    kind: 'item',
-                    canCrit: false,
-                    itemProc: true,
-                  });
-                }
-              });
-            }
-          }
+        if (kind === 'skill') {
+          amount *= 1 + 0.2 * count(source, 'archcrown');
+          if (count(source, 'arcaneeye')) opts = { ...opts, canCrit: true };
         }
-        return result;
-      } finally {
-        if (external) this.itemProcDepth--;
+        const exe = count(source, 'executioner');
+        if (exe && target.hp / target.stats.HP <= 0.3) amount *= 1 + 0.2 * exe;
       }
+      // 받는 피해(장착자 쪽, 회피와 무관하게 피해량에만)
+      if (valid && !opts.bondTransfer) {
+        const tst = target.itemState || {};
+        let cut = 0.12 * count(target, 'immortalarmor');
+        if (tst.arcaneShield && this.time < tst.arcaneShield.until) cut += tst.arcaneShield.cut;
+        if (cut) amount *= Math.max(0, 1 - cut);
+      }
+      if (normal && kind === 'basic') st.inBasic = true;
+      let result;
+      try {
+        result = inner(source, target, amount, type, opts);
+      } finally {
+        st.inBasic = false;
+      }
+      if (this.result) return result;
+      if (result.evaded) {
+        if (valid && !opts.bondTransfer) afterEvade(this, target);
+        return result;
+      }
+      // 맞은 쪽 효과
+      if (valid && !opts.bondTransfer && result.damage > 0) {
+        const mark = count(target, 'survivormark');
+        const tst = (target.itemState ||= {});
+        if (
+          mark &&
+          !tst.survivorUsed &&
+          active(this, target) &&
+          target.hp / target.stats.HP <= 0.3
+        ) {
+          tst.survivorUsed = true;
+          shield(this, target, target.stats.HP * 0.2 * mark);
+          note(this, target, 'survivormark', '보호막');
+        }
+        const counter = count(target, 'counterarmor');
+        if (
+          counter &&
+          kind === 'basic' &&
+          active(this, source) &&
+          active(this, target) &&
+          !opts.itemProc
+        )
+          proc(this, () =>
+            this.deal(target, source, this.stats(target).GD * 0.5 * counter, 'physical', {
+              kind: 'item',
+              canCrit: false,
+              itemProc: true,
+            }),
+          );
+      }
+      if (!normal || !active(this, source)) return result;
+      // 가한 쪽 효과
+      if (result.damage > 0) {
+        const vamp = count(source, 'vampblade');
+        if (vamp) proc(this, () => this.heal(source, result.damage * 0.12 * vamp, source));
+      }
+      if (kind === 'skill' && result.critical) {
+        const focus = count(source, 'focuscrystal');
+        const frame = this.itemCastFrame;
+        if (focus && (!frame || !frame.focused)) {
+          if (frame) frame.focused = true;
+          addMana(source, 0.1 * focus);
+        }
+      }
+      if (kind !== 'basic' || opts.extraAttack) return result;
+      // 기본 공격 횟수 효과(추가 공격은 세지 않음)
+      st.basicCount = (st.basicCount || 0) + 1;
+      const n = st.basicCount;
+      const ap = () => this.stats(source).AP;
+      proc(this, () => {
+        const rune = count(source, 'runeblade');
+        if (rune && active(this, target))
+          this.deal(source, target, ap() * 0.2 * rune, 'magic', {
+            kind: 'item',
+            canCrit: false,
+            itemProc: true,
+          });
+        const bow = count(source, 'spellbow');
+        if (bow && n % 3 === 0 && active(this, target))
+          this.deal(source, target, ap() * 0.35 * bow, 'magic', {
+            kind: 'item',
+            canCrit: false,
+            itemProc: true,
+          });
+        const vital = count(source, 'vitalbow');
+        if (vital) this.heal(source, source.stats.HP * 0.01 * vital, source);
+        const wall = count(source, 'bulwarkbow');
+        if (wall && n % 4 === 0) shield(this, source, source.stats.HP * 0.05 * wall);
+      });
+      const rapid = count(source, 'rapidbow');
+      if (rapid && n % 5 === 0)
+        buff(this, source, 'itemRapid', '속사 AS+25%', 'AS', 1 + 0.25 * rapid, 3);
+      const manaBow = count(source, 'manabow');
+      if (manaBow) this.gainMana(source, this.config.combat.manaOnAttack * 0.2 * manaBow);
+      const storm = count(source, 'stormblade');
+      if (storm && n % 4 === 0)
+        for (let i = 0; i < storm && active(this, target) && active(this, source); i++)
+          this.deal(source, target, this.stats(source).AD, source.attackType || 'physical', {
+            kind: 'basic',
+            extraAttack: true,
+          });
+      return result;
     },
   },
   on: {
@@ -272,14 +284,6 @@ const extension = {
 function install(Battle) {
   Battle.use(extension);
 }
-const api = {
-  extension,
-  install,
-  start,
-  update,
-  preventDeath,
-  has,
-  proc,
-};
+const api = { extension, install, start, update, preventDeath, count, proc };
 
 export default api;

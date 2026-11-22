@@ -345,7 +345,7 @@ test('연출을 읽어도 시드 전투의 결과·무작위·아이템 발동·
   function run(withVisuals, Kind) {
     let seed = 941;
     const rng = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
-    const ids = ['I26', 'I27', 'I39'];
+    const ids = ['IB02', 'IB03', 'IB07'];
     const b = new Kind(
       [
         { id: 'C13', pos: 26, itemIds: ids, bonuses: I.bonuses(ids) },

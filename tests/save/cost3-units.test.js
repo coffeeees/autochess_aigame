@@ -63,7 +63,7 @@ test('all cost3 IDs and legacy result names survive unchanged save fields and mi
       .map((x, i) => ({ id: x.id, uid: i + 1, location: 'bench', benchSlot: i, star: 2 })),
     shop: ['C24', 'C25', 'C26', 'C27', 'C28'],
   });
-  s.inventory = [{ id: 'I28', uid: 'I1', equippedTo: 1 }];
+  s.inventory = [{ id: 'IB04', uid: 'I1', equippedTo: 1 }];
   const restored = JSON.parse(JSON.stringify(s));
   P.migrate(restored);
   V.normalize(restored);

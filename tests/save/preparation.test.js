@@ -35,7 +35,7 @@ test('legacy duplicate deployment repaired without losing units or gear, even fu
   s.units[3].pos = 18;
   for (let i = 0; i < 11; i++)
     s.units.push({ uid: 6 + i, id: 'C04', star: 1, location: 'bench', pos: -1 });
-  const item = P.addItem(s, 'I01');
+  const item = P.addItem(s, 'IB01');
   item.equippedTo = 4;
   const n = s.units.length;
   a.equal(V.repairDeployment(s), 1);
@@ -59,7 +59,7 @@ test('legacy12 reserve units and equipment survive, overflow compacts as units l
         benchSlot: i,
       })),
     }),
-    item = P.addItem(s, 'I28');
+    item = P.addItem(s, 'IB04');
   item.equippedTo = 12;
   V.normalize(s);
   a.equal(s.units.length, 12);

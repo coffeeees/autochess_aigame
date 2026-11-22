@@ -40,7 +40,7 @@ test('actual 33 playable mixed gear/augments battles terminate with finite stats
   for (let i = 0; i < 33; i += 6) {
     const ids = D.playableIds.slice(i, i + 6),
       b = new Battle(
-        ids.map((id, k) => ({ id, pos: 2 + 8 * k, itemIds: ['I27', 'I28', 'I35'] })),
+        ids.map((id, k) => ({ id, pos: 2 + 8 * k, itemIds: ['IB03', 'IB04', 'IB03'] })),
         [
           { id: 'E03', pos: 7, star: 3 },
           { id: 'E04', pos: 15, star: 3 },

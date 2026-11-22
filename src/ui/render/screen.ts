@@ -9,6 +9,10 @@ export const cueDurations = {
   health: (reduced: boolean) => (reduced ? 500 : 3000),
   mergeFlight: (reduced: boolean) => (reduced ? 120 : 900),
   mergeFlare: (reduced: boolean) => (reduced ? 180 : 680),
+  /** 회수기(v0.20.0, 테스트용 임시값): 장비마다 100ms 간격으로 출발, 개당 500ms 이동, 도착 칸 260ms 발광. 움직임 줄이기면 생략 */
+  recoveryStagger: (reduced: boolean) => (reduced ? 0 : 100),
+  recoveryFlight: (reduced: boolean) => (reduced ? 0 : 500),
+  recoveryGlow: (reduced: boolean) => (reduced ? 0 : 260),
 };
 
 /** 하트 안 물결(impact-health.js water) */

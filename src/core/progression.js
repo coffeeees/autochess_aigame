@@ -4,6 +4,7 @@ import A from './augments.js';
 import I from './items.js';
 import R from './augment-run.js';
 import U from './meta-upgrades.ts';
+import E from './equipment.ts';
 import { runRng, nextSeed } from './rng.ts';
 
 const config = {
@@ -39,7 +40,8 @@ const config = {
     bossExtraGold: { 1: 5, 2: 7, 3: 9, 4: 11, 5: 13, 6: 15 },
     laterBossExtraGold: 15,
   },
-  equipment: { slotsPerUnit: 3, unequipCost: 0, allowDuplicates: true, preparationOnly: true },
+  // v0.20.0: 무료 장비 회수 없음(회수기만, equipment.ts). 같은 완성 장비 중복 착용 허용
+  equipment: { slotsPerUnit: 3, allowDuplicates: true, preparationOnly: true },
   loss: { mode: 'legacy-round', survivorDamage: 2 },
   notes: [
     '보상 전 소지금 기준 이자는 기존 동작 유지·최종 확정 전 설정값',
@@ -51,8 +53,8 @@ const config = {
   ],
 };
 const items = I.items;
-/** 원정 저장 버전(save.ts SAVE_VERSION과 같음). v0.17.0: 4, v0.18.0(좌우 대치 전장): 5 */
-const VERSION = 5;
+/** 원정 저장 버전(save.ts SAVE_VERSION과 같음). v0.17.0: 4, v0.18.0(좌우 대치 전장): 5, v0.20.0(장비 개편): 6 */
+const VERSION = 6;
 const augments = A.augments;
 const label = (s) => `${s.stage}-${s.round}`,
   ordinal = (s) => (s.stage - 1) * config.roundsPerStage + s.round;
@@ -77,6 +79,7 @@ function initialize(state) {
   state.augmentSelections = {};
   state.augmentState = { version: 1, completedPicks: [], skippedPicks: [], pendingPick: null };
   state.augmentRun = null;
+  state.recoveryTools = E.config.recovery.start; // 회수기(v0.20.0): 새 원정 2개
   R.normalize(state);
   state.completedRounds = {};
   state.roundPhase = 'prepare';
@@ -111,6 +114,18 @@ function migrate(state) {
   // 버전 4(상하 대치 전장)는 전장 칸을 한 번 회전해 5로 올린다. 그보다 오래된 저장은 받지 않는다
   if (state.version === 4) {
     B.migrate(state);
+    state.version = 5;
+  }
+  // 버전 5 → 6(v0.20.0 장비 개편): 예전 1~3티어 장비는 보관함·장착 모두에서 지우고 원정은 이어간다(사용자 결정 2026-11-23).
+  // 예전 장비가 든 보급 후보는 버리고 준비 단계로 돌려 새 기본 장비로 다시 뽑는다. 회수기는 새 원정처럼 2개.
+  if (state.version === 5) {
+    state.inventory = (state.inventory || []).filter((i) => itemById(i.id));
+    if (state.discardedItem && !itemById(state.discardedItem.id)) state.discardedItem = null;
+    if (state.supplyOffer?.options?.some((id) => !itemById(id))) {
+      state.supplyOffer = null;
+      if (state.roundPhase === 'supply') state.roundPhase = 'prepare';
+    }
+    state.recoveryTools = E.config.recovery.start;
     state.version = VERSION;
   }
   if (state.version !== VERSION)
@@ -165,8 +180,9 @@ function addItem(state, id) {
   state.inventory.push(item);
   return item;
 }
+/** 무작위 장비 하나(v0.20.0: 기본 장비 8종 중) */
 function randomItem(state, rng) {
-  return addItem(state, items[Math.min(items.length - 1, Math.floor(rng() * items.length))].id);
+  return addItem(state, I.draw(0, rng));
 }
 function normalizeAugments(state) {
   state.augments = [...new Set(Array.isArray(state.augments) ? state.augments : [])].filter((id) =>
@@ -259,24 +275,9 @@ function augmentBlock(state, id) {
 function rerollCost(state) {
   return R.rerollCost(state);
 }
+/** 보관함 장비를 캐릭터에 놓기(장착 또는 들고 있던 기본 장비와 조합, equipment.ts) */
 function equip(state, itemUid, unitUid) {
-  if (state.done || state.roundPhase !== 'prepare') return false;
-  const item = state.inventory.find((i) => i.uid === itemUid),
-    unit = state.units.find((u) => u.uid === unitUid);
-  if (!item || !unit || item.equippedTo !== null) return false;
-  const equipped = state.inventory.filter((i) => i.equippedTo === unitUid);
-  if (equipped.length >= config.equipment.slotsPerUnit || !I.canStack(item.id, equipped))
-    return false;
-  item.equippedTo = unitUid;
-  return true;
-}
-function unequip(state, itemUid) {
-  if (state.done || state.roundPhase !== 'prepare') return false;
-  const item = state.inventory.find((i) => i.uid === itemUid);
-  if (!item || item.equippedTo === null || state.gold < config.equipment.unequipCost) return false;
-  state.gold -= config.equipment.unequipCost;
-  item.equippedTo = null;
-  return true;
+  return E.dropOnUnit(state, itemUid, unitUid).ok;
 }
 function releaseEquipment(state, uids) {
   for (const item of state.inventory) if (uids.includes(item.equippedTo)) item.equippedTo = null;
@@ -402,7 +403,8 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
       : 0;
   let extra = null,
     bonusGold = 0,
-    bossItem = null;
+    bossItem = null,
+    recovery = 0;
   if (type === 'SUPPLY') {
     const received = state.supplyOffer.selected.map((index) =>
       addItem(state, state.supplyOffer.options[index]),
@@ -419,9 +421,11 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
       bonusGold = config.rewards.bossExtraGold[state.stage] ?? config.rewards.laterBossExtraGold;
       extra = { kind: 'gold', amount: bonusGold };
     }
-    const tier = state.stage === 1 ? 1 : state.stage <= 4 ? 2 : 3,
-      item = addItem(state, I.drawTier(tier, rng));
+    // 보스 확정 장비 1개(v0.20.0: 등급 없이 기본 장비 8종 중). 난수 사용 횟수는 예전과 같다
+    const item = addItem(state, I.drawTier(0, rng));
     bossItem = { kind: 'item', itemId: item.id, itemUid: item.uid };
+    // 회수기: 보스 승리마다 따로 확률 판정(장비·골드 보상과 독립)
+    recovery = E.rollBossRecovery(state, rng);
   }
 
   if (type !== 'SUPPLY') state.winStreak = win ? (state.winStreak || 0) + 1 : 0;
@@ -505,6 +509,7 @@ function settleRound(state, outcome = {}, rng = runRng(state)) {
     winStreak: state.winStreak || 0,
     monsterLoot,
     bossItem,
+    ...(recovery ? { recovery } : {}),
     total,
     totalEarned: total + monsterGold,
     extra,
@@ -600,7 +605,6 @@ const api = {
   availableAugments,
   chooseAugment,
   equip,
-  unequip,
   releaseEquipment,
   unitBonuses,
   unitItemIds,

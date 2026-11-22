@@ -53,7 +53,7 @@ function currentSave() {
 function originalCheck(s) {
   const occupied = new Set();
   return (
-    (s?.version === 4 || s?.version === 5) &&
+    [4, 5, 6].includes(s?.version) &&
     (s.boardColumns === undefined || [7, 8].includes(s.boardColumns)) &&
     Array.isArray(s.units) &&
     s.units.every((u) => {
@@ -281,13 +281,13 @@ test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보�
   a.deepEqual(result.reverted.loot, { kind: 'gold', amount: 4 });
   // … 또는 보너스 아이템
   const withItem = clone(old);
-  withItem.inventory.push({ uid: 'I99', id: 'I12', equippedTo: null });
+  withItem.inventory.push({ uid: 'I99', id: 'IB04', equippedTo: null });
   withItem.bonusLootLedger = {
-    [P.label(old)]: { kind: 'item', itemId: 'I12', itemUid: 'I99', key: P.label(old) },
+    [P.label(old)]: { kind: 'item', itemId: 'IB04', itemUid: 'I99', key: P.label(old) },
   };
   result = loadSave(memoryStorage({ [SAVE_KEY]: JSON.stringify(withItem) }), NOW);
   a.deepEqual(result.state.inventory, old.inventory);
-  a.deepEqual(result.reverted.loot, { kind: 'item', itemId: 'I12', itemUid: 'I99' });
+  a.deepEqual(result.reverted.loot, { kind: 'item', itemId: 'IB04', itemUid: 'I99' });
   // 이전 라운드 보상은 그대로
   const earlier = clone(withGold);
   earlier.bonusLootLedger['1-1'] = { kind: 'gold', amount: 3, key: '1-1' };
@@ -297,16 +297,19 @@ test('D4 (a): 전투 중 저장은 준비 단계로 돌아가고 보너스 보�
   a.equal(revertInterruptedBattle(currentSave()), null);
 });
 
-test('저장 버전 5, 이관 4 → 5(좌우 대치 전장 회전), 1~3은 지움', () => {
-  a.equal(S.SAVE_VERSION, 5);
+test('저장 버전 6, 이관 4 → 5(좌우 대치 전장 회전) → 6(장비 개편), 1~3은 지움', () => {
+  a.equal(S.SAVE_VERSION, 6);
   a.deepEqual(
     S.MIGRATIONS.map((m) => [m.from, m.to]),
-    [[4, 5]],
+    [
+      [4, 5],
+      [5, 6],
+    ],
   );
-  a.equal(currentSave().version, 5);
+  a.equal(currentSave().version, 6);
 });
 
-test('v0.17.x 저장(버전 4, 7열 상하 대치)은 지우지 않고 전장 칸을 회전해 버전 5로 불러온다', () => {
+test('v0.17.x 저장(버전 4, 7열 상하 대치)은 지우지 않고 전장 칸을 회전해 버전 6으로 불러온다', () => {
   const save = currentSave();
   // 버전 4 모양으로 되돌린다: 7열, 아군·적 편성 칸은 예전 좌표
   Object.assign(save, { version: 4, boardColumns: 7 });
@@ -318,7 +321,7 @@ test('v0.17.x 저장(버전 4, 7열 상하 대치)은 지우지 않고 전장 �
   const storage = memoryStorage({ [SAVE_KEY]: JSON.stringify(save) });
   const result = loadSave(storage, NOW);
   a.equal(result.status, 'loaded');
-  a.equal(result.state.version, 5);
+  a.equal(result.state.version, 6);
   a.equal(result.state.boardColumns, 8);
   a.deepEqual(
     result.state.units.filter((u) => u.location === 'board').map((u) => u.pos),

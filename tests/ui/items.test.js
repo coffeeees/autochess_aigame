@@ -57,17 +57,18 @@ function choose(s, rng = () => 0.1) {
 function freeze(b) {
   for (const u of b.units) u.castUntil = 999;
 }
-test('patch notes include v0.1..0.15.11 current rules40items and original history', () => {
+test('patch notes include v0.1..0.15.11 history and current equipment 8 + 36(v0.20.0)', () => {
   const N = $patchNotes;
   a.equal(N.history[0].version, '0.1');
   a(
     N.history.some((h) => h.version === '0.15.18'),
     '원본 마지막 버전 기록 보존',
   );
-  a.equal(N.history.at(-1).version, '0.19.0');
-  a.equal(N.current, '0.19.0');
+  a.equal(N.history.at(-1).version, '0.20.0');
+  a.equal(N.current, '0.20.0');
   const text = N.toMarkdown();
   a(text.includes('미구현'));
   a(text.includes('시작7G'));
-  a.equal((text.match(/^- I\d{2} \/ T/gm) || []).length, 40);
+  a.equal((text.match(/^- IB\d{2} \/ 기본/gm) || []).length, 8);
+  a.equal((text.match(/^- IC\d{2} \/ 완성/gm) || []).length, 36);
 });

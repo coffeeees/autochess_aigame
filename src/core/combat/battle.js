@@ -122,7 +122,8 @@ class Battle {
       summon: false,
       skillPower: 1,
       healingPower: 1,
-      manaGain: 1,
+      // 장비 MP 획득량 %(v0.20.0 마나 결정 계열). 최대 MP는 그대로
+      manaGain: 1 + (entry.bonuses?.MPGainPercent || 0) / 100,
       regen: 0,
       lifesteal: 0,
       healingReduction: 0,

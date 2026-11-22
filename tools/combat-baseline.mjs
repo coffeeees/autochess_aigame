@@ -40,6 +40,13 @@ const B = await load('board.js');
 // 시나리오의 고정 칸은 예전 상하 대치 좌표(7열×8행)로 적혀 있다. v0.18.0 좌우 대치 전장에서는 여기서 한 번 회전한다
 const R = B.rotateOldPos;
 const { Battle } = await load('combat/battle.js');
+// v0.20.0 캐릭터 개명: 기준선(v0.15.18) 로그 문구에는 예전 표시 이름이 들어 있다. 전투 내용은 이름과 무관하므로
+// 여기서만 예전 이름으로 되돌려 실행한다(게임 데이터는 바꾸지 않음, 이 도구 안의 사본만)
+const OLD_NAMES =
+  '녹스 아즈칼 태건 리엔 루아 카인 유하 벨모르 라칸 울프릭 둔가르 엘리엘 브룬 적호 베스퍼 토비 이그니스 아우라 설아 진무 오르페 골룸바 로제트 유키나 지그 흐로드 비올라 시그룬 카르도 네레이드 홍련 제피로 아그니 아스텔 메두라 참월 카르미나 오르딘 글라시아 월하 뇌진 바하무트 라이진 백야 아바돈'.split(
+    ' ',
+  );
+D.roster.forEach((u, i) => (u.name = OLD_NAMES[i]));
 
 const hash = (value) =>
   crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);
@@ -131,7 +138,8 @@ function scenarios() {
     );
   }
 
-  // 3) 아이템: 모든 아이템을 한 번 이상 장착.
+  // 3) 아이템: 모든 아이템을 한 번 이상 장착. v0.20.0에 예전 1~3티어 장비(I01~I40)를 지우고 기본·완성 장비(IB·IC)로
+  //    바꿨으므로, 기준선의 예전 장비 전투(items-I0…)는 --check에서 비교하지 않고 새 장비 전투(items-IB…)는 기록만 한다.
   const itemIds = I.items.map((it) => it.id);
   for (let k = 0; k < itemIds.length; k += 6) {
     const gear = itemIds.slice(k, k + 6);
@@ -208,21 +216,25 @@ if (process.argv.includes('--write')) {
   console.log(`wrote ${result.battles.length} battles to ${path.relative(ROOT, OUT)}`);
 } else if (process.argv.includes('--check')) {
   const stored = JSON.parse(fs.readFileSync(OUT, 'utf8'));
-  // 지운 증강의 기준선 전투(augment-*)는 비교하지 않는다(4단계 주석)
-  const kept = stored.battles.filter((b) => !b.name.startsWith('augment-'));
-  const now = new Map(result.battles.map((b) => [b.name, b]));
+  // 지운 증강의 기준선 전투(augment-*)와 지운 예전 장비 전투(items-I0…, v0.20.0)는 비교하지 않는다
+  const removed = (name) => name.startsWith('augment-') || /^items-I\d/.test(name);
+  const kept = stored.battles.filter((b) => !removed(b.name));
+  // 새 장비 전투(items-IB…)는 기준선에 없으므로 비교 대상에서 뺀다
+  const current = result.battles.filter((b) => !/^items-I[BC]/.test(b.name));
+  const now = new Map(current.map((b) => [b.name, b]));
   let diffs = 0;
   for (const b of kept)
     if (JSON.stringify(b) !== JSON.stringify(now.get(b.name))) {
       diffs++;
       console.error(`DIFF ${b.name}`);
     }
-  if (kept.length !== result.battles.length) diffs++;
-  const skipped = stored.battles.length - kept.length;
+  if (kept.length !== current.length) diffs++;
+  const skippedAug = stored.battles.filter((b) => b.name.startsWith('augment-')).length;
+  const skippedItems = stored.battles.filter((b) => /^items-I\d/.test(b.name)).length;
   console.log(
     diffs
       ? `${diffs} battle(s) differ`
-      : `all ${kept.length} battles match (지운 증강 전투 ${skipped}건은 비교하지 않음)`,
+      : `all ${kept.length} battles match (지운 증강 전투 ${skippedAug}건·지운 예전 장비 전투 ${skippedItems}건은 비교하지 않음)`,
   );
   process.exit(diffs ? 1 : 0);
 } else {

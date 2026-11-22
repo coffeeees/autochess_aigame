@@ -57,7 +57,7 @@ test('바깥 클릭·Esc는 맨 위 팝업 하나만 닫는다: 덮개 창 > 설
   const unit = s().run.units[0];
   act.select(unit.uid, 300, 400);
   a.deepEqual(s().anchor, { x: 300, y: 400 }, '누른 위치에 띄움');
-  s().run.inventory.push({ uid: 'I9', id: 'I01', equippedTo: null });
+  s().run.inventory.push({ uid: 'I9', id: 'IB01', equippedTo: null });
   act.selectItem('I9');
   act.setPeek('bond', '무극', true);
   act.setShopOpen(true);
@@ -141,7 +141,7 @@ test('전투 중 캐릭터 상세: 전투 중에만 열리고, 전투는 멈추�
 
 test('보관함 접기·펼치기는 아이템·장착·선택 상태를 바꾸지 않는다', () => {
   const { s, a: act } = setup();
-  s().run.inventory.push({ uid: 'I7', id: 'I02', equippedTo: null });
+  s().run.inventory.push({ uid: 'I7', id: 'IB05', equippedTo: null });
   act.selectItem('I7');
   const before = JSON.stringify(s().run.inventory);
   a.equal(s().inventoryOpen, true);

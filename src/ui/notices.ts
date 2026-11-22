@@ -18,8 +18,11 @@ export const RETAINED = [
 ] as const;
 /** T28: 아이템 버리기 거절, 원인별 문구(승인됨). */
 export const APPROVED = ['T28'] as const;
-/** 재구축에서 추가: 저장 실패, 손상 저장 백업, 새로고침으로 전투 취소, 이전 버전 저장 삭제(v0.17.0), 메타 XP 지급(v0.17.3). */
-export const ADDED = ['T42', 'T43', 'T44', 'T45', 'T46'] as const;
+/**
+ * 재구축에서 추가: 저장 실패, 손상 저장 백업, 새로고침으로 전투 취소, 이전 버전 저장 삭제(v0.17.0), 메타 XP 지급(v0.17.3),
+ * 장비 조합 완료(v0.20.0), 회수기 사용(v0.20.0).
+ */
+export const ADDED = ['T42', 'T43', 'T44', 'T45', 'T46', 'T47', 'T48'] as const;
 
 const shown = new Set<string>([...RETAINED, ...APPROVED, ...ADDED]);
 

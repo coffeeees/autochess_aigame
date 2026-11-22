@@ -151,7 +151,10 @@ test('화면 규칙: 드래그할 수 있는 캐릭터·아이템에 data-drag-s
   const items = fs.readFileSync('src/ui/components/Items.tsx', 'utf8');
   const hook = fs.readFileSync('src/ui/usePopupDismiss.ts', 'utf8');
   a(pawn.includes('data-drag-source'));
-  a(items.includes('data-drag-source="item"'));
+  a(
+    items.includes("data-drag-source={loose ? 'item' : undefined}"),
+    '보관함 장비만(장착 장비는 끌 수 없음, v0.20.0)',
+  );
   const i = hook.indexOf("closest('[data-drag-source]')");
   a(i > 0 && i < hook.indexOf('e.stopPropagation()'), '막기 전에 드래그 대상이면 돌아감');
 });
