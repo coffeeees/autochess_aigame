@@ -111,7 +111,7 @@ export function InventoryPanel(props: GameProps) {
   const over = ui.drag?.active && ui.drag.kind === 'item' ? ui.drag.over : null;
   const open = ui.inventoryOpen;
   return (
-    <section class={styles.panel} data-open={open}>
+    <section class={styles.panel} data-open={open} data-inventory-panel>
       <header class={styles.head}>
         <div>
           <h2>아이템</h2>

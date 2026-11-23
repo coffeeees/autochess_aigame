@@ -58,7 +58,12 @@
   z-index: 60;
   display: flex;
   gap: 8px;
-  width: 260px;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  width: min(260px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow: hidden;
   padding: 10px;
   border: 1px solid #e6c449;
   border-radius: var(--radius-md);
