@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.20.1');
+  a.equal(notes.current, '0.21.0');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -380,5 +380,14 @@ test('장비 개편 기록(v0.20.0): 요청서 최종 체크·사용자 결정·
       t.growth.some((x) => x.includes('1차 테스트안')),
   );
   a(t.notRun.some((x) => x.includes('사람이 직접')));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 장비 개편'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 장비 개편'));
+});
+
+test('장비 밸런스 1차 기록(v0.21.0): 3장비 시너지 표·필수 검증·미해결 이슈', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.itemBalance;
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.cases.some((c) => c[0].includes('유령의 망토')));
+  a(t.issues.some((x) => x.title.includes('치명타')));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 장비 밸런스 1차'));
 });

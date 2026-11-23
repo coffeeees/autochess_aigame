@@ -274,6 +274,7 @@ const prototypeConfig = {
     skillsCrit: false,
     basicDodge: true,
     skillsDodge: false,
+    dodgeCap: 40, // 최종 회피 확률 상한 %(v0.21.0 장비 밸런스 1차). 치명타 확률은 100%까지
     statusPolicy: '같은 시전자·같은 효과는 갱신, 다른 시전자 DOT는 중첩',
     duplicateSynergy: '서로 다른 ID만 집계',
     summonPlacementRadius: 3,

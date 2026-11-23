@@ -50,16 +50,11 @@ test('기본 장비 8종 + 완성 장비 36종, 모든 두 재료 조합(같은 
     }
   a.equal(seen.size, 36);
   a.equal(I.recipe('IC01', 'IB01'), null, '완성 장비는 다시 조합하지 않음');
-  // 완성 장비는 두 재료 능력치를 100% 이어받는다(+추가 능력치)
-  for (const c of I.complete) {
-    const sum = {};
-    for (const m of c.recipe)
-      for (const [k, v] of Object.entries(I.byId(m).stats)) sum[k] = (sum[k] || 0) + v;
-    for (const [k, v] of Object.entries(sum)) a(c.stats[k] >= v, `${c.name} ${k}`);
-  }
-  a.deepEqual(I.byId(id('폭풍의 검')).stats, { ADPercent: 10, ASPercent: 10 });
-  a.deepEqual(I.byId(id('불멸의 갑옷')).stats, { HPPercent: 15, GD: 10 });
-  a.deepEqual(I.byId(id('거인의 심장')).stats, { HPPercent: 50 }, '15 + 15 + 추가 20');
+  // v0.21.0: 완성 장비 능력치는 재료 합이 아니라 장비마다 정한 값(재료 능력치를 이어받지 않음)
+  a.deepEqual(I.byId(id('폭풍의 검')).stats, { ADPercent: 20, ASPercent: 20 });
+  a.deepEqual(I.byId(id('불멸의 갑옷')).stats, { HPPercent: 30, GD: 22 });
+  a.deepEqual(I.byId(id('거인의 심장')).stats, { HPPercent: 55 });
+  a.deepEqual(I.byId(id('거인의 심장')).uniqueStats, { HPPercent: 20 });
 });
 
 // ─── 지급 경로 ───
@@ -298,7 +293,7 @@ function fight(itemIds, extraAllies = []) {
 const me = (b) => b.units.find((u) => u.persistentUid === 1);
 const foe = (b) => b.units.find((u) => u.id === 'E06');
 
-test('기본 장비 능력치: AD·AP·AS·HP %, GD·CTC·DOD 더하기, MP 획득량 %(최대 MP 그대로), 완성 장비는 재료 합', () => {
+test('기본 장비 능력치: AD·AP·AS·HP %, GD·CTC·DOD 더하기, MP 획득량 %(최대 MP 그대로), 완성 장비는 자기 능력치만', () => {
   const base = me(fight([]));
   const s = (ids) => me(fight(ids));
   near(s(['IB01']).stats.AD, base.stats.AD * 1.1);
@@ -310,8 +305,8 @@ test('기본 장비 능력치: AD·AP·AS·HP %, GD·CTC·DOD 더하기, MP 획�
   a.equal(s(['IB06']).stats.MP, base.stats.MP);
   near(s(['IB07']).stats.CTC, base.stats.CTC + 10);
   near(s(['IB08']).stats.DOD, base.stats.DOD + 8);
-  near(s([id('폭풍의 검')]).stats.AD, base.stats.AD * 1.1);
-  near(s([id('유령의 망토')]).stats.DOD, base.stats.DOD + 28, '8 + 8 + 추가 12');
+  near(s([id('폭풍의 검')]).stats.AD, base.stats.AD * 1.2);
+  near(s([id('유령의 망토')]).stats.DOD, base.stats.DOD + 18, '기본 12 + 고유 6');
   // 미리보기(원정)와 전투가 같은 능력치
   const r = run();
   const it = give(r, 'IB01');
@@ -319,7 +314,7 @@ test('기본 장비 능력치: AD·AP·AS·HP %, GD·CTC·DOD 더하기, MP 획�
   near(P.previewStats(r, r.units[0]).AD, base.stats.AD * 1.1);
 });
 
-test('고유 효과: 광전사의 대검(기본 +20%, 2개면 +40%), 대마법사의 관(스킬 +20%), 처형자의 검, 불멸의 갑옷(받는 피해 −12%)', () => {
+test('고유 효과: 광전사의 대검(기본 공격 +20%, 2개여도 1번), 대마법사의 관(스킬 +20%), 처형자의 검, 불멸의 갑옷(받는 피해 −12%)', () => {
   const hit = (ids, kind, enemyHp = 1) => {
     const b = fight(ids);
     const t = foe(b);
@@ -328,7 +323,7 @@ test('고유 효과: 광전사의 대검(기본 +20%, 2개면 +40%), 대마법�
   };
   const plain = hit([], 'basic');
   near(hit([id('광전사의 대검')], 'basic') / plain, 1.2);
-  near(hit([id('광전사의 대검'), id('광전사의 대검')], 'basic') / plain, 1.4, '중복 허용·합산');
+  near(hit([id('광전사의 대검'), id('광전사의 대검')], 'basic') / plain, 1.2, '고유 효과는 1번');
   near(hit([id('대마법사의 관')], 'skill') / hit([], 'skill'), 1.2);
   near(hit([id('처형자의 검')], 'skill', 0.3) / hit([], 'skill', 0.3), 1.2);
   near(hit([id('처형자의 검')], 'skill', 0.31) / hit([], 'skill', 0.31), 1);
@@ -336,8 +331,14 @@ test('고유 효과: 광전사의 대검(기본 +20%, 2개면 +40%), 대마법�
     const b = fight(ids);
     return b.deal(foe(b), me(b), 100, 'physical', { kind: 'skill', canCrit: false }).damage;
   };
-  // 재료 능력치(HP 15%·GD 10)는 같게 두고 고유 효과만 비교
-  near(taken([id('불멸의 갑옷')]) / taken(['IB04', 'IB05']), 0.88);
+  // 기본 능력치(GD)를 뺀 고유 효과만: 불멸의 갑옷 GD 22와 같은 GD를 주는 상태에서 비교
+  const armorOnly = (() => {
+    const b = fight([id('불멸의 갑옷')]);
+    const t = me(b);
+    t.itemIds = [];
+    return b.deal(foe(b), t, 100, 'physical', { kind: 'skill', canCrit: false }).damage;
+  })();
+  near(taken([id('불멸의 갑옷')]) / armorOnly, 0.88);
 });
 
 test('고유 효과: 폭풍의 검(기본 공격 4회마다 추가 공격, 연쇄 없음), 흡혈검 12% 회복, 수호자의 검·마력의 심장(시작), 반격의 갑주', () => {
