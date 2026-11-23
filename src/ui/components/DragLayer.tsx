@@ -1,6 +1,7 @@
 // 캐릭터·아이템 드래그: 문서 단위 포인터 처리, 포인터 아래 고스트,
 // 양쪽 판매 영역(v0.15.18 interaction-ui.js / drag-sales.js와 같은 규칙). Esc 취소는 usePopupDismiss가 맡는다.
-import { useEffect } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef } from 'preact/hooks';
+import { placePreview } from '../previewPlacement.ts';
 import { salePrice } from '../../core/shop.ts';
 import { CharacterImage } from './CharacterImage.tsx';
 import E from '../../core/equipment.ts';
@@ -74,20 +75,14 @@ export function DragLayer({
           dangerouslySetInnerHTML={{ __html: itemIconSvg(item.id) }}
         />
         {result && plan?.ok && plan.action === 'combine' && (
-          <aside
-            class={styles.preview}
-            role="status"
-            aria-label={`조합 미리보기 · ${result.name}`}
-            style={{ left: `${drag.x + 26}px`, top: `${drag.y + 18}px` }}
-          >
-            <span dangerouslySetInnerHTML={{ __html: itemIconSvg(plan.resultId) }} />
-            <div>
-              <small>놓으면 조합</small>
-              <b>{result.name}</b>
-              <em>{result.stats}</em>
-              <p>{result.effect}</p>
-            </div>
-          </aside>
+          <CombinePreview
+            over={drag.over!}
+            mode={kind2 === 'item' ? 'inventory' : 'unit'}
+            x={drag.x}
+            y={drag.y}
+            resultId={plan.resultId}
+            result={result}
+          />
         )}
       </>
     );
@@ -113,5 +108,76 @@ export function DragLayer({
         <CharacterImage id={unit.id} context="bench" />
       </div>
     </>
+  );
+}
+
+/**
+ * 조합 미리보기(v0.20.1): 보관함 조합은 보관함 왼쪽, 캐릭터 조합은 대상 칸의 여유 있는 쪽에 붙이고
+ * 화면 안으로 보정한다(previewPlacement). 위치는 그리기 전에 실제 크기를 재서 정하므로 화면 크기·확대 비율과 무관하다.
+ * 문서 맨 위층(fixed, z-index 60)에 그리고 pointer-events: none이라 드롭 판정(elementFromPoint)을 가리지 않는다.
+ */
+function CombinePreview({
+  over,
+  mode,
+  x,
+  y,
+  resultId,
+  result,
+}: {
+  over: string;
+  mode: 'inventory' | 'unit';
+  x: number;
+  y: number;
+  resultId: string;
+  result: { name: string; stats: string; effect: string };
+}) {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const hit = document.elementFromPoint(x, y)?.closest('[data-item-drop]');
+    const target =
+      hit?.getAttribute('data-item-drop') === over
+        ? hit
+        : document.querySelector(`[data-item-drop="${over}"]`);
+    const anchor = target?.getBoundingClientRect() ?? {
+      left: x,
+      right: x,
+      top: y,
+      bottom: y,
+    };
+    const edge =
+      mode === 'inventory'
+        ? (target?.closest('[data-inventory-panel]')?.getBoundingClientRect() ?? anchor)
+        : anchor;
+    const pos = placePreview(
+      anchor,
+      edge,
+      { width: el.offsetWidth, height: el.offsetHeight },
+      { width: document.documentElement.clientWidth, height: window.innerHeight },
+      mode,
+    );
+    el.style.left = `${pos.left}px`;
+    el.style.top = `${pos.top}px`;
+    el.dataset.side = pos.side;
+    el.style.visibility = 'visible';
+  });
+  return (
+    <aside
+      ref={ref}
+      class={styles.preview}
+      role="status"
+      aria-label={`조합 미리보기 · ${result.name}`}
+      data-combine-preview={mode}
+      style={{ visibility: 'hidden' }}
+    >
+      <span dangerouslySetInnerHTML={{ __html: itemIconSvg(resultId) }} />
+      <div>
+        <small>놓으면 조합</small>
+        <b>{result.name}</b>
+        <em>{result.stats}</em>
+        <p>{result.effect}</p>
+      </div>
+    </aside>
   );
 }
