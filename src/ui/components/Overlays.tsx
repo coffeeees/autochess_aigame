@@ -406,6 +406,8 @@ interface BalanceApi {
   interaction: BalanceMeta;
   /** 메타 영구 강화(v0.19.0) */
   metaUpgrades: BalanceMeta;
+  /** 장비 밸런스 1차(v0.21.0) */
+  itemBalance: BalanceMeta;
   /** 장비 개편·개명(v0.20.0) */
   itemRework: BalanceMeta;
   counts<T>(list: T[], key: keyof T & string): Record<string, number>;
@@ -814,6 +816,7 @@ function ResetConfirm({ actions }: Props) {
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
   const [record, setRecord] = useState<
+    | 'itemBalance'
     | 'itemRework'
     | 'metaUpgrades'
     | 'interaction'
@@ -822,7 +825,7 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
     | 'meta'
     | 'stage2'
     | 'stage1'
-  >('itemRework');
+  >('itemBalance');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -832,6 +835,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'itemBalance'} onClick={() => setRecord('itemBalance')}>
+          장비 밸런스 · v0.21.0
+        </button>
         <button aria-pressed={record === 'itemRework'} onClick={() => setRecord('itemRework')}>
           장비 개편 · v0.20.0
         </button>
@@ -864,7 +870,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'itemRework' ? (
+      {record === 'itemBalance' ? (
+        <BalanceMetaView t={balance.itemBalance} />
+      ) : record === 'itemRework' ? (
         <BalanceMetaView t={balance.itemRework} />
       ) : record === 'metaUpgrades' ? (
         <BalanceMetaView t={balance.metaUpgrades} />

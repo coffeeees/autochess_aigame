@@ -17,8 +17,16 @@ import type { GameProps } from './Game.tsx';
 import styles from './UnitDetail.module.css';
 
 const num = (n: number) => Math.round(n).toLocaleString('ko-KR');
+const dodgeCap: number = D.prototypeConfig.combat.dodgeCap;
+/** 회피는 실제 판정 값(상한 40%)을 보여 준다(v0.21.0). 넘친 합계는 StatGrid가 아래 줄에 적는다 */
 const fmt = (key: string, v: number) =>
-  ['CTH', 'CTC', 'DOD'].includes(key) ? num(v) + '%' : key === 'AS' ? v.toFixed(2) : num(v);
+  key === 'DOD' && v > dodgeCap
+    ? `${num(dodgeCap)}%`
+    : ['CTH', 'CTC', 'DOD'].includes(key)
+      ? num(Math.max(0, v)) + '%'
+      : key === 'AS'
+        ? v.toFixed(2)
+        : num(v);
 const skills = D.skills as Record<string, SkillDef>;
 
 /** 기준점(누른 곳) 오른쪽에, 자리가 없으면 왼쪽에 띄우고 화면 안으로 보정(v0.15.18 positionInfo). */
@@ -266,9 +274,19 @@ function StatGrid({ stats }: { stats: Stats }) {
   return (
     <div class={styles.stats}>
       {(D.statKeys as string[]).map((k) => (
-        <span key={k}>
+        <span
+          key={k}
+          title={
+            k === 'DOD' && stats.DOD > dodgeCap
+              ? `회피 합계 ${num(stats.DOD)}% · 실제 판정은 최대 ${dodgeCap}%`
+              : undefined
+          }
+        >
           {k}
           <b>{fmt(k, stats[k as keyof Stats])}</b>
+          {k === 'DOD' && stats.DOD > dodgeCap && (
+            <small class={styles.capped}>합 {num(stats.DOD)}% · 상한</small>
+          )}
         </span>
       ))}
     </div>

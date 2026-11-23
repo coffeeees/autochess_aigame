@@ -74,7 +74,7 @@ test('유대가 Bond와 맞다', () => {
     });
 });
 
-test('장비가 Item과 맞다(v0.20.0 기본 8종·완성 36종, 능력치 키)', () => {
+test('장비가 Item과 맞다(v0.20.0 기본 8종·완성 36종, 능력치 키, v0.21.0 고유 상시 능력치)', () => {
   const itemStatKeys = new Set([
     'ADPercent',
     'APPercent',
@@ -88,22 +88,28 @@ test('장비가 Item과 맞다(v0.20.0 기본 8종·완성 36종, 능력치 키)
   ]);
   for (const item of I.items) {
     const base = item.kind === 'base';
-    fields(item, {
-      id: (v) => (base ? /^IB\d\d$/ : /^IC\d\d$/).test(v),
-      kind: (v) => ['base', 'complete'].includes(v),
-      name: str,
-      stats: (s) => Object.entries(s).every(([k, v]) => itemStatKeys.has(k) && isNum(v)),
-      statsText: str,
-      effect: str,
-      iconKey: str,
-      ...(base
-        ? { short: str }
-        : {
-            recipe: (v) => v.length === 2 && v.every((id) => I.isBase(id)),
-            subIconKey: str,
-            effectKey: str,
-          }),
-    });
+    fields(
+      item,
+      {
+        id: (v) => (base ? /^IB\d\d$/ : /^IC\d\d$/).test(v),
+        kind: (v) => ['base', 'complete'].includes(v),
+        name: str,
+        stats: (s) => Object.entries(s).every(([k, v]) => itemStatKeys.has(k) && isNum(v)),
+        statsText: str,
+        effect: str,
+        iconKey: str,
+        ...(base
+          ? { short: str }
+          : {
+              recipe: (v) => v.length === 2 && v.every((id) => I.isBase(id)),
+              subIconKey: str,
+              effectKey: str,
+            }),
+      },
+      {
+        uniqueStats: (s) => Object.entries(s).every(([k, v]) => itemStatKeys.has(k) && isNum(v)),
+      },
+    );
   }
 });
 

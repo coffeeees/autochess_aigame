@@ -283,13 +283,11 @@ function releaseEquipment(state, uids) {
   for (const item of state.inventory) if (uids.includes(item.equippedTo)) item.equippedTo = null;
 }
 function unitBonuses(state, uid) {
-  const b = I.bonuses(state.inventory.filter((i) => i.equippedTo === uid));
-  // S3 장비 숙련(메타): 장착 아이템의 수치 보너스만 +x%(고유 효과·발동은 그대로). 반올림하지 않는다
-  const s3 = U.value(state, 'S3');
-  if (s3 > 0)
-    for (const key of Object.keys(b))
-      b[key] = key === 'ASMultiplier' ? 1 + (b[key] - 1) * (1 + s3) : b[key] * (1 + s3);
-  return b;
+  // S3 장비 숙련(메타): 장착 장비의 기본 능력치만 +x%(고유 효과·고유 상시 능력치는 그대로). 반올림하지 않는다
+  return I.bonuses(
+    state.inventory.filter((i) => i.equippedTo === uid),
+    U.value(state, 'S3'),
+  );
 }
 function unitItemIds(state, uid) {
   return state.inventory.filter((i) => i.equippedTo === uid).map((i) => i.id);

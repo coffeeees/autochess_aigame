@@ -12,6 +12,10 @@ import { distance } from './geometry.ts';
 import skills from './skills/index.js';
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
+/** 실제 회피 판정에 쓰는 회피 확률 %: 0 ~ 상한(cfg.dodgeCap, 기본 40) */
+function effectiveDodge(dod, cfg = D.prototypeConfig.combat) {
+  return Math.min(cfg.dodgeCap ?? 40, Math.max(0, dod || 0));
+}
 function mitigatedDamage(raw, gd, denominator = 100) {
   return (Math.max(0, raw) * denominator) / (denominator + Math.max(0, gd));
 }
@@ -252,7 +256,8 @@ class Battle {
     const dodge =
       !opts.bondTransfer &&
       (kind === 'basic' ? cfg.basicDodge : kind === 'skill' ? cfg.skillsDodge : false);
-    if (dodge && this.rng() * 100 < targetStats.DOD) {
+    // 회피 상한(v0.21.0): 모든 출처를 더한 최종 회피 확률을 판정에서 최대 cfg.dodgeCap(40)%로
+    if (dodge && this.rng() * 100 < effectiveDodge(targetStats.DOD, cfg)) {
       this.log('evade', `${target.name} 회피`, { target: target.uid });
       return { damage: 0, critical: false, evaded: true };
     }
@@ -682,6 +687,6 @@ Battle.use(AF.setupExtension);
 Battle.use(AF.extension);
 Battle.use(Bonds.extension);
 Battle.use(MF.extension); // 메타 영구 강화(v0.19.0, 전투 옵션에 meta가 있을 때만)
-const api = { Battle, distance, mitigatedDamage };
+const api = { Battle, distance, mitigatedDamage, effectiveDodge };
 
 export default api;

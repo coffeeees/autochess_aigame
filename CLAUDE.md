@@ -40,7 +40,7 @@
   예전 칸 회전 `rotateOldPos`), 화면 좌표 변환은 `ui/art/board.ts` 한 곳(보정값 `docs/specs/BOARD_SIDE_8X7_CALIBRATION.json`).
   보드 그림 위치는 DOM 입력 칸 컨테이너(`Board.tsx`의 `.art`) 사각형을 장면이 읽어 맞춘다. 전투 기준선 도구는 로그 칸 번호를 예전 번호로 되돌려 비교한다.
 - 장비(v0.20.0): 기본 8종(IB01~)·완성 36종(IC01~) `items.js`, 조합·장착·회수기 규칙 `equipment.ts`(무료 회수 없음, 기본 장비는 캐릭터당 1개),
-  완성 장비 고유 효과 `combat/item-effects.js`(effectKey, 개수만큼 합산). 수치·효과는 임시값. 회수 연출은 `ScreenCues`의 `recovery` 신호.
+  완성 장비 고유 효과 `combat/item-effects.js`(effectKey). v0.21.0부터 완성 장비 능력치는 재료 합이 아닌 장비별 값, 같은 장비 여러 개면 기본 능력치는 합산·고유 효과(`uniqueStats` 포함)는 1번, 최종 회피 상한 40%(`combat.dodgeCap`). 회수 연출은 `ScreenCues`의 `recovery` 신호.
 - 메타 레벨(v0.17.2): `meta.ts`(곡선·원정 보상·레벨업·중복 방지), 수치는 `data/meta.js`(임시값). 프로필 저장 키 `autochess-meta-v1`은 원정 저장과 별도이고,
   저장소(`store.ts`의 `settleMeta`)가 원정이 끝날 때(`run.done`) 원정 ID(`runId`)마다 한 번 지급한다.
 - 메타 영구 강화(v0.19.0): `meta-upgrades.ts`(레벨 보상 P·티켓 원장, 구매, 원정 스냅샷 `state.metaRun`, 횟수 `take`), 수치 `data/meta-upgrades.js`(임시값),

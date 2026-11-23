@@ -78,7 +78,8 @@ export interface Item {
   id: string; // IB01..IB08 기본, IC01..IC36 완성
   kind: ItemKind;
   name: string;
-  stats: ItemStats;
+  stats: ItemStats; // 기본 능력치(여러 개 끼면 개수만큼 합산)
+  uniqueStats?: ItemStats; // 고유 효과의 상시 능력치(같은 장비 여러 개여도 1번, v0.21.0)
   statsText: string;
   effect: string; // 기본 장비는 ''
   iconKey: string;

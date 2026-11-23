@@ -1,19 +1,17 @@
-// 완성 장비 36종의 고유 효과(v0.20.0 아이템 개편, 요청서의 1차 테스트안 그대로·임시값). 장비의 effectKey로 판정한다.
-// 능력치(재료에서 이어받은 % 능력치·추가 능력치)는 items.applyStats가 전투 전에 이미 넣었다. 여기서는 발동 효과만.
-// 사용자 결정(2026-11-23): 같은 완성 장비 중복 착용 허용 → 효과는 개수만큼 더한다(배율은 합산, 추가 타격·보호막은 개수만큼).
-// 회피·치명타 확률 상한은 따로 두지 않는다(치명타는 전투 기본 규칙대로 100%까지). 소환수에는 장비 효과가 없다.
+// 완성 장비 36종의 고유 효과(v0.20.0 아이템 개편). 장비의 effectKey로 판정한다.
+// 능력치(기본 능력치·고유 상시 능력치)는 items.bonuses/applyStats가 전투 전에 이미 넣었다. 여기서는 발동 효과만.
+// v0.21.0(장비 밸런스 1차): 같은 완성 장비를 여러 개 껴도 고유 효과는 캐릭터마다 1번만(count는 0 또는 1).
+// 서로 다른 장비의 효과는 함께 적용. 회피 상한 40%는 battle.deal, 치명타는 100%까지. 소환수에는 장비 효과가 없다.
 // 추가 공격·추가 피해(itemProc)는 다시 추가 공격·추가 피해를 만들지 않는다(연쇄 차단).
 // 보호막 지속 시간·발동 간격은 요청서에 정해지지 않아 전투 끝까지(999초)로 둔다(테스트용 임시값).
 import I from '../items.js';
 
 const LONG = 999;
 const active = (b, u) => !b.result && u && !u.dead && u.hp > 0;
-/** 유닛이 가진 그 효과 장비 수(소환수는 0) */
+/** 그 고유 효과를 가졌는지(0 또는 1). 같은 장비를 여러 개 껴도 1(v0.21.0). 소환수는 0 */
 function count(u, key) {
   if (!u || u.summon) return 0;
-  let n = 0;
-  for (const id of u.itemIds || []) if (I.byId(id)?.effectKey === key) n++;
-  return n;
+  return (u.itemIds || []).some((id) => I.byId(id)?.effectKey === key) ? 1 : 0;
 }
 function proc(b, fn) {
   b.itemProcDepth = (b.itemProcDepth || 0) + 1;
