@@ -1962,6 +1962,105 @@ const metaUpgrades = {
   ],
 };
 
+/** v0.23.0 시작 화면 컬렉션·관리자·카드 꾸미기(요청서 AUTOCHESS_COLLECTION_ADMIN_UPDATE_2026-11-25) 구현·확인 기록 */
+const cardAdmin = {
+  title: '시작 화면 컬렉션·관리자 · 카드 이름·그림 등록',
+  date: '2026-11-24',
+  version: 'v0.23.0',
+  method:
+    '두 가지로 확인했습니다. ① 단위 테스트(Vitest): 업로드 형식·크기 판정, 그림 안내, 표시 이름 규칙, 화면 전환과 저장 불변, 관리자 메뉴 등록표, 저장소 분리. ② 브라우저 조작(Playwright Chromium): 실제 파일 업로드(투명 PNG·불투명 PNG·JPG·SVG 위장 파일·깨진 PNG·11MB 파일), 저장·취소·초기화, 새로고침·새 원정 뒤 유지, 컬렉션 반영, 1600×900·1280×720.',
+  environment:
+    'feat/collection-admin 브랜치(v0.23.0). Chromium(Playwright), vite 개발 서버, 시험 그림은 직접 만든 것(실제 캐릭터 그림 아님).',
+  scope:
+    '요청서 포함 항목(시작 화면 버튼 2개, 확장형 관리자 화면, 캐릭터 설정, IndexedDB 영구 저장, 공용 카드 렌더러 연동). 제외 항목(뽑기·해금·돌파·조각·지급, 다른 관리 메뉴 기능, 서버·인증, 전투 데이터 변경)은 하지 않았습니다.',
+  runs: [
+    {
+      kind: '단위 테스트',
+      name: 'tests/collection/card-admin.test.js(6개)',
+      how: 'PNG·JPG·WebP 매직 바이트 판정과 SVG·HTML·스크립트·GIF 거절, 빈 파일·10MB 초과, 그림 안내(캐릭터 JPG·불투명 가장자리·4096px 초과), 표시 이름 정리·12자·원래 이름이면 없음·원본 데이터 불변, 시작 화면 ↔ 관리자·컬렉션 전환 때 원정·메타 저장 불변, 메뉴 등록표(캐릭터 설정만 동작), 저장소가 별도 IndexedDB이고 네트워크·localStorage를 쓰지 않음, 시작 화면 기존 버튼 유지',
+      result: '6개 모두 통과(전체 431개 통과)',
+      evidence: 'npm test',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '관리자 › 캐릭터 설정 전체 흐름',
+      how: '시작 화면 컬렉션 열기·Esc → 관리자 → C12 검색 → 잘못된 파일 3종 → 불투명 PNG → 투명 PNG·JPG 배경·이름 입력 → 취소 → 다시 입력·저장 → 미리보기 기울이기 → 다른 캐릭터 이동 시도(미저장 확인) → C02 이름 저장 → 새로고침 → 유지 확인 → C02 초기화 → Esc로 시작 화면 → 컬렉션 빈 상태 → ?carddev 컬렉션 → 새 원정 시작 → 다시 관리자',
+      result:
+        'SVG 위장 파일 "PNG·JPG·WebP 그림만", 깨진 PNG "그림을 열 수 없습니다", 11MB "10MB 이하", 불투명 PNG는 가장자리 경고, 투명 PNG는 경고 없음. 저장 전 미리보기는 새 이름·그림, 저장된 상태 카드는 원래대로. 취소하면 원래 이름·그림 없음. 저장 뒤 새로고침해도 이름·두 그림·설정됨 표시 2개 유지. 초기화는 C02만(C01 유지). Esc로 시작 화면, 원정 저장 불변, 컬렉션은 여전히 빈 상태. ?carddev에서 등록 그림·이름이 같은 카드로 보이고 상세에 원래 이름 표시. 새 원정의 대기석 이름은 원래 이름, 새 원정 뒤에도 카드 설정 유지. 1600·1280 폭에서 이름표·이름이 패널 안. 콘솔 오류 0',
+      evidence: 'scratchpad admin-ui.cjs · admin-shot.cjs',
+    },
+  ],
+  casesTitle: '요청서 검수 체크리스트',
+  cases: [
+    [
+      '시작 화면 컬렉션·관리자 버튼, 기존 시작 UI 정상',
+      '확정',
+      '세 카드 아래 한 줄 추가(기존 버튼·이어하기 그대로)',
+      '통과',
+    ],
+    [
+      '시작 화면 컬렉션 열기·닫기·복귀, 게임 중 진입 유지',
+      '확정',
+      '닫으면 시작 화면 / 더보기는 게임으로',
+      '통과',
+    ],
+    ['C01~C45 검색·선택', '확정', 'ID·원래 이름·표시 이름으로 검색', '통과'],
+    ['표시 이름·캐릭터·배경 그림 등록·교체·삭제', '확정', '각각 따로', '통과'],
+    ['파일 교체 직후 미리보기 반영', '확정', '저장 전 2.5D 미리보기 + 저장된 상태 카드', '통과'],
+    ['저장 후 새로고침·재접속 유지', '확정', 'IndexedDB에 Blob 그대로', '통과'],
+    ['취소는 저장 상태로, 초기화는 그 캐릭터만', '확정', '초기화 전 확인', '통과'],
+    ['컬렉션 카드가 등록 아트 사용, 보유와 독립', '확정', '같은 렌더러, 등록해도 빈 상태', '통과'],
+    [
+      '프레임·이름표 원본, 별도 층, 설명 패널 없음, 2.5D 유지',
+      '확정',
+      'v0.22.0 렌더러 그대로',
+      '통과',
+    ],
+    [
+      '기존 저장과 충돌 없음, 업로드 오류·저장 공간 안내',
+      '확정',
+      '별도 DB, 한국어 오류 문구',
+      '통과(공간 부족은 문구만, 실제 재현 안 함)',
+    ],
+  ],
+  growthTitle: '아직 정해지지 않았거나 하지 않은 것',
+  growth: [
+    '다른 관리 메뉴(전투 수치·아이템·증강·확률/재화): 자리만 있음.',
+    '그림 위치·크기 조절 도구: imageTransform(scale·offsetX·offsetY) 필드만 예약.',
+    '모두에게 같은 카드 그림 보여 주기: 서버 저장·관리자 인증이 필요해 하지 않음(지금은 각자 브라우저에만).',
+    '뽑기·해금·돌파·조각과 보유 기록 저장.',
+  ],
+  notRun: [
+    '저장 공간 부족·비공개 모드·다른 탭 잠금: 오류 문구만 넣고 실제 상황은 재현하지 않음.',
+    '실제 캐릭터 일러스트로 손·머리 잘림 확인: 받은 그림이 없어 직접 만든 시험 그림으로만 확인.',
+    'Safari·Firefox: 확인하지 않음(Chromium만).',
+  ],
+  issues: [
+    {
+      title: '관리자 버튼이 배포 사이트에서도 보임',
+      status: '확인 필요',
+      detail:
+        '요청서 체크리스트대로 시작 화면에 늘 보이게 했다. 편집 결과는 누른 사람의 브라우저에만 저장되고 서버·다른 사람에게 가지 않아 전역 편집은 생기지 않는다. 배포 사이트에서 아예 숨길지(예: 개발 서버나 주소 ?admin일 때만)는 결정이 필요하다.',
+      repro: '배포 주소 시작 화면',
+    },
+  ],
+  decisions: [
+    '저장: IndexedDB autochess-card-assets(원정·메타 저장과 별개, 이 브라우저에만). 서버 엔드포인트는 만들지 않음.',
+    '배경 그림은 카드 안쪽 창을 비율을 유지한 채 꽉 채움(창 비율과 다르면 가장자리가 잘림, 늘이지 않음). 캐릭터 그림은 비율 유지·자르지 않음.',
+    '표시 이름은 12자까지, 길면 이름표 안에 들어가게 글자를 줄임.',
+    '새로 결정할 것: 배포 사이트에서 관리자 버튼을 숨길지.',
+  ],
+  files: [
+    'src/core/card-settings.ts(새), src/ui/cardAssetStore.ts(새), src/ui/components/CardView.tsx·CardView.module.css(새, Collection에서 분리)',
+    'src/ui/components/admin/AdminPage.tsx·CharacterSettings.tsx·modules.ts·Admin.module.css(새)',
+    'src/ui/components/Collection.tsx·Collection.module.css·Home.tsx·Home.module.css·App.tsx, src/ui/store.ts(view admin)',
+    'public/assets/fonts/pretendard-subset.woff2(새 글자), tests/collection/card-admin.test.js(새), 문서·패치노트',
+  ],
+  conflicts: [
+    '게임 규칙·전투·상점·장비·원정 저장·메타 저장은 바꾸지 않았다. 캐릭터 원본 이름은 그대로이고 카드 표시 이름만 따로 둔다.',
+  ],
+};
+
 /** v0.22.0 컬렉션 UI 뼈대(요청서 AUTOCHESS_COLLECTION_SKELETON_2026-11-25) 구현·확인 기록 */
 const collection = {
   title: '컬렉션 UI 뼈대 · 2.5D 캐릭터 카드',
@@ -2386,6 +2485,8 @@ function recordMarkdown(t) {
 
 function toMarkdown() {
   return (
+    recordMarkdown(cardAdmin) +
+    '\n---\n\n' +
     recordMarkdown(collection) +
     '\n---\n\n' +
     recordMarkdown(itemBalance) +
@@ -2460,6 +2561,7 @@ export default {
   visual,
   interaction,
   metaUpgrades,
+  cardAdmin,
   collection,
   itemBalance,
   itemRework,

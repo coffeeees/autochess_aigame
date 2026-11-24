@@ -16,7 +16,7 @@ import E from '../core/equipment.ts';
 import { durations } from './render/plan.ts';
 import { allows, dragId, NOTICE_MS, DRAG_THRESHOLD, DRAG_CLICK_GUARD_MS } from './notices.ts';
 
-export type View = 'home' | 'difficulty' | 'game' | 'abilities';
+export type View = 'home' | 'difficulty' | 'game' | 'abilities' | 'admin';
 
 export interface Notice {
   id: string;
@@ -605,6 +605,8 @@ export function createStore(env: StoreEnv) {
     showDifficulty: () => publish({ view: 'difficulty' }),
     /** 시작 화면 → 능력치(메타 영구 강화 트리) */
     showAbilities: () => publish({ view: 'abilities' }),
+    /** 관리자 화면(v0.23.0, 시작 화면에서). 게임 상태는 바꾸지 않는다 */
+    showAdmin: () => publish({ view: 'admin', overlay: null }),
     pickBranch(branch: UiState['abilities']['branch']) {
       publish({ abilities: { ...state.abilities, branch, node: `${branch}1` } });
     },
