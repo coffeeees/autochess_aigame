@@ -328,3 +328,44 @@
   font-size: 11px;
   color: var(--color-muted);
 }
+
+/* ─── 반영 상태·내보내기(v0.24.0) ─── */
+.badge {
+  font-style: normal;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.editor h2 .badge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-weight: 400;
+  vertical-align: middle;
+}
+.badge[data-status='baked'] {
+  color: #8fd18a;
+}
+.badge[data-status='local'] {
+  color: #ffd36b;
+}
+.badge[data-status='same'] {
+  color: #8fb6d9;
+}
+.clean {
+  font-size: var(--text-xs);
+  padding: 6px 8px;
+}
+.export {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.export small {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+.export [role='status'] {
+  color: #e8d9a8;
+}

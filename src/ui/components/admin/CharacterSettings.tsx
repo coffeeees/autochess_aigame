@@ -14,6 +14,8 @@ import S, {
 import D from '../../../core/data/units.js';
 import { costColor } from '../../data.ts';
 import { cardAssets, useBlobUrl, useCardAssets } from '../../cardAssetStore.ts';
+import { bakedSettings, cardStatus, type CardStatus } from '../../bakedCards.ts';
+import { bakedCard } from '../../art/cards.ts';
 import { AnimatedCard, CardFace, useCardViewData } from '../CardView.tsx';
 import styles from './Admin.module.css';
 
@@ -88,16 +90,24 @@ async function readImage(
 
 export function CharacterSettings({
   guard,
+  dirty: dirtyRef,
   onLeave,
 }: {
   guard: RefObject<(() => boolean) | null>;
+  dirty?: RefObject<boolean>;
   onLeave: () => void;
 }) {
   const assets = useCardAssets();
   const [selected, setSelected] = useState('C01');
   const [query, setQuery] = useState('');
   const saved = assets.byId[selected];
+  // 반영본(게임 파일)을 편집 출발점으로 받아 온 것. 브라우저 설정이 없으면 이것이 기준 상태다
+  const [baked, setBaked] = useState<{ id: string; settings: CardSettings | null } | null>(null);
+  const bakedBase = baked?.id === selected ? baked.settings : null;
+  const loadingBaked = !!bakedCard(selected) && baked?.id !== selected;
+  const base = saved ?? bakedBase ?? undefined;
   const [draft, setDraft] = useState<Draft>(() => fromSaved(selected, saved));
+  const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
   const [confirm, setConfirm] = useState<Confirm>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -109,14 +119,42 @@ export function CharacterSettings({
     setDraft(fromSaved(selected, assets.byId[selected]));
     setWarnings({});
     setError('');
+    let live = true;
+    bakedSettings(selected)
+      .then((b) => {
+        if (!live) return;
+        setBaked({ id: selected, settings: b });
+        if (!assets.byId[selected] && b) setDraft(fromSaved(selected, b));
+      })
+      .catch((e) => {
+        if (!live) return;
+        setBaked({ id: selected, settings: null });
+        setError((e as Error).message);
+      });
+    return () => {
+      live = false;
+    };
   }, [selected, assets.ready]);
+
+  // 목록 표시: 반영됨 / 이 브라우저에서만 수정 / 반영본과 같음
+  useEffect(() => {
+    let live = true;
+    Promise.all(roster.map(async (u) => [u.id, await cardStatus(u.id, assets.byId[u.id])] as const))
+      .then((rows) => live && setStatuses(Object.fromEntries(rows)))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [assets]);
 
   const override = S.normalizeName(selected, draft.name);
   const dirty =
-    override !== (saved?.displayNameOverride ?? null) ||
-    draft.background !== (saved?.backgroundImage ?? null) ||
-    draft.character !== (saved?.characterImage ?? null);
+    !loadingBaked &&
+    (override !== (base?.displayNameOverride ?? null) ||
+      draft.background !== (base?.backgroundImage ?? null) ||
+      draft.character !== (base?.characterImage ?? null));
 
+  if (dirtyRef) dirtyRef.current = dirty;
   guard.current = () => {
     if (!dirty) return true;
     setConfirm({ kind: 'leave' });
@@ -148,7 +186,7 @@ export function CharacterSettings({
     setError('');
     try {
       await cardAssets.save({
-        ...(saved ?? S.emptySettings(selected)),
+        ...(base ?? S.emptySettings(selected)),
         characterId: selected,
         displayNameOverride: override,
         backgroundImage: draft.background,
@@ -164,7 +202,7 @@ export function CharacterSettings({
   };
 
   const cancel = () => {
-    setDraft(fromSaved(selected, saved));
+    setDraft(fromSaved(selected, base));
     setWarnings({});
     setError('');
     setStatus('저장된 상태로 되돌렸습니다.');
@@ -175,9 +213,26 @@ export function CharacterSettings({
     setBusy(true);
     try {
       await cardAssets.reset(selected);
-      setDraft(fromSaved(selected, undefined));
+      setDraft(fromSaved(selected, bakedBase ?? undefined));
       setWarnings({});
-      setStatus('이 캐릭터의 카드 설정을 초기화했습니다.');
+      setStatus(
+        bakedBase
+          ? '이 브라우저 설정을 지우고 게임 반영본으로 되돌렸습니다.'
+          : '이 캐릭터의 카드 설정을 초기화했습니다.',
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const same = roster.filter((u) => statuses[u.id] === 'same').map((u) => u.id);
+  const cleanSame = async () => {
+    setBusy(true);
+    try {
+      for (const id of same) await cardAssets.reset(id);
+      setStatus(`반영본과 같은 브라우저 설정 ${same.length}개를 정리했습니다.`);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -227,19 +282,26 @@ export function CharacterSettings({
                     {u.id} · {u.cost}코스트
                   </small>
                 </span>
-                {assets.byId[u.id] && <em>설정됨</em>}
+                <StatusBadge status={statuses[u.id]} />
               </button>
             </li>
           ))}
           {!list.length && <li class={styles.none}>검색 결과가 없습니다.</li>}
         </ul>
+        {same.length > 0 && !dirty && (
+          <button class={styles.clean} disabled={busy} onClick={cleanSame}>
+            반영본과 같은 브라우저 설정 정리({same.length})
+          </button>
+        )}
       </aside>
 
       <section class={styles.editor} aria-label={`${unit.id} 카드 설정`}>
         <h2>
           {unit.id} · {unit.name}
           <small> {unit.cost}코스트</small>
+          <StatusBadge status={statuses[selected]} long />
         </h2>
+        {loadingBaked && <p role="status">게임 반영본을 불러오는 중…</p>}
         {!assets.ready && <p role="status">카드 그림 저장소를 여는 중…</p>}
         {assets.error && (
           <p class={styles.error} role="alert">
@@ -251,6 +313,7 @@ export function CharacterSettings({
           <input
             value={draft.name}
             maxLength={S.limits.nameMax}
+            disabled={loadingBaked}
             aria-label="카드 표시 이름"
             onInput={(e) => setDraft({ ...draft, name: (e.target as HTMLInputElement).value })}
           />
@@ -293,10 +356,12 @@ export function CharacterSettings({
             {confirm.kind === 'reset' ? (
               <>
                 <span>
-                  {unit.id}의 카드 설정(이름·그림)을 모두 지울까요? 다른 캐릭터는 그대로입니다.
+                  {bakedBase
+                    ? `${unit.id}의 이 브라우저 설정을 지우고 게임 반영본으로 되돌릴까요? 다른 캐릭터는 그대로입니다.`
+                    : `${unit.id}의 카드 설정(이름·그림)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
                 </span>
                 <button data-variant="danger" onClick={reset}>
-                  초기화
+                  {bakedBase ? '되돌리기' : '초기화'}
                 </button>
               </>
             ) : (
@@ -324,11 +389,8 @@ export function CharacterSettings({
           <button disabled={!dirty || busy} onClick={cancel}>
             취소
           </button>
-          <button
-            disabled={busy || (!saved && !dirty)}
-            onClick={() => setConfirm({ kind: 'reset' })}
-          >
-            초기화
+          <button disabled={busy || !saved} onClick={() => setConfirm({ kind: 'reset' })}>
+            {bakedBase ? '반영본으로 되돌리기' : '초기화'}
           </button>
           <span role="status">{dirty ? '저장하지 않은 변경 있음' : status}</span>
         </div>
@@ -346,7 +408,11 @@ export function CharacterSettings({
           <small>
             저장된 상태
             <br />
-            {saved ? '등록된 설정' : '설정 없음(기본 카드)'}
+            {saved
+              ? '이 브라우저 설정'
+              : bakedCard(selected)
+                ? '게임 반영본'
+                : '설정 없음(기본 카드)'}
           </small>
         </div>
       </section>
@@ -414,5 +480,22 @@ function ImageField({
         </small>
       ))}
     </div>
+  );
+}
+
+const statusText: Record<CardStatus, [string, string] | null> = {
+  none: null,
+  baked: ['반영됨', '게임 반영본 사용 중'],
+  local: ['수정됨', '이 브라우저에서만 수정됨(내보내기 전에는 반영 안 됨)'],
+  same: ['반영본과 같음', '이 브라우저 설정이 게임 반영본과 같음'],
+};
+
+function StatusBadge({ status, long }: { status?: CardStatus; long?: boolean }) {
+  const t = status && statusText[status];
+  if (!t) return null;
+  return (
+    <em class={styles.badge} data-status={status} title={t[1]}>
+      {long ? t[1] : t[0]}
+    </em>
   );
 }
