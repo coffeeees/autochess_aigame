@@ -20,7 +20,7 @@ export function Hud({ ui, actions }: GameProps) {
       <button class={styles.brand} onClick={actions.showHome} title="시작 화면">
         <i aria-hidden="true">✦</i>
         <span>
-          AUTOCHESS<small>v0.21.0</small>
+          AUTOCHESS<small>v0.22.0</small>
         </span>
       </button>
       <div class={styles.stage}>
@@ -174,6 +174,9 @@ function MorePopover({ actions }: GameProps) {
         <button onClick={() => actions.openOverlay({ kind: 'reset' })}>새 원정</button>
         <button onClick={() => actions.openOverlay({ kind: 'codex', page: 'characters' })}>
           테스트 무료 영입
+        </button>
+        <button onClick={() => actions.openOverlay({ kind: 'collection', card: null })}>
+          컬렉션
         </button>
       </div>
     </section>

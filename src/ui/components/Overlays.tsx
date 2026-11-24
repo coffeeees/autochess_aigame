@@ -12,6 +12,7 @@ import { CharacterImage } from './CharacterImage.tsx';
 import { Shell } from './Modals.tsx';
 import type { Overlay } from '../store.ts';
 import type { GameProps } from './Game.tsx';
+import { Collection } from './Collection.tsx';
 import styles from './Overlays.module.css';
 
 type Props = Pick<GameProps, 'ui' | 'actions'>;
@@ -31,6 +32,8 @@ export function Overlays(props: Props) {
       <Guide />
     ) : o.kind === 'rules' ? (
       <Rules />
+    ) : o.kind === 'collection' ? (
+      <Collection card={o.card} {...props} />
     ) : (
       <ResetConfirm {...props} />
     );
@@ -406,6 +409,8 @@ interface BalanceApi {
   interaction: BalanceMeta;
   /** 메타 영구 강화(v0.19.0) */
   metaUpgrades: BalanceMeta;
+  /** 컬렉션 UI 뼈대(v0.22.0) */
+  collection: BalanceMeta;
   /** 장비 밸런스 1차(v0.21.0) */
   itemBalance: BalanceMeta;
   /** 장비 개편·개명(v0.20.0) */
@@ -816,6 +821,7 @@ function ResetConfirm({ actions }: Props) {
 /** 밸런스 테스트 탭: 테스트 방법·범위·미실행 항목·증강별 판정·결정 사항(실행하지 않은 테스트는 미실행으로 표시). */
 function BalanceTests({ balance }: { balance: BalanceApi }) {
   const [record, setRecord] = useState<
+    | 'collection'
     | 'itemBalance'
     | 'itemRework'
     | 'metaUpgrades'
@@ -825,7 +831,7 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
     | 'meta'
     | 'stage2'
     | 'stage1'
-  >('itemBalance');
+  >('collection');
   const [status, setStatus] = useState('');
   const { copy, download } = exportActions(
     () => balance.toMarkdown(),
@@ -835,6 +841,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
   return (
     <>
       <div class={styles.kindFilter} role="group" aria-label="기록 고르기">
+        <button aria-pressed={record === 'collection'} onClick={() => setRecord('collection')}>
+          컬렉션 · v0.22.0
+        </button>
         <button aria-pressed={record === 'itemBalance'} onClick={() => setRecord('itemBalance')}>
           장비 밸런스 · v0.21.0
         </button>
@@ -870,7 +879,9 @@ function BalanceTests({ balance }: { balance: BalanceApi }) {
         <button onClick={download}>MD 파일 저장</button>
         <span role="status">{status}</span>
       </div>
-      {record === 'itemBalance' ? (
+      {record === 'collection' ? (
+        <BalanceMetaView t={balance.collection} />
+      ) : record === 'itemBalance' ? (
         <BalanceMetaView t={balance.itemBalance} />
       ) : record === 'itemRework' ? (
         <BalanceMetaView t={balance.itemRework} />

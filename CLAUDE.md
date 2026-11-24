@@ -46,6 +46,8 @@
 - 메타 영구 강화(v0.19.0): `meta-upgrades.ts`(레벨 보상 P·티켓 원장, 구매, 원정 스냅샷 `state.metaRun`, 횟수 `take`), 수치 `data/meta-upgrades.js`(임시값),
   전투 `combat/meta-effects.js`(전투 옵션 `allyModifiers.meta`가 있을 때만). 강화가 없으면 원정·전투가 예전과 같아야 한다(기준선).
   화면 `components/Abilities.tsx`. 개발용 테스트 프로필은 주소 `?metadev`(저장 키 `autochess-meta-dev-v1`).
+- 컬렉션(v0.22.0, UI 뼈대): 보유 카드 어댑터 `core/collection.ts`(메타 프로필 `collection.owned`를 읽기만, 지금은 빈 목록), 카드 그림 등록표 `ui/art/cards.ts`,
+  화면 `components/Collection.tsx`(목록·2.5D 상세, 덮개 창 `kind: 'collection'`). 뽑기·해금·돌파는 없다. 개발용 미리보기 `?carddev`.
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).
 - 수치 표기: 퍼센트는 `src/core/format.ts`의 `percent`(비율)·`percentNumber`(백분율 숫자)를 쓴다(B1).

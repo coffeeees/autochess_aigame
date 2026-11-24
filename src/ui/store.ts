@@ -113,7 +113,9 @@ export type Overlay =
   | { kind: 'patch' }
   | { kind: 'guide' }
   | { kind: 'rules' }
-  | { kind: 'reset' };
+  | { kind: 'reset' }
+  /** 컬렉션(v0.22.0): card가 있으면 그 카드의 2.5D 상세 */
+  | { kind: 'collection'; card: string | null };
 
 /**
  * 화면 연출 신호(6단계). 게임 상태와 무관하고, 연출 컴포넌트가 재생한 뒤 doneCue로 지운다.
@@ -752,7 +754,10 @@ export function createStore(env: StoreEnv) {
     dismissTop(): boolean {
       const top = actions.topPopup();
       if (!top) return false;
-      if (top === 'overlay') publish({ overlay: null });
+      // 컬렉션 카드 상세는 Esc·바깥 클릭이면 목록으로 먼저 돌아간다
+      if (top === 'overlay' && state.overlay?.kind === 'collection' && state.overlay.card)
+        publish({ overlay: { kind: 'collection', card: null } });
+      else if (top === 'overlay') publish({ overlay: null });
       else if (top === 'settings' || top === 'more') publish({ popover: null });
       else if (top === 'shop') publish({ shopOpen: false });
       else if (top === 'peek') publish({ peek: null });
