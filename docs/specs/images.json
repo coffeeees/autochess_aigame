@@ -34,5 +34,23 @@
       992
     ],
     "mode": 88
+  },
+  "cards/card-frame.webp": {
+    "source": "assets-src/images/cards/card-frame.png",
+    "sourceSha256": "9ff023364e132eb6835af6957cf1eef7a0b8ed1daa208a464e094a1f6239d336",
+    "size": [
+      714,
+      1000
+    ],
+    "mode": "lossless"
+  },
+  "cards/card-nameplate.webp": {
+    "source": "assets-src/images/cards/card-nameplate.png",
+    "sourceSha256": "acf6a4d3fdd675212a45c4ea4ae61b824e76f45e7d119077dc43fa1a2a92efb6",
+    "size": [
+      750,
+      279
+    ],
+    "mode": "lossless"
   }
 }

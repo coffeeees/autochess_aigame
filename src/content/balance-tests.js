@@ -1962,6 +1962,98 @@ const metaUpgrades = {
   ],
 };
 
+/** v0.22.0 컬렉션 UI 뼈대(요청서 AUTOCHESS_COLLECTION_SKELETON_2026-11-25) 구현·확인 기록 */
+const collection = {
+  title: '컬렉션 UI 뼈대 · 2.5D 캐릭터 카드',
+  date: '2026-11-24',
+  version: 'v0.22.0',
+  method:
+    '두 가지로 확인했습니다. ① 단위 테스트(Vitest): 보유 카드 어댑터·창 열고 닫기·저장 불변·그림 등록표·메뉴 순서. ② 브라우저 조작(Playwright Chromium): 더보기 → 컬렉션, 빈 상태, ?carddev 미리보기 45장, 키보드로 카드 열기, 마우스 기울기·복귀, Esc 순서, 작은 창, 모션 줄이기.',
+  environment:
+    'feat/collection-skeleton 브랜치(v0.22.0). Chromium 1600×900·1024×640·1280×800(모션 줄이기), vite 개발 서버.',
+  scope:
+    '요청서의 포함 항목(진입 버튼·컬렉션 창·카드 공통 컴포넌트·보유 데이터 어댑터·2.5D 상세·플레이스홀더·원본 프레임/이름표). 제외 항목(뽑기·가챠·확률·재화·조각·해금·돌파·보상·캐릭터 그림 생성)은 구현하지 않았습니다.',
+  runs: [
+    {
+      kind: '단위 테스트',
+      name: 'tests/collection/collection.test.js(5개)',
+      how: '새 프로필·빈 값·잘못된 값은 빈 컬렉션, collection.owned가 있으면 명단 순서·없는 ID·중복 제외·기존 이름·코스트, 읽기만 함, 열기 → 상세 → Esc 두 번(상세 → 목록 → 닫기)과 저장 불변·보유 기록 미생성, 프레임·이름표 무손실 원본 크기, 45명 그림 없음, 더보기 버튼 순서 유지',
+      result: '5개 모두 통과(전체 테스트 통과)',
+      evidence: 'npm test',
+    },
+    {
+      kind: '브라우저 조작',
+      name: '컬렉션 진입·빈 상태·카드 상세',
+      how: '새 원정 → 더보기 → 컬렉션 → Esc / ?carddev로 다시 열기 → 첫 카드에 키보드 포커스 후 Enter → 카드 오른쪽 위·왼쪽 아래로 마우스 이동 → 밖으로 → Esc 두 번 / 1024×640 / 모션 줄이기',
+      result:
+        '빈 상태 문구 표시, Esc로 닫힘, 저장(localStorage) 그대로. 미리보기 45장 그리드, Enter로 상세 열림, 기울기(예: X 6.4°·Y 10.8°)와 이름표 독립 이동(21px·Z 90px), 밖으로 나가면 정면 0°로 복귀, 층 순서 배경 → 프레임 → 캐릭터 → 코스트 → 반사광 → 이름표, Esc 상세 → 목록 → 닫힘, 작은 창에서도 카드 비율 유지, 모션 줄이기면 기울지 않음. 콘솔 오류·그림 요청 실패 0',
+      evidence: 'scratchpad collection-ui.cjs · col-reset.cjs',
+    },
+  ],
+  casesTitle: '요청서 검수 체크리스트',
+  cases: [
+    [
+      '상단·더보기 메뉴와 충돌 없이 진입',
+      '확정',
+      '더보기 맨 끝 「컬렉션」(기존 순서 유지)',
+      '통과',
+    ],
+    ['열기·닫기·Esc·게임 복귀', '확정', '상세 → 목록 → 닫기, 상태 그대로', '통과'],
+    ['보유 기록이 비어도 빈 상태', '확정', '"아직 획득한 카드가 없습니다."', '통과'],
+    ['제공 프레임·이름표 원본 사용', '확정', '무손실 WebP(픽셀 동일 확인)', '통과'],
+    ['원본 비율 유지', '확정', '714:1000 · 750:279, 글자는 카드 폭 기준', '통과'],
+    [
+      '층 순서 배경 → 프레임 → 캐릭터 → 이름표',
+      '확정',
+      'DOM 순서와 Z 깊이 1·9·55·76·70·90px',
+      '통과',
+    ],
+    ['이름표 v5 위치·독립 패럴랙스', '확정', 'left −7%·top 71.4%·폭 114%, 21/15px', '통과'],
+    ['하단 설명 상자 없음', '확정', '없음', '통과'],
+    [
+      '임의 획득·뽑기 없음, 그림은 나중에',
+      '확정',
+      '읽기 전용 어댑터, 그림 등록표 비어 있음',
+      '통과',
+    ],
+    ['다른 시스템 변화 없음', '확정', '전투 기준선·전체 테스트 그대로', '통과'],
+  ],
+  growthTitle: '아직 정해지지 않은 것',
+  growth: [
+    '카드 획득(뽑기·확률·재화)·조각·해금·돌파와 보상: 구현하지 않음(후속 지시 예정).',
+    '보유 기록의 저장 위치: 어댑터는 메타 프로필의 collection.owned를 읽도록만 해 두었고, 쓰는 곳은 없음.',
+    '미획득 카드를 잠금 카드로 보일지: 미정이라 보유 카드만 보임.',
+    '캐릭터별 카드 배경·인물 그림: 45명 모두 없음(플레이스홀더).',
+  ],
+  notRun: [
+    '실제 캐릭터 그림이 들어간 카드의 손·머리 잘림 확인: 그림이 없어 하지 못함(레이아웃은 v5 시안 비율 그대로).',
+    '터치 기기에서의 기울이기: 확인하지 않음(누른 채 끌면 기울도록 시안과 같게 구현).',
+  ],
+  issues: [
+    {
+      title: '시작 화면에는 진입 버튼이 없음',
+      status: '확인 필요',
+      detail:
+        '요청서가 더보기 메뉴를 예로 들어 원정 중 더보기에만 넣었다. 시작 화면(게임시작·능력치·뽑기 카드)에도 둘지는 화면 배치를 바꾸는 일이라 정하지 않았다.',
+      repro: '시작 화면에서 컬렉션을 찾을 수 없음',
+    },
+  ],
+  decisions: [
+    '구현 방식: 기존 PixiJS 전장은 그대로 두고, 카드는 DOM + CSS 3D(덮개 창 안)로 그림. 목록은 정적, 상세 한 장만 움직임.',
+    '개발용 미리보기 ?carddev: 그림·움직임 확인용으로 45명 카드를 보여 주며 보유로 치지 않고 저장하지 않음.',
+    '새로 결정할 것: 시작 화면 진입 버튼 여부, 미획득 카드 표시 방식.',
+  ],
+  files: [
+    'src/core/collection.ts(새), src/ui/art/cards.ts(새), src/ui/components/Collection.tsx·Collection.module.css(새)',
+    'src/ui/store.ts(덮개 창 종류·Esc 순서), src/ui/components/Overlays.tsx·Hud.tsx(버튼)',
+    'assets-src/images/cards/card-frame.png·card-nameplate.png(원본) → public/assets/cards/*.webp, tools/convert-images.py, docs/specs/images.json',
+    'tests/collection/collection.test.js(새), 문서·패치노트',
+  ],
+  conflicts: [
+    '게임 규칙·전투·상점·장비·저장 형식은 바꾸지 않았다(메타 프로필에 필드를 추가하지 않음).',
+  ],
+};
+
 /** v0.21.0 장비 밸런스 1차(AUTOCHESS_ITEM_BALANCE_FINAL_DRAFT1_2026-11-24) 구현·테스트 기록 */
 const itemBalance = {
   title: '장비 밸런스 1차(완성 장비 수치·같은 장비 효과 1번·회피 상한 40%)',
@@ -2294,6 +2386,8 @@ function recordMarkdown(t) {
 
 function toMarkdown() {
   return (
+    recordMarkdown(collection) +
+    '\n---\n\n' +
     recordMarkdown(itemBalance) +
     '\n---\n\n' +
     recordMarkdown(itemRework) +
@@ -2366,6 +2460,7 @@ export default {
   visual,
   interaction,
   metaUpgrades,
+  collection,
   itemBalance,
   itemRework,
   counts,

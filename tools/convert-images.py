@@ -15,6 +15,9 @@ JOBS = [
     ('battlefield-bg-fog.png', 'battlefield-bg-fog.webp', 85),
     ('characters/c01-nox.png', 'characters/c01-nox.webp', 88),
     ('characters/c01-nox-thumbnail.png', 'characters/c01-nox-thumbnail.webp', 88),
+    # v0.22.0 컬렉션 카드 공통 프레임·이름표(사용자 제공 원본, 픽셀 그대로 무손실)
+    ('cards/card-frame.png', 'cards/card-frame.webp', 'lossless'),
+    ('cards/card-nameplate.png', 'cards/card-nameplate.webp', 'lossless'),
 ]
 
 report = {}
