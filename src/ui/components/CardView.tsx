@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import S, { type ImageTransform } from '../../core/card-settings.ts';
 import C from '../../core/collection.ts';
-import { cardArt, cardFrame, cardNameplate } from '../art/cards.ts';
+import { bakedCard, cardArt, cardFrame, cardNameplate } from '../art/cards.ts';
 import { useBlobUrl } from '../cardAssetStore.ts';
 import styles from './CardView.module.css';
 
@@ -201,7 +201,10 @@ export function AnimatedCard({ card, label }: { card: CardViewData; label?: stri
   );
 }
 
-/** 카드 데이터 만들기: 원래 캐릭터 정보 + 카드 꾸미기 설정(관리자 등록 그림 → 없으면 정적 등록표 → 없으면 플레이스홀더) */
+/**
+ * 카드 데이터 만들기. 이 브라우저의 관리자 설정이 있으면 그 상태 전부(그림이 없으면 플레이스홀더),
+ * 없으면 게임 반영본(card-art.generated.ts), 그것도 없으면 원래 이름·플레이스홀더.
+ */
 export function useCardViewData(
   characterId: string,
   settings:
@@ -216,14 +219,24 @@ export function useCardViewData(
 ): CardViewData {
   const bgUrl = useBlobUrl(settings?.backgroundImage?.blob);
   const chUrl = useBlobUrl(settings?.characterImage?.blob);
-  const art = cardArt(characterId);
   const base = C.entry(characterId);
+  if (settings)
+    return {
+      characterId,
+      name: S.cardName(characterId, settings),
+      cost: base?.cost ?? 1,
+      background: bgUrl,
+      character: chUrl,
+      transform: settings.imageTransform,
+    };
+  const baked = bakedCard(characterId);
+  const art = cardArt(characterId);
   return {
     characterId,
-    name: S.cardName(characterId, settings),
+    name: baked?.displayName || base?.displayName || characterId,
     cost: base?.cost ?? 1,
-    background: bgUrl ?? art.background,
-    character: chUrl ?? art.character,
-    transform: settings?.imageTransform,
+    background: art.background,
+    character: art.character,
+    transform: baked?.imageTransform,
   };
 }
