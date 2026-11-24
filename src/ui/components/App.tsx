@@ -5,6 +5,7 @@ import { Home } from './Home.tsx';
 import { Game } from './Game.tsx';
 import { Abilities } from './Abilities.tsx';
 import { Overlays } from './Overlays.tsx';
+import { AdminPage } from './admin/AdminPage.tsx';
 
 export function App({ store }: { store: Store }) {
   const ui = useStore(store);
@@ -15,6 +16,8 @@ export function App({ store }: { store: Store }) {
         <Game ui={ui} actions={store.actions} />
       ) : ui.view === 'abilities' ? (
         <Abilities ui={ui} actions={store.actions} />
+      ) : ui.view === 'admin' ? (
+        <AdminPage ui={ui} actions={store.actions} />
       ) : (
         <Home ui={ui} actions={store.actions} />
       )}

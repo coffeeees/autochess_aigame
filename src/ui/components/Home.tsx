@@ -57,6 +57,18 @@ function MainMenu({ ui, actions }: Props) {
           <small>준비 중 · 캐릭터 성장 콘텐츠</small>
         </button>
       </div>
+      <div class={styles.subMenu}>
+        <button onClick={() => actions.openOverlay({ kind: 'collection', card: null })}>
+          <span aria-hidden="true">▤</span>
+          <b>컬렉션</b>
+          <small>보유한 캐릭터 카드</small>
+        </button>
+        <button onClick={actions.showAdmin}>
+          <span aria-hidden="true">⚙</span>
+          <b>관리자</b>
+          <small>테스트용 · 카드 이름·그림 설정(이 브라우저에만 저장)</small>
+        </button>
+      </div>
       {ui.loadNotice && (
         <p class={styles.notice} role="status">
           {ui.loadNotice.text}

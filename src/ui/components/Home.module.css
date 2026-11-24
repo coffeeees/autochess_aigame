@@ -90,6 +90,35 @@
 .primary > small {
   color: #5c506b;
 }
+.subMenu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.subMenu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  text-align: left;
+  border-radius: 10px;
+  background: #1b1723;
+  border: 1px solid #574a68;
+  cursor: pointer;
+}
+.subMenu span {
+  font-size: 18px;
+  color: #ddc79b;
+}
+.subMenu b {
+  font-size: var(--text-md);
+}
+.subMenu small {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: #a79ab6;
+}
 .card:disabled {
   opacity: 0.43;
   cursor: default;

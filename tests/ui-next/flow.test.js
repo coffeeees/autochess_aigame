@@ -229,7 +229,7 @@ test('도감·패치노트 덮개 창, 무료 테스트 영입, 더보기의 새
 test('패치노트·알림 조사표 모듈은 따로 불러올 수 있고 기존 내용과 같다', async () => {
   const notes = (await import('../../src/content/patch-notes.js')).default;
   const audit = (await import('../../src/content/notice-audit.js')).default;
-  a.equal(notes.current, '0.22.0');
+  a.equal(notes.current, '0.23.0');
   a(notes.toMarkdown().includes('## 버전별 변경 이력'));
   a.equal(audit.rows.filter((r) => r.status === '유지').length, 12);
   a.deepEqual(
@@ -397,5 +397,13 @@ test('컬렉션 기록(v0.22.0): 검수 체크리스트·미정 항목·실행�
   const t = B.collection;
   for (const c of t.cases) a.equal(c.length, 4, c[0]);
   a(t.growth.some((x) => x.includes('돌파')));
-  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 컬렉션'));
+  a(B.toMarkdown().includes('# 밸런스 테스트 — 컬렉션 UI'));
+});
+
+test('관리자·카드 기록(v0.23.0): 검수 체크리스트·미정 항목·확인 필요', async () => {
+  const B = (await import('../../src/content/balance-tests.js')).default;
+  const t = B.cardAdmin;
+  for (const c of t.cases) a.equal(c.length, 4, c[0]);
+  a(t.issues.some((x) => x.title.includes('관리자 버튼')));
+  a(B.toMarkdown().startsWith('# 밸런스 테스트 — 시작 화면 컬렉션·관리자'));
 });
