@@ -7,7 +7,7 @@ import type { GameProps } from '../Game.tsx';
 import { adminModules } from './modules.ts';
 import { CharacterSettings } from './CharacterSettings.tsx';
 import { useCardAssets } from '../../cardAssetStore.ts';
-import { buildExport, download, exportFileName } from '../../adminExport.ts';
+import { buildExport, download, exportFileName, ExportError } from '../../adminExport.ts';
 import styles from './Admin.module.css';
 
 type Props = Pick<GameProps, 'ui' | 'actions'>;
@@ -37,7 +37,12 @@ export function AdminPage({ ui, actions }: Props) {
           (dirty.current ? ' · 저장하지 않은 지금 편집 중인 변경은 빠졌습니다' : ''),
       );
     } catch (e) {
-      setExportMsg('내보내지 못했습니다: ' + (e as Error).message);
+      setExportMsg(
+        e instanceof ExportError
+          ? '내보내지 않았습니다(파일을 만들지 않음) — 고칠 곳: ' +
+              e.problems.map((p) => `${p.characterId} ${p.field} ${p.message}`).join(' · ')
+          : '내보내지 못했습니다: ' + (e as Error).message,
+      );
     } finally {
       setExporting(false);
     }

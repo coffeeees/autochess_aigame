@@ -64,8 +64,8 @@ test('all ten proposed stats for C01-C12 exactly match the source table', () => 
         .map((s) => s.trim()),
       u = D.byId(cols[0]);
     assert(u.name.length > 0);
-    D.statKeys.forEach((key, i) =>
-      assert.equal(u.stats[key], parseFloat(cols[i + 2]), u.id + ' ' + key),
+    D.statKeys.forEach(
+      (key, i) => assert.equal(u.sourceStats[key], parseFloat(cols[i + 2]), u.id + ' ' + key), // 원본(반영본 전)
     );
   }
 });

@@ -23,6 +23,8 @@ export interface BakedCardArt {
   displayName?: string; // 카드 표시 이름(없으면 원래 이름)
   background?: BakedImage;
   character?: BakedImage;
+  /** 인게임 썸네일(v0.25.0) — 영입·대기석·전장에 쓰는 그림(ui/art/characters.ts portraitOf가 합침) */
+  thumbnail?: BakedImage;
   imageTransform?: Partial<
     Record<'background' | 'character', { scale: number; offsetX: number; offsetY: number }>
   >;

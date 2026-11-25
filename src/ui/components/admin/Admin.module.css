@@ -369,3 +369,129 @@
 .export [role='status'] {
   color: #e8d9a8;
 }
+
+/* ─── 인게임 썸네일·기본 능력치(v0.25.0) ─── */
+.stats {
+  border: 1px solid #4c425c;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.stats summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+.statsNote {
+  margin: 8px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+.stats table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.stats th,
+.stats td {
+  padding: 4px 6px;
+  text-align: left;
+  border-bottom: 1px solid #ffffff10;
+  vertical-align: middle;
+}
+.stats thead th {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.stats tbody th small,
+.stats td small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.stats td small {
+  display: inline;
+}
+.stats input {
+  width: 92px;
+  padding: 4px 6px;
+}
+.stats input[aria-invalid='true'] {
+  border-color: #d0606a;
+}
+.stats tr[data-changed='true'] input {
+  border-color: #ffd36b;
+}
+.changed {
+  font-style: normal;
+  color: #ffd36b;
+}
+.stats td small.changed {
+  color: #ffd36b;
+}
+.stats td small.statError {
+  color: #ff9aa2;
+}
+.statButtons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.statButtons button {
+  font-size: var(--text-xs);
+  padding: 5px 9px;
+}
+/* 편집 칸이 길어져도 저장 줄은 늘 보이게 */
+.actions {
+  position: sticky;
+  bottom: -14px;
+  padding: 10px 0;
+  background: #15131d;
+  border-top: 1px solid #4c425c;
+}
+.thumbPreview {
+  align-self: stretch;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #4c425c;
+}
+.thumbPreview h3 {
+  margin: 0 0 8px;
+  font-size: var(--text-md);
+}
+.thumbPreview h3 small {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.thumbRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.thumbRow figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.thumbRow figcaption {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+/* 크기는 1600×900 게임 화면에서 잰 실제 크기 */
+.fieldBox {
+  width: var(--field-size, 70px);
+  height: var(--field-size, 70px);
+}
+.benchBox {
+  width: var(--bench-w, 96px);
+  height: var(--bench-h, 98px);
+}
+.shopBox {
+  width: var(--shop-w, 139px);
+}

@@ -55,7 +55,7 @@ const img = (bytes, format, name) => ({
   height: 20,
 });
 
-test('내보내기: 매니페스트(형식·버전·카드 전체 상태·sha256) + 원본 그림 + README, 캐릭터 ID 순', async () => {
+test('내보내기: 매니페스트(형식·버전 2·카드 전체 상태·sha256) + 원본 그림 + README_APPLY.md, 캐릭터 ID 순', async () => {
   const records = [
     {
       ...S.emptySettings('C12'),
@@ -68,19 +68,19 @@ test('내보내기: 매니페스트(형식·버전·카드 전체 상태·sha256
       characterImage: img(png, 'png', 'nox.png'),
       updatedAt: 2,
     },
-    { ...S.emptySettings('X99'), displayNameOverride: '무시' },
   ];
   const now = new Date(2026, 10, 24, 9, 5);
   const { zip, manifest } = await buildExport(records, '0.24.0', now);
   const files = readZip(zip);
   a.deepEqual(
     [...files.keys()],
-    ['manifest.json', 'README.txt', 'cards/C01/character.png', 'cards/C12/background.jpg'],
+    ['manifest.json', 'README_APPLY.md', 'cards/C01/character.png', 'cards/C12/background.jpg'],
   );
   const m = JSON.parse(new TextDecoder().decode(files.get('manifest.json')));
   a.deepEqual(m, JSON.parse(JSON.stringify(manifest)));
   a.equal(m.format, EXPORT_FORMAT);
-  a.equal(m.version, 1);
+  a.equal(m.version, 2);
+  a.equal(m.schemaVersion, 2);
   a.equal(m.gameVersion, '0.24.0');
   const [c01, c12] = m.modules.characters.cards;
   a.equal(c01.characterId, 'C01');
@@ -90,8 +90,20 @@ test('내보내기: 매니페스트(형식·버전·카드 전체 상태·sha256
   a.deepEqual([...files.get('cards/C01/character.png')], [...png]);
   a.equal(c12.displayNameOverride, null);
   a.equal(c12.backgroundImage.format, 'jpeg');
-  a.equal(m.modules.characters.cards.length, 2, '없는 ID는 뺌');
-  a(new TextDecoder().decode(files.get('README.txt')).includes('대화창에 첨부'));
+  a.equal(m.modules.characters.cards.length, 2);
+  a.equal(c01.thumbnailImage, null);
+  a.equal(c01.stats, null, '능력치를 안 바꿨으면 null');
+  const guide = new TextDecoder().decode(files.get('README_APPLY.md'));
+  for (const path of [
+    'src/ui/art/card-art.generated.ts',
+    'src/core/data/unit-stat-overrides.generated.js',
+    'public/assets/cards/<id>/',
+    'tools/import-admin-export.py',
+  ])
+    a(guide.includes(path), path);
+  a(guide.includes('대화창에 첨부') && guide.includes('반영되지 않습니다'));
+  // 없는 캐릭터 ID는 내보내지 않고 알린다
+  await a.rejects(buildExport([{ ...S.emptySettings('X99'), displayNameOverride: '무시' }], 't'));
   a.equal(exportFileName(now), 'autochess-admin-export-20261124-0905.zip');
 });
 
@@ -99,7 +111,7 @@ test('반영본 등록표: 캐릭터 ID·배포 파일·해시 형식이 맞다(
   for (const [id, e] of Object.entries(bakedCardArt)) {
     a(S.isCharacterId(id), id);
     if (e.displayName) a([...e.displayName].length <= S.limits.nameMax, id);
-    for (const slot of ['background', 'character']) {
+    for (const slot of ['background', 'character', 'thumbnail']) {
       const im = e[slot];
       if (!im) continue;
       a(fs.existsSync('public/' + im.src), im.src);

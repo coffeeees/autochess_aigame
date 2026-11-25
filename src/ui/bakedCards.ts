@@ -4,6 +4,12 @@
 // - 같은지 비교는 그림 sha256(반영본은 보낸 원본·배포본 해시 둘 다 기록)과 이름으로 한다.
 import S, { type CardSettings, type StoredImage } from '../core/card-settings.ts';
 import { bakedCard, type BakedImage } from './art/cards.ts';
+import U from '../core/unit-stats.ts';
+import D from '../core/data/units.js';
+
+const statOverrides = D.statOverrides as Record<string, Record<string, number>>;
+/** 반영된 능력치가 있는 캐릭터 */
+export const hasBakedStats = (id: string) => Object.keys(statOverrides[id] || {}).length > 0;
 
 const cache = new Map<string, Promise<CardSettings | null>>();
 
@@ -25,18 +31,22 @@ async function fetchImage(img: BakedImage | undefined): Promise<StoredImage | nu
 /** 반영본을 편집용 설정으로(반영본이 없으면 null). 같은 캐릭터는 같은 객체를 돌려준다 */
 export function bakedSettings(characterId: string): Promise<CardSettings | null> {
   const baked = bakedCard(characterId);
-  if (!baked) return Promise.resolve(null);
+  if (!baked && !hasBakedStats(characterId)) return Promise.resolve(null);
   let p = cache.get(characterId);
   if (!p) {
-    p = Promise.all([fetchImage(baked.background), fetchImage(baked.character)]).then(
-      ([backgroundImage, characterImage]) => ({
-        ...S.emptySettings(characterId),
-        displayNameOverride: S.normalizeName(characterId, baked.displayName ?? ''),
-        backgroundImage,
-        characterImage,
-        imageTransform: baked.imageTransform,
-      }),
-    );
+    p = Promise.all([
+      fetchImage(baked?.background),
+      fetchImage(baked?.character),
+      fetchImage(baked?.thumbnail),
+    ]).then(([backgroundImage, characterImage, thumbnailImage]) => ({
+      ...S.emptySettings(characterId),
+      displayNameOverride: S.normalizeName(characterId, baked?.displayName ?? ''),
+      backgroundImage,
+      characterImage,
+      thumbnailImage,
+      stats: hasBakedStats(characterId) ? U.gameStats(characterId)! : null,
+      imageTransform: baked?.imageTransform,
+    }));
     p.catch(() => cache.delete(characterId));
     cache.set(characterId, p);
   }
@@ -61,13 +71,22 @@ export type CardStatus = 'none' | 'baked' | 'local' | 'same';
 /** 캐릭터 카드 상태: 설정 없음 / 게임 반영본만 / 이 브라우저 수정(반영 안 됨) / 브라우저 설정이 반영본과 같음 */
 export async function cardStatus(characterId: string, local?: CardSettings): Promise<CardStatus> {
   const baked = bakedCard(characterId);
-  if (!local) return baked ? 'baked' : 'none';
-  if (!baked) return 'local';
-  if ((local.displayNameOverride ?? null) !== S.normalizeName(characterId, baked.displayName ?? ''))
+  const anyBaked = !!baked || hasBakedStats(characterId);
+  if (!local) return anyBaked ? 'baked' : 'none';
+  if (!anyBaked) return 'local';
+  if (
+    (local.displayNameOverride ?? null) !== S.normalizeName(characterId, baked?.displayName ?? '')
+  )
     return 'local';
-  for (const slot of ['background', 'character'] as const) {
-    const mine = slot === 'background' ? local.backgroundImage : local.characterImage;
-    const theirs = baked[slot];
+  if (local.stats && !U.sameStats(local.stats, U.gameStats(characterId))) return 'local';
+  for (const slot of ['background', 'character', 'thumbnail'] as const) {
+    const mine =
+      slot === 'background'
+        ? local.backgroundImage
+        : slot === 'character'
+          ? local.characterImage
+          : (local.thumbnailImage ?? null);
+    const theirs = baked?.[slot];
     if (!mine !== !theirs) return 'local';
     if (mine && theirs && !theirs.sha256.includes(await sha256(mine.blob))) return 'local';
   }

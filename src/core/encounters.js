@@ -37,7 +37,7 @@ const enemies = rows.map(([id, name, skillId, job, color]) => ({
   race: '적군',
   trait: '몬스터',
   enemyOnly: true,
-  stats: { ...D.byId(skillId).stats },
+  stats: { ...D.byId(skillId).sourceStats }, // v0.25.0: 캐릭터 능력치 반영본과 무관하게 원본 값
 }));
 enemies.push({
   id: 'E99',
@@ -49,7 +49,7 @@ enemies.push({
   trait: '보물',
   enemyOnly: true,
   bonus: true,
-  stats: { ...D.byId('C03').stats, HP: 650, AD: 35, GD: 20 },
+  stats: { ...D.byId('C03').sourceStats, HP: 650, AD: 35, GD: 20 },
 });
 const enemyIds = enemies.filter((e) => !e.bonus).map((e) => e.id),
   byId = (id) => enemies.find((e) => e.id === id),

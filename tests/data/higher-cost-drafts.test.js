@@ -13,7 +13,10 @@ const baseline = JSON.parse(fs.readFileSync('docs/specs/onecost-baseline.json', 
 let passed = 0;
 test('existing C01-C12 data, skills, pool subset and old metadata unchanged; new bonds explicitly added', () => {
   assert.deepEqual(
-    D.roster.filter((u) => u.cost === 1).map(({ bonds, gender, ...u }) => u), // 성별은 v0.20.0에 추가(기준 밖)
+    // 성별은 v0.20.0에 추가(기준 밖). 능력치는 관리자 반영본(v0.25.0)을 합치기 전 원본으로 비교
+    D.roster
+      .filter((u) => u.cost === 1)
+      .map(({ bonds, gender, ...u }) => ({ ...u, stats: { ...D.sourceStatsOf(u.id) } })),
     baseline.roster.map((u) => ({ ...u, name: D.byId(u.id).name })),
   );
   assert.deepEqual(
@@ -49,7 +52,7 @@ test('new 33 names/classes/attributes and ten stats match original Markdown exac
     ])
       assert.equal(unit[key], fields[label]);
     for (const key of D.statKeys)
-      assert.equal(unit.stats[key], parseFloat(fields[key]), unit.id + ' ' + key);
+      assert.equal(unit.sourceStats[key], parseFloat(fields[key]), unit.id + ' ' + key); // 원본(반영본 전)
     assert(unit.provisional);
   }
 });
