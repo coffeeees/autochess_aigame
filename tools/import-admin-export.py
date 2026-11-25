@@ -1,15 +1,24 @@
-# 관리자 내보내기 ZIP(autochess-admin-export, v1)을 게임 파일(반영본)에 넣는다.
+# 관리자 내보내기 ZIP(autochess-admin-export, v1·v2)을 게임 파일(반영본)에 넣는다.
 #   python3 tools/import-admin-export.py <내보내기.zip> [--dry-run]
 # - 검사: 형식·버전, 캐릭터 ID(data/units.js 명단), 그림 매직 바이트·sha256·10MB·디코드.
 # - 그림: 원본은 assets-src/images/cards/<id>/<slot>.<확장자>, 배포본은 public/assets/cards/<id>/<slot>.webp
-#   (캐릭터는 투명도 유지 품질 90, 배경은 품질 88). 반영본과 같은 그림(sha256)이면 다시 만들지 않는다.
-# - 결과: src/ui/art/card-art.generated.ts(이름·그림 경로·크기·해시). ZIP에 든 캐릭터만 그 상태 전부로 바꾸고 나머지는 그대로.
+#   (캐릭터·인게임 썸네일은 투명도 유지 품질 90, 배경은 품질 88). 반영본과 같은 그림(sha256)이면 다시 만들지 않는다.
+# - 결과: src/ui/art/card-art.generated.ts(이름·그림 경로·크기·해시), v2부터 기본 능력치는
+#   src/core/data/unit-stat-overrides.generated.js(원본과 다른 키만, 검사는 src/core/unit-stats.ts와 같은 규칙).
+#   ZIP에 든 캐릭터만 바꾸고 나머지는 그대로. v1(썸네일·능력치 항목 없음)은 그 둘을 바꾸지 않는다. 모르는 항목은 무시하고 알린다.
 # 실행: pip install pillow (Prettier는 npx로 결과 파일만 정리)
 import hashlib, io, json, pathlib, re, subprocess, sys, zipfile
 from PIL import Image
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GENERATED = ROOT / 'src/ui/art/card-art.generated.ts'
+STATS_GENERATED = ROOT / 'src/core/data/unit-stat-overrides.generated.js'
+STATS_HEADER = """// 캐릭터 기본 능력치 반영본(관리자 내보내기 → tools/import-admin-export.py가 만든다). 손으로 고치지 않는다.
+// 캐릭터 ID → 원본(units.js·higher-cost-drafts.js)과 다른 능력치 키만. 없는 캐릭터·키는 원본 값 그대로.
+// data/units.js가 명단을 만들 때 합친다(전투·미리보기·상점 정보 모두 같은 값). 적군(E01~E08)은 원본 값을 쓴다.
+export default """
+KNOWN_CARD_KEYS = {'characterId', 'originalName', 'displayNameOverride', 'backgroundImage', 'characterImage',
+                   'thumbnailImage', 'stats', 'imageTransform', 'updatedAt'}
 SRC_DIR = ROOT / 'assets-src/images/cards'
 OUT_DIR = ROOT / 'public/assets/cards'
 MAX_BYTES = 10 * 1024 * 1024
@@ -23,6 +32,26 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = """
 
 def fail(msg):
     sys.exit('가져오기 실패: ' + msg)
+
+
+def node_json(code, data=None):
+    out = subprocess.run(['node', '--input-type=module', '-e', code], cwd=ROOT, capture_output=True, text=True,
+                         input=json.dumps(data) if data is not None else None, check=True)
+    return json.loads(out.stdout)
+
+
+def check_stats(cid, stats):
+    """게임과 같은 규칙(src/core/unit-stats.ts)으로 검사하고 원본과 다른 키만 돌려준다"""
+    r = node_json("""import U from './src/core/unit-stats.ts';
+let t='';process.stdin.on('data',d=>t+=d).on('end',()=>{const {id,stats}=JSON.parse(t);
+console.log(JSON.stringify({errors:U.checkStats(stats),diff:U.diffFromSource(id,stats)}))});""", {'id': cid, 'stats': stats})
+    if r['errors']:
+        fail(f"{cid} 기본 능력치 오류: {r['errors']}")
+    return r['diff']
+
+
+def read_stat_overrides():
+    return node_json("import m from './src/core/data/unit-stat-overrides.generated.js';console.log(JSON.stringify(m))")
 
 
 def roster():
@@ -66,10 +95,12 @@ def main():
         manifest = json.loads(z.read('manifest.json'))
     except KeyError:
         fail('manifest.json이 없습니다(관리자 내보내기 ZIP이 아님).')
-    if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') != 1:
+    if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2):
         fail(f"지원하지 않는 형식: {manifest.get('format')} v{manifest.get('version')}")
     names = roster()
     baked = read_generated()
+    stat_overrides = read_stat_overrides()
+    version = manifest['version']
     cards = manifest.get('modules', {}).get('characters', {}).get('cards', [])
     report = []
     for card in cards:
@@ -78,11 +109,17 @@ def main():
             fail(f'없는 캐릭터 ID: {cid}')
         prev = baked.get(cid, {})
         entry = {}
+        unknown = set(card) - KNOWN_CARD_KEYS
+        if unknown:
+            print(f'   (알림) {cid}: 모르는 항목 무시 {sorted(unknown)}')
         name = normalize_name(card.get('displayNameOverride'), names[cid])
         if name:
             entry['displayName'] = name
         lines = [f"{cid} {names[cid]}: 이름 {name or '(원래 이름)'}"]
-        for slot in ('background', 'character'):
+        slots = ('background', 'character', 'thumbnail') if version >= 2 else ('background', 'character')
+        if version < 2 and prev.get('thumbnail'):
+            entry['thumbnail'] = prev['thumbnail']  # v1 파일은 썸네일을 바꾸지 않는다
+        for slot in slots:
             img = card.get(slot + 'Image')
             folder = cid.lower()
             if not img:
@@ -116,7 +153,7 @@ def main():
                 for f in (SRC_DIR / folder).glob(slot + '.*'):
                     f.unlink()
                 src.write_bytes(data)
-                if slot == 'character':
+                if slot in ('character', 'thumbnail'):
                     im.convert('RGBA').save(out, 'WEBP', quality=90, alpha_quality=100, method=6)
                 else:
                     im.convert('RGB').save(out, 'WEBP', quality=88, method=6)
@@ -133,6 +170,15 @@ def main():
             lines.append(f"{slot} 새 그림 {im.width}×{im.height} {len(data)//1024}KB → {out.relative_to(ROOT)}" + (f' {out.stat().st_size//1024}KB' if not dry else ''))
         if card.get('imageTransform'):
             entry['imageTransform'] = card['imageTransform']
+        if version >= 2 and card.get('stats') is not None:
+            diff = check_stats(cid, card['stats'])
+            if diff:
+                stat_overrides[cid] = diff
+            else:
+                stat_overrides.pop(cid, None)
+            lines.append('능력치 ' + (', '.join(f'{k} {v}' for k, v in diff.items()) if diff else '원본 그대로'))
+        elif version >= 2:
+            lines.append('능력치 바꾸지 않음')
         if entry:
             baked[cid] = entry
         else:
@@ -141,7 +187,11 @@ def main():
     ordered = {k: baked[k] for k in sorted(baked)}
     if not dry:
         GENERATED.write_text(HEADER + json.dumps(ordered, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
-        subprocess.run(['npx', 'prettier', '--write', str(GENERATED)], cwd=ROOT, check=True, capture_output=True)
+        stats_ordered = {k: stat_overrides[k] for k in sorted(stat_overrides)}
+        STATS_GENERATED.write_text(STATS_HEADER + json.dumps(stats_ordered, ensure_ascii=False, indent=2) + ';\n',
+                                   encoding='utf-8')
+        subprocess.run(['npx', 'prettier', '--write', str(GENERATED), str(STATS_GENERATED)], cwd=ROOT, check=True,
+                       capture_output=True)
     print(f"{'(dry-run) ' if dry else ''}내보낸 시각 {manifest.get('exportedAt')} · 게임 {manifest.get('gameVersion')} · 캐릭터 {len(cards)}명")
     for r in report:
         print(' - ' + r)

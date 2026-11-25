@@ -5,6 +5,8 @@
 // 추가하면 캐릭터별로 하나씩 그림을 넣을 수 있다. 다른 곳은 고칠 필요 없다.
 // 파일은 public/assets/characters/에 영문 소문자·하이픈 이름으로 둔다.
 
+import { bakedCard } from './cards.ts';
+
 export type ArtContext = 'field' | 'bench' | 'shop' | 'detail';
 
 export interface Framing {
@@ -48,5 +50,18 @@ export const characterArt: Readonly<Record<string, CharacterArt>> = {
   },
 };
 
-export const portraitOf = (id: string): Portrait | undefined => characterArt[id]?.portrait;
+/**
+ * 캐릭터 그림. v0.25.0: 관리자에서 반영한 인게임 썸네일(card-art.generated.ts의 thumbnail)이 있으면
+ * 영입·대기석·전장 썸네일을 그것으로 바꾼다(가운데 기준으로 채움, 원래 그림의 확대 설정은 쓰지 않음).
+ * 상세 창용 일러스트(detail)는 원래 것이 있으면 그대로, 없으면 썸네일을 쓴다.
+ */
+/** 반영본 썸네일을 합치기 전 원래 그림(관리자 미리보기에서 썸네일을 지웠을 때) */
+export const originalPortraitOf = (id: string): Portrait | undefined => characterArt[id]?.portrait;
+
+export const portraitOf = (id: string): Portrait | undefined => {
+  const base = characterArt[id]?.portrait;
+  const thumb = bakedCard(id)?.thumbnail?.src;
+  if (!thumb) return base;
+  return { thumbnail: thumb, detail: base?.detail ?? thumb };
+};
 export const spriteOf = (id: string): SpriteSheet | undefined => characterArt[id]?.sprite;

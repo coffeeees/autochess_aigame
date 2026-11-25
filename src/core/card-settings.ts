@@ -3,8 +3,10 @@
 // ③ 보유(collection.ts, 추후 뽑기). 그림을 등록해도 보유·해금으로 치지 않는다. 표시 이름 오버라이드는 카드에만 쓰고
 // 상점·전장·전투·도감의 이름은 바꾸지 않는다. 저장(IndexedDB)은 화면 쪽 ui/cardAssetStore.ts가 맡는다.
 import D from './data/units.js';
+import type { UnitStats } from './unit-stats.ts';
 
-export type CardImageSlot = 'background' | 'character';
+// v0.25.0: thumbnail = 인게임 썸네일(영입·대기석·전장), 카드 그림과 다른 자산
+export type CardImageSlot = 'background' | 'character' | 'thumbnail';
 export type CardImageFormat = 'png' | 'jpeg' | 'webp';
 
 /** 그림 위치 보정(예약, 이번 버전 화면에는 조절 도구 없음). 기본 scale 1 · offset 0(카드 폭·높이 대비 %) */
@@ -28,7 +30,11 @@ export interface CardSettings {
   displayNameOverride: string | null;
   backgroundImage: StoredImage | null;
   characterImage: StoredImage | null;
-  imageTransform?: Partial<Record<CardImageSlot, ImageTransform>>; // 예약
+  /** 인게임 썸네일(v0.25.0). null = 등록 안 함(게임의 기존 썸네일·아바타) */
+  thumbnailImage?: StoredImage | null;
+  /** 기본 능력치 10개(v0.25.0). null·없음 = 지금 게임 값 그대로 */
+  stats?: UnitStats | null;
+  imageTransform?: Partial<Record<'background' | 'character', ImageTransform>>; // 예약
   updatedAt: number;
 }
 
@@ -87,6 +93,14 @@ export function imageWarnings(
   const out: string[] = [];
   if (Math.max(info.width, info.height) > limits.maxSide)
     out.push(`해상도가 큽니다(${info.width}×${info.height}). 4096px 이하를 권장합니다.`);
+  if (slot === 'thumbnail') {
+    if (info.width !== info.height)
+      out.push(
+        `정사각형(1:1)을 권장합니다(지금 ${info.width}×${info.height}). 화면마다 가운데를 기준으로 잘려 보입니다.`,
+      );
+    if (info.format === 'jpeg')
+      out.push('JPG는 투명 배경이 없습니다. 투명 PNG(또는 알파 WebP)를 권장합니다.');
+  }
   if (slot === 'character') {
     if (info.format === 'jpeg')
       out.push(
@@ -126,12 +140,18 @@ export const emptySettings = (characterId: string): CardSettings => ({
   displayNameOverride: null,
   backgroundImage: null,
   characterImage: null,
+  thumbnailImage: null,
+  stats: null,
   updatedAt: 0,
 });
 
 /** 설정이 비었는지(이름·그림 모두 없으면 저장할 필요 없음 → 지움) */
 export const isEmptySettings = (s: CardSettings) =>
-  !s.displayNameOverride && !s.backgroundImage && !s.characterImage;
+  !s.displayNameOverride &&
+  !s.backgroundImage &&
+  !s.characterImage &&
+  !s.thumbnailImage &&
+  !s.stats;
 
 export default {
   limits,

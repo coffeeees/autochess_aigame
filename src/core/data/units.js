@@ -1,6 +1,7 @@
 import B from '../board.js';
 import higherDrafts from './higher-cost-drafts.js';
 import Bonds from './bonds.js';
+import statOverrides from './unit-stat-overrides.generated.js';
 
 const synergies = Bonds.definitions;
 const rosterRows = [
@@ -191,6 +192,20 @@ for (const [i, u] of roster.entries()) {
   u.name = displayNames[i];
   u.gender = genders[i];
 }
+// v0.25.0 관리자 능력치 반영본(unit-stat-overrides.generated.js): 원본은 sourceStats에 남기고 stats에 바뀐 키만 합친다.
+// 전투·미리보기·상점 정보는 모두 stats를 읽는다. 알 수 없는 키·숫자가 아닌 값은 무시한다(원본 값 유지).
+/** 반영본 합치기(테스트에서도 씀): 숫자가 아닌 값·모르는 키는 무시 */
+function applyStatOverrides(units, overrides) {
+  for (const u of units) {
+    // 열거되지 않는 속성: 명단 데이터 모양(직렬화·기존 비교)은 예전과 같다
+    if (!u.sourceStats)
+      Object.defineProperty(u, 'sourceStats', { value: Object.freeze({ ...u.stats }) });
+    for (const [k, v] of Object.entries(overrides[u.id] || {}))
+      if (statKeys.includes(k) && typeof v === 'number' && Number.isFinite(v)) u.stats[k] = v;
+  }
+  return units;
+}
+applyStatOverrides(roster, statOverrides);
 const playableIds = roster.filter((x) => x.playable).map((x) => x.id);
 const skills = {
   C01: {
@@ -334,6 +349,8 @@ roster.forEach((u, i) => {
 skills.C07.text =
   'AD 75% 물리 피해 3회. 마지막 공격은 주 대상 외 전장 생존 적 중 주 대상과 가까운 최대 2명에게 각각 AD 70% 마법 피해. 거리 동률은 UID순.';
 const byId = (id) => roster.find((x) => x.id === id);
+/** 반영본을 합치기 전 원본 능력치(관리자 화면 비교·적군 능력치용) */
+const sourceStatsOf = (id) => byId(id)?.sourceStats;
 function evaluateSynergies(units) {
   const unique = [
     ...new Set(units.filter((u) => !u.summon).map((u) => (typeof u === 'string' ? u : u.id))),
@@ -369,6 +386,9 @@ const api = {
   statKeys,
   costColors,
   byId,
+  sourceStatsOf,
+  statOverrides,
+  applyStatOverrides,
   evaluateSynergies,
   hasBond: Bonds.has,
 };

@@ -1,7 +1,7 @@
 // 전장이나 대기석에 놓인 캐릭터 말.
 import { combatant, costColor } from '../data.ts';
 import { CharacterImage } from './CharacterImage.tsx';
-import type { ArtContext } from '../art/characters.ts';
+import type { ArtContext, Portrait } from '../art/characters.ts';
 import styles from './Pawn.module.css';
 
 type Props = {
@@ -21,6 +21,8 @@ type Props = {
   label?: string;
   /** 누르면 이 캐릭터의 드래그를 시작(왼쪽 버튼만) */
   onDragStart?: (pointerId: number, x: number, y: number) => void;
+  /** 그림을 바꿔 그릴 때(관리자 썸네일 미리보기) */
+  portrait?: Portrait | null;
 };
 
 export function Pawn({
@@ -36,6 +38,7 @@ export function Pawn({
   mp,
   shielded = false,
   label,
+  portrait,
 }: Props) {
   const { name: fullName, cost } = combatant(id);
   const name = fullName.split(' ').at(-1);
@@ -60,7 +63,7 @@ export function Pawn({
         {'★'.repeat(star)}
       </span>
       <span class={styles.image}>
-        <CharacterImage id={id} context={context} />
+        <CharacterImage id={id} context={context} portrait={portrait} />
       </span>
       <span class={styles.name}>{label ?? name}</span>
       {hp !== undefined && (

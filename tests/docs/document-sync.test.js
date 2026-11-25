@@ -77,7 +77,8 @@ test('design includes exactly45 unique character sections with every stat and un
   for (const u of D.roster) {
     a(doc.includes('### ' + u.id + ' · ' + u.name));
     a(doc.includes(D.skills[u.id].text));
-    const row = '| ' + D.statKeys.map((k) => u.stats[k]).join(' | ') + ' |';
+    // 문서는 원본 능력치를 적는다(관리자 반영본은 unit-stat-overrides.generated.js, v0.25.0)
+    const row = '| ' + D.statKeys.map((k) => u.sourceStats[k]).join(' | ') + ' |';
     a(doc.includes(row), u.id);
   }
   a(doc.includes('provisional=true'));
@@ -102,7 +103,7 @@ test('changelog preserves every version and separately records sourced differenc
   a(docs[files[2]].includes('확인필요'));
 });
 test('patch metadata keeps Codex decisions and all notification changes independently exportable', () => {
-  a.equal(N.current, '0.24.0');
+  a.equal(N.current, '0.25.0');
   const e = N.history.find((x) => x.version === '0.15.11'),
     md = N.toMarkdown();
   for (const key of ['approvedDecisions', 'additionalChanges', 'notificationChanges'])

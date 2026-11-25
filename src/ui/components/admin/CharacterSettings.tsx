@@ -1,4 +1,6 @@
-// 관리자 › 캐릭터 설정(v0.23.0). 왼쪽 캐릭터 목록·검색 → 가운데 표시 이름·배경·인물 그림 → 오른쪽 카드 미리보기.
+// 관리자 › 캐릭터 설정(v0.23.0 → v0.25.0). 왼쪽 캐릭터 목록·검색 → 가운데 표시 이름·카드 그림·배경·인게임 썸네일·
+// 기본 능력치 → 오른쪽 카드 미리보기 + 썸네일 미리보기(실제 전장·대기석·영입 표시 컴포넌트로 그림).
+// - 인게임 썸네일·기본 능력치(v0.25.0)는 이 브라우저에 저장해도 게임(원정·전투·상점)에는 쓰이지 않는다. 내보내기 → 반영 뒤 적용.
 // - 캐릭터 목록은 기존 명단(C01~C45)에서 만든다. 표시 이름은 카드 전용 오버라이드라 상점·전장·전투·도감 이름은 그대로.
 // - 그림은 PNG·JPG·WebP만(파일 앞부분으로 판정, 10MB 이하), 깨진 그림은 거절. 캐릭터 그림은 투명 배경을 확인해 안내한다.
 // - 고친 내용은 「저장」 전까지 미리보기에만 보이고(저장 전/저장된 상태를 따로 보여 줌), 「취소」로 되돌린다.
@@ -14,7 +16,13 @@ import S, {
 import D from '../../../core/data/units.js';
 import { costColor } from '../../data.ts';
 import { cardAssets, useBlobUrl, useCardAssets } from '../../cardAssetStore.ts';
-import { bakedSettings, cardStatus, type CardStatus } from '../../bakedCards.ts';
+import { bakedSettings, cardStatus, hasBakedStats, type CardStatus } from '../../bakedCards.ts';
+import U, { type StatKey, type UnitStats } from '../../../core/unit-stats.ts';
+import { originalPortraitOf } from '../../art/characters.ts';
+import { unitDef } from '../../data.ts';
+import { Pawn } from '../Pawn.tsx';
+import { CharacterImage } from '../CharacterImage.tsx';
+import shopStyles from '../ShopPopover.module.css';
 import { bakedCard } from '../../art/cards.ts';
 import { AnimatedCard, CardFace, useCardViewData } from '../CardView.tsx';
 import styles from './Admin.module.css';
@@ -26,13 +34,19 @@ interface Draft {
   name: string;
   background: StoredImage | null;
   character: StoredImage | null;
+  thumbnail: StoredImage | null;
+  stats: Record<StatKey, string>; // 입력 칸 글자 그대로
 }
 type Confirm = { kind: 'reset' } | { kind: 'switch'; to: string } | { kind: 'leave' } | null;
 
+const statText = (st: UnitStats) =>
+  Object.fromEntries(U.statKeys.map((k) => [k, String(st[k])])) as Record<StatKey, string>;
 const fromSaved = (id: string, s?: CardSettings): Draft => ({
   name: s?.displayNameOverride ?? roster.find((u) => u.id === id)!.name,
   background: s?.backgroundImage ?? null,
   character: s?.characterImage ?? null,
+  thumbnail: s?.thumbnailImage ?? null,
+  stats: statText(s?.stats ?? U.gameStats(id)!),
 });
 
 /** 올린 파일 읽기: 형식·크기 검사 → 디코드(깨진 그림 거절) → 크기·투명 가장자리 확인 */
@@ -57,7 +71,7 @@ async function readImage(
   }
   const { width, height } = bitmap;
   let opaqueEdges = false;
-  if (slot === 'character' && checked.format !== 'jpeg') {
+  if (slot !== 'background' && checked.format !== 'jpeg') {
     // 가장자리 픽셀의 90% 넘게 불투명하면 배경이 남아 있다고 본다
     const n = 64;
     const canvas = document.createElement('canvas');
@@ -104,7 +118,7 @@ export function CharacterSettings({
   // 반영본(게임 파일)을 편집 출발점으로 받아 온 것. 브라우저 설정이 없으면 이것이 기준 상태다
   const [baked, setBaked] = useState<{ id: string; settings: CardSettings | null } | null>(null);
   const bakedBase = baked?.id === selected ? baked.settings : null;
-  const loadingBaked = !!bakedCard(selected) && baked?.id !== selected;
+  const loadingBaked = (!!bakedCard(selected) || hasBakedStats(selected)) && baked?.id !== selected;
   const base = saved ?? bakedBase ?? undefined;
   const [draft, setDraft] = useState<Draft>(() => fromSaved(selected, saved));
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
@@ -148,11 +162,23 @@ export function CharacterSettings({
   }, [assets]);
 
   const override = S.normalizeName(selected, draft.name);
+  const game = U.gameStats(selected)!;
+  const source = U.sourceStats(selected)!;
+  const baseStats = base?.stats ?? game;
+  const parsed = Object.fromEntries(
+    U.statKeys.map((k) => [k, U.parseStat(draft.stats[k])]),
+  ) as UnitStats;
+  const statErrors = U.checkStats(parsed);
+  const statChanged = (k: StatKey) => !Object.is(parsed[k], baseStats[k]);
+  const statsDirty = U.statKeys.some(statChanged);
   const dirty =
     !loadingBaked &&
     (override !== (base?.displayNameOverride ?? null) ||
       draft.background !== (base?.backgroundImage ?? null) ||
-      draft.character !== (base?.characterImage ?? null));
+      draft.character !== (base?.characterImage ?? null) ||
+      draft.thumbnail !== (base?.thumbnailImage ?? null) ||
+      statsDirty);
+  const invalid = Object.keys(statErrors).length > 0;
 
   if (dirtyRef) dirtyRef.current = dirty;
   guard.current = () => {
@@ -182,6 +208,10 @@ export function CharacterSettings({
   };
 
   const save = async () => {
+    if (invalid) {
+      setError('능력치 입력을 확인해 주세요: ' + Object.keys(statErrors).join(', '));
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -191,6 +221,9 @@ export function CharacterSettings({
         displayNameOverride: override,
         backgroundImage: draft.background,
         characterImage: draft.character,
+        thumbnailImage: draft.thumbnail,
+        // 지금 게임 값과 같으면 저장하지 않음(null = 게임 값 그대로)
+        stats: U.sameStats(parsed, game) ? null : { ...parsed },
         updatedAt: Date.now(),
       });
       setStatus('저장했습니다. 새로고침해도 이 브라우저에 남습니다.');
@@ -346,6 +379,88 @@ export function CharacterSettings({
             setWarnings({ ...warnings, background: [] });
           }}
         />
+        <ImageField
+          slot="thumbnail"
+          label="인게임 썸네일"
+          hint="영입·대기석·전장에 쓰는 그림(카드 그림과 별개). 투명 PNG·정사각형(1:1) 권장, WebP 가능. 오른쪽에서 실제 표시 모양을 확인하세요."
+          image={draft.thumbnail}
+          warnings={warnings.thumbnail}
+          onFile={(f) => upload('thumbnail', f)}
+          onRemove={() => {
+            setDraft({ ...draft, thumbnail: null });
+            setWarnings({ ...warnings, thumbnail: [] });
+          }}
+        />
+        <details class={styles.stats} open>
+          <summary>기본 능력치 {statsDirty && <em class={styles.changed}>● 변경 있음</em>}</summary>
+          <p class={styles.statsNote}>
+            성급·장비·유대·증강·영구 강화가 붙기 전 기본값입니다. 여기서 저장한 값은 이 화면에만
+            보이고, 실제 전투에는 내보내기 → 게임 반영 뒤 적용됩니다. 치명타 확률은 전투에서
+            100%까지, 회피는 최종 40% 상한이 그대로 적용됩니다.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>능력치</th>
+                <th>게임 값</th>
+                <th>편집값</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {U.statFields.map((f) => (
+                <tr key={f.key} data-stat={f.key} data-changed={statChanged(f.key)}>
+                  <th>
+                    {f.label} ({f.key}){f.note && <small>{f.note}</small>}
+                  </th>
+                  <td>
+                    {game[f.key]}
+                    {f.unit && <small> {f.unit}</small>}
+                    {game[f.key] !== source[f.key] && <small> · 원본 {source[f.key]}</small>}
+                  </td>
+                  <td>
+                    <input
+                      inputMode="decimal"
+                      aria-label={`${f.label} 편집값`}
+                      aria-invalid={!!statErrors[f.key]}
+                      value={draft.stats[f.key]}
+                      disabled={loadingBaked}
+                      onInput={(e) =>
+                        setDraft({
+                          ...draft,
+                          stats: { ...draft.stats, [f.key]: (e.target as HTMLInputElement).value },
+                        })
+                      }
+                    />
+                  </td>
+                  <td>
+                    {statErrors[f.key] ? (
+                      <small class={styles.statError}>{statErrors[f.key]}</small>
+                    ) : statChanged(f.key) ? (
+                      <small class={styles.changed}>● 바뀜</small>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div class={styles.statButtons}>
+            <button
+              disabled={U.sameStats(parsed, game)}
+              onClick={() => setDraft({ ...draft, stats: statText(game) })}
+            >
+              능력치만 게임 값으로
+            </button>
+            {!U.sameStats(game, source) && (
+              <button
+                disabled={U.sameStats(parsed, source)}
+                onClick={() => setDraft({ ...draft, stats: statText(source) })}
+              >
+                능력치만 원본 값으로
+              </button>
+            )}
+          </div>
+        </details>
         {error && (
           <p class={styles.error} role="alert">
             {error}
@@ -358,7 +473,7 @@ export function CharacterSettings({
                 <span>
                   {bakedBase
                     ? `${unit.id}의 이 브라우저 설정을 지우고 게임 반영본으로 되돌릴까요? 다른 캐릭터는 그대로입니다.`
-                    : `${unit.id}의 카드 설정(이름·그림)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
+                    : `${unit.id}의 이 브라우저 설정(카드 이름·카드 그림·배경·인게임 썸네일·기본 능력치)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
                 </span>
                 <button data-variant="danger" onClick={reset}>
                   {bakedBase ? '되돌리기' : '초기화'}
@@ -383,7 +498,11 @@ export function CharacterSettings({
           </div>
         )}
         <div class={styles.actions}>
-          <button data-variant="primary" disabled={!dirty || busy || !!assets.error} onClick={save}>
+          <button
+            data-variant="primary"
+            disabled={!dirty || busy || invalid || !!assets.error}
+            onClick={save}
+          >
             저장
           </button>
           <button disabled={!dirty || busy} onClick={cancel}>
@@ -392,7 +511,9 @@ export function CharacterSettings({
           <button disabled={busy || !saved} onClick={() => setConfirm({ kind: 'reset' })}>
             {bakedBase ? '반영본으로 되돌리기' : '초기화'}
           </button>
-          <span role="status">{dirty ? '저장하지 않은 변경 있음' : status}</span>
+          <span role="status">
+            {invalid ? '능력치 입력 오류' : dirty ? '저장하지 않은 변경 있음' : status}
+          </span>
         </div>
       </section>
 
@@ -415,6 +536,7 @@ export function CharacterSettings({
                 : '설정 없음(기본 카드)'}
           </small>
         </div>
+        <ThumbPreview id={selected} image={draft.thumbnail} />
       </section>
     </div>
   );
@@ -442,7 +564,7 @@ function ImageField({
     <div class={styles.field} data-image-slot={slot}>
       <span>{label}</span>
       <div class={styles.imageRow}>
-        <div class={styles.thumb} data-checker={slot === 'character'}>
+        <div class={styles.thumb} data-checker={slot !== 'background'}>
           {url ? <img src={url} alt={`${label} 미리보기`} /> : <small>없음</small>}
         </div>
         <div class={styles.imageInfo}>
@@ -497,5 +619,54 @@ function StatusBadge({ status, long }: { status?: CardStatus; long?: boolean }) 
     <em class={styles.badge} data-status={status} title={t[1]}>
       {long ? t[1] : t[0]}
     </em>
+  );
+}
+
+/**
+ * 인게임 썸네일 미리보기: 실제 전장·대기석 말(Pawn)과 영입 카드(ShopPopover 스타일)로 그린다.
+ * 그림이 없으면 원래 그림(일러스트 썸네일 또는 SVG 아바타).
+ */
+function ThumbPreview({ id, image }: { id: string; image: StoredImage | null }) {
+  const url = useBlobUrl(image?.blob);
+  const portrait = url ? { thumbnail: url, detail: url } : (originalPortraitOf(id) ?? null);
+  const unit = unitDef(id);
+  return (
+    <section class={styles.thumbPreview} aria-label="인게임 썸네일 미리보기">
+      <h3>
+        인게임 썸네일 <small>{image ? '등록한 그림' : '기본 그림'}</small>
+      </h3>
+      <div class={styles.thumbRow}>
+        <figure>
+          <div class={styles.fieldBox}>
+            <Pawn id={id} star={1} context="field" portrait={portrait} />
+          </div>
+          <figcaption>전장</figcaption>
+        </figure>
+        <figure>
+          <div class={styles.benchBox}>
+            <Pawn id={id} star={1} context="bench" portrait={portrait} />
+          </div>
+          <figcaption>대기석</figcaption>
+        </figure>
+        <figure>
+          <div class={styles.shopBox}>
+            <span
+              class={shopStyles.card}
+              style={{ '--cost-color': costColor(unit.cost), '--i': 0 }}
+            >
+              <span class={shopStyles.art}>
+                <CharacterImage id={id} context="shop" portrait={portrait} />
+              </span>
+              <span class={shopStyles.info}>
+                <b>{unit.name}</b>
+                <span class={shopStyles.tags}>{unit.bonds.join(' · ')}</span>
+              </span>
+              <span class={shopStyles.cost}>{unit.cost}G</span>
+            </span>
+          </div>
+          <figcaption>영입</figcaption>
+        </figure>
+      </div>
+    </section>
   );
 }
