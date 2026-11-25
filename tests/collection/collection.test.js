@@ -8,6 +8,7 @@ import D from '../../src/core/data/units.js';
 import M from '../../src/core/meta.ts';
 import { createStore } from '../../src/ui/store.ts';
 import { cardArt, cardFrame, cardNameplate } from '../../src/ui/art/cards.ts';
+import { bakedCardArt } from '../../src/ui/art/card-art.generated.ts';
 
 test('보유 기록이 없으면 빈 컬렉션(새 프로필·빈 값·잘못된 값)', () => {
   a.deepEqual(C.ownedIds(M.newProfile()), []);
@@ -57,7 +58,7 @@ test('컬렉션 열기·카드 상세·Esc(상세 → 목록 → 닫기)는 원�
   a.equal(store.getState().meta.collection, undefined, '보유 기록을 만들지 않음');
 });
 
-test('카드 그림: 공통 프레임·이름표는 제공 원본과 픽셀이 같은 무손실 WebP, 캐릭터별 그림은 아직 없어 플레이스홀더', () => {
+test('카드 그림: 공통 프레임·이름표는 제공 원본과 픽셀이 같은 무손실 WebP, 캐릭터별 그림은 반영본과 같음(없으면 플레이스홀더)', () => {
   const spec = JSON.parse(fs.readFileSync('docs/specs/images.json', 'utf8'));
   for (const [path, size] of [
     [cardFrame, [714, 1000]],
@@ -68,7 +69,12 @@ test('카드 그림: 공통 프레임·이름표는 제공 원본과 픽셀이 �
     a.deepEqual(spec[key].size, size, key);
     a(fs.existsSync('public/' + path), path);
   }
-  for (const u of D.roster) a.deepEqual(cardArt(u.id), { background: null, character: null });
+  // 캐릭터별 그림은 반영본(card-art.generated.ts)과 같아야 한다(반영 전에는 모두 null → 플레이스홀더)
+  for (const u of D.roster)
+    a.deepEqual(cardArt(u.id), {
+      background: bakedCardArt[u.id]?.background?.src ?? null,
+      character: bakedCardArt[u.id]?.character?.src ?? null,
+    });
 });
 
 test('화면: 더보기 메뉴 맨 끝에 컬렉션 버튼, 기존 버튼 순서는 그대로, 뽑기·해금·돌파 동작 없음', () => {

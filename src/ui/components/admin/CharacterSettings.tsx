@@ -23,7 +23,7 @@ import { unitDef } from '../../data.ts';
 import { Pawn } from '../Pawn.tsx';
 import { CharacterImage } from '../CharacterImage.tsx';
 import shopStyles from '../ShopPopover.module.css';
-import { bakedCard } from '../../art/cards.ts';
+import { bakedCard, cardFrame, cardNameplate } from '../../art/cards.ts';
 import { AnimatedCard, CardFace, useCardViewData } from '../CardView.tsx';
 import styles from './Admin.module.css';
 
@@ -35,6 +35,8 @@ interface Draft {
   background: StoredImage | null;
   character: StoredImage | null;
   thumbnail: StoredImage | null;
+  frame: StoredImage | null; // v0.26.0 이 캐릭터만의 카드 프레임(null = 공통 기본)
+  nameplate: StoredImage | null; // v0.26.0 이 캐릭터만의 이름표(null = 공통 기본)
   stats: Record<StatKey, string>; // 입력 칸 글자 그대로
 }
 type Confirm = { kind: 'reset' } | { kind: 'switch'; to: string } | { kind: 'leave' } | null;
@@ -46,6 +48,8 @@ const fromSaved = (id: string, s?: CardSettings): Draft => ({
   background: s?.backgroundImage ?? null,
   character: s?.characterImage ?? null,
   thumbnail: s?.thumbnailImage ?? null,
+  frame: s?.frameImage ?? null,
+  nameplate: s?.nameplateImage ?? null,
   stats: statText(s?.stats ?? U.gameStats(id)!),
 });
 
@@ -71,7 +75,27 @@ async function readImage(
   }
   const { width, height } = bitmap;
   let opaqueEdges = false;
-  if (slot !== 'background' && checked.format !== 'jpeg') {
+  let opaqueCenter = false;
+  if (slot === 'frame' && checked.format !== 'jpeg') {
+    // 프레임 안쪽(가운데 60%)이 대부분 불투명하면 배경·캐릭터를 가린다
+    const n = 32;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = n;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(bitmap, 0, 0, n, n);
+      const px = ctx.getImageData(0, 0, n, n).data;
+      let all = 0,
+        solid = 0;
+      for (let y = 7; y < n - 7; y++)
+        for (let x = 7; x < n - 7; x++) {
+          all++;
+          if (px[(y * n + x) * 4 + 3] > 240) solid++;
+        }
+      opaqueCenter = solid / all > 0.5;
+    }
+  }
+  if ((slot === 'character' || slot === 'thumbnail') && checked.format !== 'jpeg') {
     // 가장자리 픽셀의 90% 넘게 불투명하면 배경이 남아 있다고 본다
     const n = 64;
     const canvas = document.createElement('canvas');
@@ -98,7 +122,13 @@ async function readImage(
   bitmap.close();
   return {
     image: { blob, format: checked.format, name: file.name, size: file.size, width, height },
-    warnings: S.imageWarnings(slot, { format: checked.format, width, height, opaqueEdges }),
+    warnings: S.imageWarnings(slot, {
+      format: checked.format,
+      width,
+      height,
+      opaqueEdges,
+      opaqueCenter,
+    }),
   };
 }
 
@@ -177,6 +207,8 @@ export function CharacterSettings({
       draft.background !== (base?.backgroundImage ?? null) ||
       draft.character !== (base?.characterImage ?? null) ||
       draft.thumbnail !== (base?.thumbnailImage ?? null) ||
+      draft.frame !== (base?.frameImage ?? null) ||
+      draft.nameplate !== (base?.nameplateImage ?? null) ||
       statsDirty);
   const invalid = Object.keys(statErrors).length > 0;
 
@@ -222,6 +254,8 @@ export function CharacterSettings({
         backgroundImage: draft.background,
         characterImage: draft.character,
         thumbnailImage: draft.thumbnail,
+        frameImage: draft.frame,
+        nameplateImage: draft.nameplate,
         // 지금 게임 값과 같으면 저장하지 않음(null = 게임 값 그대로)
         stats: U.sameStats(parsed, game) ? null : { ...parsed },
         updatedAt: Date.now(),
@@ -287,6 +321,8 @@ export function CharacterSettings({
     displayNameOverride: override,
     backgroundImage: draft.background,
     characterImage: draft.character,
+    frameImage: draft.frame,
+    nameplateImage: draft.nameplate,
   });
   const savedCard = useCardViewData(selected, saved);
 
@@ -377,6 +413,34 @@ export function CharacterSettings({
           onRemove={() => {
             setDraft({ ...draft, background: null });
             setWarnings({ ...warnings, background: [] });
+          }}
+        />
+        <ImageField
+          slot="frame"
+          label="카드 프레임"
+          hint="이 캐릭터 카드에만 쓰는 외곽 프레임(투명 PNG 권장, 기본 714×1000). 비율을 유지해 카드에 맞추며, 체크무늬가 보이는 곳이 투명한 부분입니다."
+          image={draft.frame}
+          fallback={cardFrame}
+          removeLabel="삭제(기본값으로 복구)"
+          warnings={warnings.frame}
+          onFile={(f) => upload('frame', f)}
+          onRemove={() => {
+            setDraft({ ...draft, frame: null });
+            setWarnings({ ...warnings, frame: [] });
+          }}
+        />
+        <ImageField
+          slot="nameplate"
+          label="카드 이름표"
+          hint="이 캐릭터 카드에만 쓰는 이름표(글자 없는 투명 PNG 권장, 기본 750×279). 기본 이름표와 같은 자리·크기로 놓이고 이름은 그 위에 글자로 그립니다."
+          image={draft.nameplate}
+          fallback={cardNameplate}
+          removeLabel="삭제(기본값으로 복구)"
+          warnings={warnings.nameplate}
+          onFile={(f) => upload('nameplate', f)}
+          onRemove={() => {
+            setDraft({ ...draft, nameplate: null });
+            setWarnings({ ...warnings, nameplate: [] });
           }}
         />
         <ImageField
@@ -473,7 +537,7 @@ export function CharacterSettings({
                 <span>
                   {bakedBase
                     ? `${unit.id}의 이 브라우저 설정을 지우고 게임 반영본으로 되돌릴까요? 다른 캐릭터는 그대로입니다.`
-                    : `${unit.id}의 이 브라우저 설정(카드 이름·카드 그림·배경·인게임 썸네일·기본 능력치)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
+                    : `${unit.id}의 이 브라우저 설정(카드 이름·카드 그림·배경·개별 프레임·개별 이름표·인게임 썸네일·기본 능력치)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
                 </span>
                 <button data-variant="danger" onClick={reset}>
                   {bakedBase ? '되돌리기' : '초기화'}
@@ -547,6 +611,8 @@ function ImageField({
   label,
   hint,
   image,
+  fallback,
+  removeLabel = '삭제',
   warnings,
   onFile,
   onRemove,
@@ -555,6 +621,9 @@ function ImageField({
   label: string;
   hint: string;
   image: StoredImage | null;
+  /** 개별 그림이 없을 때 실제로 쓰이는 공통 기본 그림(프레임·이름표) */
+  fallback?: string;
+  removeLabel?: string;
   warnings?: string[];
   onFile: (f: File | undefined) => void;
   onRemove: () => void;
@@ -564,8 +633,18 @@ function ImageField({
     <div class={styles.field} data-image-slot={slot}>
       <span>{label}</span>
       <div class={styles.imageRow}>
-        <div class={styles.thumb} data-checker={slot !== 'background'}>
-          {url ? <img src={url} alt={`${label} 미리보기`} /> : <small>없음</small>}
+        <div
+          class={styles.thumb}
+          data-checker={slot !== 'background'}
+          data-wide={slot === 'nameplate'}
+        >
+          {url ? (
+            <img src={url} alt={`${label} 미리보기`} />
+          ) : fallback ? (
+            <img src={fallback} alt={`${label} 공통 기본 그림`} data-fallback />
+          ) : (
+            <small>없음</small>
+          )}
         </div>
         <div class={styles.imageInfo}>
           {image ? (
@@ -573,7 +652,7 @@ function ImageField({
               {image.name} · {image.width}×{image.height} · {(image.size / 1024).toFixed(0)}KB
             </small>
           ) : (
-            <small>등록된 그림 없음(플레이스홀더)</small>
+            <small>{fallback ? '공통 기본 그림 사용 중' : '등록된 그림 없음(플레이스홀더)'}</small>
           )}
           <div class={styles.imageButtons}>
             <label class={styles.fileButton}>
@@ -590,7 +669,7 @@ function ImageField({
               />
             </label>
             <button disabled={!image} onClick={onRemove}>
-              삭제
+              {removeLabel}
             </button>
           </div>
         </div>

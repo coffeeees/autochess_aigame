@@ -1,4 +1,5 @@
-# 관리자 내보내기 ZIP(autochess-admin-export, v1·v2)을 게임 파일(반영본)에 넣는다.
+# 관리자 내보내기 ZIP(autochess-admin-export, v1·v2·v3)을 게임 파일(반영본)에 넣는다.
+# v3(v0.26.0): 캐릭터별 카드 프레임·이름표(frame·nameplate, 무손실 WebP). null이면 개별 그림을 지워 공통 기본으로.
 #   python3 tools/import-admin-export.py <내보내기.zip> [--dry-run]
 # - 검사: 형식·버전, 캐릭터 ID(data/units.js 명단), 그림 매직 바이트·sha256·10MB·디코드.
 # - 그림: 원본은 assets-src/images/cards/<id>/<slot>.<확장자>, 배포본은 public/assets/cards/<id>/<slot>.webp
@@ -18,7 +19,7 @@ STATS_HEADER = """// 캐릭터 기본 능력치 반영본(관리자 내보내기
 // data/units.js가 명단을 만들 때 합친다(전투·미리보기·상점 정보 모두 같은 값). 적군(E01~E08)은 원본 값을 쓴다.
 export default """
 KNOWN_CARD_KEYS = {'characterId', 'originalName', 'displayNameOverride', 'backgroundImage', 'characterImage',
-                   'thumbnailImage', 'stats', 'imageTransform', 'updatedAt'}
+                   'thumbnailImage', 'frameImage', 'nameplateImage', 'stats', 'imageTransform', 'updatedAt'}
 SRC_DIR = ROOT / 'assets-src/images/cards'
 OUT_DIR = ROOT / 'public/assets/cards'
 MAX_BYTES = 10 * 1024 * 1024
@@ -95,7 +96,7 @@ def main():
         manifest = json.loads(z.read('manifest.json'))
     except KeyError:
         fail('manifest.json이 없습니다(관리자 내보내기 ZIP이 아님).')
-    if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2):
+    if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2, 3):
         fail(f"지원하지 않는 형식: {manifest.get('format')} v{manifest.get('version')}")
     names = roster()
     baked = read_generated()
@@ -116,9 +117,14 @@ def main():
         if name:
             entry['displayName'] = name
         lines = [f"{cid} {names[cid]}: 이름 {name or '(원래 이름)'}"]
-        slots = ('background', 'character', 'thumbnail') if version >= 2 else ('background', 'character')
-        if version < 2 and prev.get('thumbnail'):
-            entry['thumbnail'] = prev['thumbnail']  # v1 파일은 썸네일을 바꾸지 않는다
+        slots = ['background', 'character']
+        if version >= 2:
+            slots.append('thumbnail')
+        if version >= 3:
+            slots += ['frame', 'nameplate']
+        for keep in ('thumbnail', 'frame', 'nameplate'):
+            if keep not in slots and prev.get(keep):
+                entry[keep] = prev[keep]  # 예전 형식 파일은 그 항목을 바꾸지 않는다
         for slot in slots:
             img = card.get(slot + 'Image')
             folder = cid.lower()
@@ -153,7 +159,10 @@ def main():
                 for f in (SRC_DIR / folder).glob(slot + '.*'):
                     f.unlink()
                 src.write_bytes(data)
-                if slot in ('character', 'thumbnail'):
+                if slot in ('frame', 'nameplate'):
+                    # 공통 프레임·이름표처럼 원본 픽셀 그대로(무손실)
+                    im.convert('RGBA').save(out, 'WEBP', lossless=True, quality=100, method=6, exact=True)
+                elif slot in ('character', 'thumbnail'):
                     im.convert('RGBA').save(out, 'WEBP', quality=90, alpha_quality=100, method=6)
                 else:
                     im.convert('RGB').save(out, 'WEBP', quality=88, method=6)

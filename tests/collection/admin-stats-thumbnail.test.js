@@ -128,7 +128,7 @@ test('내보내기 v2: 썸네일·능력치만 바꾼 캐릭터도 포함, 잘�
 test('가져오기 도구·반영본 파일: v1·v2 읽기, 썸네일·능력치 경로를 안다', () => {
   const tool = fs.readFileSync('tools/import-admin-export.py', 'utf8');
   for (const s of [
-    '(1, 2)',
+    '(1, 2, 3)',
     'thumbnail',
     'unit-stat-overrides.generated.js',
     'src/core/unit-stats.ts',

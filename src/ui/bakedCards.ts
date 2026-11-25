@@ -38,12 +38,16 @@ export function bakedSettings(characterId: string): Promise<CardSettings | null>
       fetchImage(baked?.background),
       fetchImage(baked?.character),
       fetchImage(baked?.thumbnail),
-    ]).then(([backgroundImage, characterImage, thumbnailImage]) => ({
+      fetchImage(baked?.frame),
+      fetchImage(baked?.nameplate),
+    ]).then(([backgroundImage, characterImage, thumbnailImage, frameImage, nameplateImage]) => ({
       ...S.emptySettings(characterId),
       displayNameOverride: S.normalizeName(characterId, baked?.displayName ?? ''),
       backgroundImage,
       characterImage,
       thumbnailImage,
+      frameImage,
+      nameplateImage,
       stats: hasBakedStats(characterId) ? U.gameStats(characterId)! : null,
       imageTransform: baked?.imageTransform,
     }));
@@ -79,13 +83,15 @@ export async function cardStatus(characterId: string, local?: CardSettings): Pro
   )
     return 'local';
   if (local.stats && !U.sameStats(local.stats, U.gameStats(characterId))) return 'local';
-  for (const slot of ['background', 'character', 'thumbnail'] as const) {
-    const mine =
-      slot === 'background'
-        ? local.backgroundImage
-        : slot === 'character'
-          ? local.characterImage
-          : (local.thumbnailImage ?? null);
+  const localImage = {
+    background: local.backgroundImage,
+    character: local.characterImage,
+    thumbnail: local.thumbnailImage ?? null,
+    frame: local.frameImage ?? null,
+    nameplate: local.nameplateImage ?? null,
+  };
+  for (const slot of ['background', 'character', 'thumbnail', 'frame', 'nameplate'] as const) {
+    const mine = localImage[slot];
     const theirs = baked?.[slot];
     if (!mine !== !theirs) return 'local';
     if (mine && theirs && !theirs.sha256.includes(await sha256(mine.blob))) return 'local';

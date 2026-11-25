@@ -495,3 +495,12 @@
 .shopBox {
   width: var(--shop-w, 139px);
 }
+
+/* ─── 개별 프레임·이름표(v0.26.0) ─── */
+.thumb[data-wide='true'] {
+  width: 160px;
+  height: 64px;
+}
+.thumb img[data-fallback] {
+  opacity: 0.55;
+}

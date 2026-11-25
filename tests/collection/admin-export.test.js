@@ -55,7 +55,7 @@ const img = (bytes, format, name) => ({
   height: 20,
 });
 
-test('내보내기: 매니페스트(형식·버전 2·카드 전체 상태·sha256) + 원본 그림 + README_APPLY.md, 캐릭터 ID 순', async () => {
+test('내보내기: 매니페스트(형식·버전 3·카드 전체 상태·sha256) + 원본 그림 + README_APPLY.md, 캐릭터 ID 순', async () => {
   const records = [
     {
       ...S.emptySettings('C12'),
@@ -79,8 +79,8 @@ test('내보내기: 매니페스트(형식·버전 2·카드 전체 상태·sha2
   const m = JSON.parse(new TextDecoder().decode(files.get('manifest.json')));
   a.deepEqual(m, JSON.parse(JSON.stringify(manifest)));
   a.equal(m.format, EXPORT_FORMAT);
-  a.equal(m.version, 2);
-  a.equal(m.schemaVersion, 2);
+  a.equal(m.version, 3);
+  a.equal(m.schemaVersion, 3);
   a.equal(m.gameVersion, '0.24.0');
   const [c01, c12] = m.modules.characters.cards;
   a.equal(c01.characterId, 'C01');
@@ -111,7 +111,7 @@ test('반영본 등록표: 캐릭터 ID·배포 파일·해시 형식이 맞다(
   for (const [id, e] of Object.entries(bakedCardArt)) {
     a(S.isCharacterId(id), id);
     if (e.displayName) a([...e.displayName].length <= S.limits.nameMax, id);
-    for (const slot of ['background', 'character', 'thumbnail']) {
+    for (const slot of ['background', 'character', 'thumbnail', 'frame', 'nameplate']) {
       const im = e[slot];
       if (!im) continue;
       a(fs.existsSync('public/' + im.src), im.src);

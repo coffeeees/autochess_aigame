@@ -6,7 +6,8 @@ import D from './data/units.js';
 import type { UnitStats } from './unit-stats.ts';
 
 // v0.25.0: thumbnail = 인게임 썸네일(영입·대기석·전장), 카드 그림과 다른 자산
-export type CardImageSlot = 'background' | 'character' | 'thumbnail';
+// v0.26.0: frame·nameplate = 이 캐릭터 카드만 쓰는 프레임·이름표(없으면 공통 기본 그림)
+export type CardImageSlot = 'background' | 'character' | 'thumbnail' | 'frame' | 'nameplate';
 export type CardImageFormat = 'png' | 'jpeg' | 'webp';
 
 /** 그림 위치 보정(예약, 이번 버전 화면에는 조절 도구 없음). 기본 scale 1 · offset 0(카드 폭·높이 대비 %) */
@@ -32,6 +33,9 @@ export interface CardSettings {
   characterImage: StoredImage | null;
   /** 인게임 썸네일(v0.25.0). null = 등록 안 함(게임의 기존 썸네일·아바타) */
   thumbnailImage?: StoredImage | null;
+  /** 카드 프레임·이름표 개별 그림(v0.26.0). null·없음 = 공통 기본 그림 */
+  frameImage?: StoredImage | null;
+  nameplateImage?: StoredImage | null;
   /** 기본 능력치 10개(v0.25.0). null·없음 = 지금 게임 값 그대로 */
   stats?: UnitStats | null;
   imageTransform?: Partial<Record<'background' | 'character', ImageTransform>>; // 예약
@@ -88,11 +92,36 @@ export function checkUpload(
 /** 그림을 읽은 뒤 안내(저장은 막지 않음): 너무 큰 해상도, 캐릭터 그림의 투명 배경 */
 export function imageWarnings(
   slot: CardImageSlot,
-  info: { format: CardImageFormat; width: number; height: number; opaqueEdges?: boolean },
+  info: {
+    format: CardImageFormat;
+    width: number;
+    height: number;
+    opaqueEdges?: boolean;
+    opaqueCenter?: boolean;
+  },
 ): string[] {
   const out: string[] = [];
   if (Math.max(info.width, info.height) > limits.maxSide)
     out.push(`해상도가 큽니다(${info.width}×${info.height}). 4096px 이하를 권장합니다.`);
+  if (slot === 'frame') {
+    if (Math.abs(info.width / info.height - 714 / 1000) > 0.01)
+      out.push(
+        `기본 프레임(714×1000)과 비율이 다릅니다(${info.width}×${info.height}). 늘리지 않고 비율을 유지해 맞추므로 여백이 생깁니다.`,
+      );
+    if (info.format === 'jpeg')
+      out.push('JPG는 투명 영역이 없어 카드 그림을 가립니다. 투명 PNG를 권장합니다.');
+    else if (info.opaqueCenter)
+      out.push(
+        '가운데가 투명하지 않습니다. 배경·캐릭터 그림을 가리는지 미리보기에서 확인해 주세요(자동으로 투명하게 바꾸지 않음).',
+      );
+  }
+  if (slot === 'nameplate') {
+    if (Math.abs(info.width / info.height - 750 / 279) > 0.03)
+      out.push(
+        `기본 이름표(750×279)와 비율이 다릅니다(${info.width}×${info.height}). 같은 자리에 비율을 유지해 맞춥니다.`,
+      );
+    if (info.format === 'jpeg') out.push('JPG는 투명 영역이 없습니다. 투명 PNG를 권장합니다.');
+  }
   if (slot === 'thumbnail') {
     if (info.width !== info.height)
       out.push(
@@ -141,6 +170,8 @@ export const emptySettings = (characterId: string): CardSettings => ({
   backgroundImage: null,
   characterImage: null,
   thumbnailImage: null,
+  frameImage: null,
+  nameplateImage: null,
   stats: null,
   updatedAt: 0,
 });
@@ -151,6 +182,8 @@ export const isEmptySettings = (s: CardSettings) =>
   !s.backgroundImage &&
   !s.characterImage &&
   !s.thumbnailImage &&
+  !s.frameImage &&
+  !s.nameplateImage &&
   !s.stats;
 
 export default {

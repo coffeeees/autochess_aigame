@@ -25,6 +25,9 @@ export interface BakedCardArt {
   character?: BakedImage;
   /** 인게임 썸네일(v0.25.0) — 영입·대기석·전장에 쓰는 그림(ui/art/characters.ts portraitOf가 합침) */
   thumbnail?: BakedImage;
+  /** 이 캐릭터만의 카드 프레임·이름표(v0.26.0). 없으면 공통 cardFrame·cardNameplate */
+  frame?: BakedImage;
+  nameplate?: BakedImage;
   imageTransform?: Partial<
     Record<'background' | 'character', { scale: number; offsetX: number; offsetY: number }>
   >;
