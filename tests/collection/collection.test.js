@@ -61,7 +61,7 @@ test('컬렉션 열기·카드 상세·Esc(상세 → 목록 → 닫기)는 원�
 test('카드 그림: 공통 프레임·이름표는 제공 원본과 픽셀이 같은 무손실 WebP, 캐릭터별 그림은 반영본과 같음(없으면 플레이스홀더)', () => {
   const spec = JSON.parse(fs.readFileSync('docs/specs/images.json', 'utf8'));
   for (const [path, size] of [
-    [cardFrame, [714, 1000]],
+    [cardFrame, [1060, 1484]], // v0.26.2 사용자가 준 새 공통 프레임(비율 714:1000과 같음),
     [cardNameplate, [750, 279]],
   ]) {
     const key = path.replace('assets/', '');

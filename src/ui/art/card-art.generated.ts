@@ -2,4 +2,1257 @@
 // 캐릭터마다 표시 이름·배경·인물 그림(배포 경로)·원본/배포본 해시. 비어 있으면 모든 카드가 원래 이름·플레이스홀더.
 import type { BakedCardArt } from './cards.ts';
 
-export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {};
+export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
+  C01: {
+    background: {
+      src: 'assets/cards/c01/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '5c0f24f1dd4c69cae979a661fe5460a78ce3009c2532de5c1c7e173d4088a738',
+        'ed7842295b6a2c8c6bcb1d48d4cb18b867f9cf818e5dd75b42bea1f2c7b99c35',
+        '04add61c25ecbbd5d0b4d1375bb6454bedbb542478860548d069514f8458d983',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c01/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '0a63491c5c7b052a4c90246ca5cb36fbe5e034ca4dff6412e94fe08434487218',
+        '3fdde1af2ba8795f1ec333f5d7ecdbc5e3501662eb3bb638565545b8237a831a',
+        'd3723bfeea34d2c43acf21363c17c2bccfa072dd25c57ff336bacd60850ac4e0',
+      ],
+    },
+    frame: {
+      src: 'assets/cards/c01/frame.webp',
+      format: 'webp',
+      width: 1060,
+      height: 1484,
+      sha256: [
+        '39df25fc1e94e7dd60f01acc262efaa8ae1522196f86f5918bb4b5e4a0740f9c',
+        '85ed383ae2c8dac525580f5bd09971d771771d646d75a53d851aaceea42899e2',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c01/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+  C02: {
+    background: {
+      src: 'assets/cards/c02/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'be98ff4f7060ad56740b6a96b58caf9530cf1be287e8305dba059c070de0f848',
+        '629222b6c0cdfcd8f6e92a651d20f763f0b1c0c0d23ff94274bdc5a43ee61b42',
+        'c2c3a2037cc432ec28c6926dd5318b9a67fdaeb4984e1467c22679deeda621b9',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c02/character.webp',
+      format: 'webp',
+      width: 1024,
+      height: 1536,
+      sha256: [
+        '93744880a06a64a6086f165bea3d9d328db75115bb90792a4b64ebcf80fee964',
+        'd4fcde1fc2ce75fce5e0564c454b5d7eeb859ba4141d63545e6ff15547af8368',
+        '3465405669c4de8fedfec0f08e94e71845b023150ab087d80f5a7a0c3b4b0049',
+      ],
+    },
+    frame: {
+      src: 'assets/cards/c02/frame.webp',
+      format: 'webp',
+      width: 1060,
+      height: 1484,
+      sha256: [
+        '39df25fc1e94e7dd60f01acc262efaa8ae1522196f86f5918bb4b5e4a0740f9c',
+        '85ed383ae2c8dac525580f5bd09971d771771d646d75a53d851aaceea42899e2',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c02/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '97a2e3b2b48fb751e9ad22ac5184b51ea68bc7e036ae0ddc211e7ff669576842',
+        '67edadf5424991110f2649dcf905526bd58578957a42ac830011389798442e21',
+      ],
+    },
+  },
+  C03: {
+    background: {
+      src: 'assets/cards/c03/background.webp',
+      format: 'webp',
+      width: 1052,
+      height: 1495,
+      sha256: [
+        '64e2d18e75a7e59a92c1e1a82108582cef0b16d345e593b1469b1d4e8ca76d3d',
+        'a0cbea58b69931a295f9b7afa5eed322dd3047b8040af25f81a900f7b48bca69',
+        '00113c9cb5cfbb49056aecd37900762bbb221b72868991fb3d26dbd22d9f9781',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c03/character.webp',
+      format: 'webp',
+      width: 1082,
+      height: 1454,
+      sha256: [
+        '213aff5474b7f26499a56af53c554e6f6afb46080b1402396d4c366983984096',
+        'a4c9cb49dadc3a4f19822174a93245b6b1da8dcb1da082da95e80e6306ca9be8',
+        'ade256a44b7150a28e5e15a69dd507e9b4347f7bae17faece8b73062c0d42b6b',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c03/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        'f09ea033d996d4976de4b8ccc76a3bd8aa07d4b508f18b58555c2edce284b859',
+        'eeb51b808ba8c6b4da6eb51c35c6491240f151abedbf2af65bdb796a7b83f124',
+        'd7cf291a1341b29e1e436a116f2cccc6d027eb2bc52ee7a5906ffa23a609ee2c',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c03/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '610651f36fd5be178228c93a34ee342204f43e48c317e0e2e4160a08f718da71',
+        '3ceebd07b1637c7a79f75489ddeb642c0a08dbed3b2d8751766b562027d7b78a',
+      ],
+    },
+  },
+  C04: {
+    background: {
+      src: 'assets/cards/c04/background.webp',
+      format: 'webp',
+      width: 1052,
+      height: 1495,
+      sha256: [
+        'fb436f9dd8f99d06afe8b7ee409412e422797804f272d2544dcbdb3fcd1979e1',
+        '2844c25a4725075771b5d91e6b6191f631d88f403022b4a208448d7457811e51',
+        'baa6d58355e7aac8b45092ecca401af0f1663d3b2cf14ed6f12476067b8e8169',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c04/character.webp',
+      format: 'webp',
+      width: 1052,
+      height: 1495,
+      sha256: [
+        '46c86a694a658358afc897a80d56552d0d4a2fd1995fdfd9aadf74c0c52a4323',
+        '056c9b37e17ee4bd8716f6cfd899a5cc68339fee040815e036bbb4cd862bad3c',
+        '8eb18db8e4dcb283ebd30220f8a933906af504dcd6865cc06183fada918ed840',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c04/thumbnail.webp',
+      format: 'webp',
+      width: 1024,
+      height: 1024,
+      sha256: [
+        '798269a2b7ef63c5792d649e4aa8a84316b50e55b12bf758377fb776d246fd8e',
+        '314e1532020b663a5dc50603de1d6810c7b19535e74765e2060550a082399da7',
+        '087f8fbef715123c62d1dde0237ca303c402a7d425dbe057cba3a1364b143d04',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c04/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '748f5ddbda96fef005f65e6fc87d37f96d8d185f31b25621cafd426582476e1e',
+        '7a51291b08d50e82bd8054249a3f612ae4ac80b1bfa9fb3aa3dc1aeea80afac9',
+      ],
+    },
+  },
+  C05: {
+    background: {
+      src: 'assets/cards/c05/background.webp',
+      format: 'webp',
+      width: 1052,
+      height: 1495,
+      sha256: [
+        '220431bf8c6905ef7dc57aac550702ed0f0fb0617fd390c5c3e0a605559fe02f',
+        '6c927b0c44f75c4ed9c42df806d5bf122181b9523604842da0a09ab98ddc8949',
+        '808ffcaa646eed7591cc9dd64be0a97222b86ea8392620ac17884ee03793d5f1',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c05/character.webp',
+      format: 'webp',
+      width: 1052,
+      height: 1495,
+      sha256: [
+        '1adc050df6a45ab459a99aa052b66080fcc59b8d35728905371275bfb7177b4d',
+        '0528f5f128d07f1b9df015524e180e79150600f338c0a323a453f72a0ed13e4d',
+        'e9813d3e0f1ca58a9e4b19c907184aebd9a2528f98463128f49c46b55ec8da8b',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c05/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '01df51f2162d4a52d89d4eb308374ce4e9d9a4405f232cbca2db957f1a4fa21a',
+        '4fa2caa1f3eee04a9b5df57c71f56c3b48ab1edfbe99388c0723d0352f546bab',
+        '7e2782e7963ad6d87e0de852558cfdfa3888f0dfc537ff00631889ae0f179e49',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c05/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '163e295aaf0d65705acbbf94c3f18387938beed9e3da20b61657a3f1a72871a2',
+        'dd41430ffbbce63837176ade2e46bc65fe7aff59922939f9ea9553d6bad12ccc',
+      ],
+    },
+  },
+  C06: {
+    background: {
+      src: 'assets/cards/c06/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'c54793b0faa82f513245da6d230929122646799669a7d9efea7eee2adfac51af',
+        'db977c05ee24659eca24ad2af00c2baf551b54da12d138915b87b0cf29d193a4',
+        '87f0d3fecbe7d3969863c9311c7f7f2c90f3505f82db27c43955eb636c53c525',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c06/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '8d53e6ee14f02d4deb8be1280e848e9be040994988157261ea71fa5a34b20758',
+        'a96c3225693f8fa734065a1b513abc1cca9ba4ee6b9f32329bb13250cb5950fd',
+        'd0b02f147ab1cd8a45e9bec640ac432ce1f12df7b40402c331e1062af52e393f',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c06/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        'c54b5ed1b99bcf162abd3c4da2a4ea7e4c8c3d9442309cd854d344305aa2b448',
+        'a32fab853a12ef0d288da42273fcde7e7337848cc42eafc57e0d845929c389b5',
+        '1a9b99adb8f55f88b3fd777478d721f48693f97f857fc1eea90fc2a6f2a24499',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c06/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'effaf7c94302ecfc87339226f76238161776a4cf31ebcfc8070017ac3a29712e',
+        'd53b9542e79edfa26425967533b3ee341d82d4c1882696effedeaa0c9ffc4fbd',
+      ],
+    },
+  },
+  C07: {
+    background: {
+      src: 'assets/cards/c07/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'dc8682f47179eb2e870a26ba88db957a21ba3144aa1aeca1ef58c6de7f9bcd27',
+        'baaf365fd865ff1d08b8fe1110f6737d39588814fd52bed3220c8590cc1d4cec',
+        '7807d40eb242e93f988e7ac3dc4099551e857c7a6905da30f889889c16809cdf',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c07/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'd8b9dc5e6de36cbec04cf3f66ffafcc022ab155d49b22541e65a8159d853cbaf',
+        'f03250710d61080c2524ddf7bfb81b705fc17a847cdf0eee2846c877868c5191',
+        'f865d7375abe59aa8123a6ca98958d94ae181051c651377af8bb8a0b7e6fb6d5',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c07/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '0c5e1e6c7ed252bb71e88c6955428d3696cd896b4ee5819d5c03c78a3feb86a8',
+        '4339bae1c49daea281de784d1a5799272b1f2c10c5e18763f8921c253d5e4b5e',
+        '5b107f0bafbdda9a03a4fe1cd92b5b597c8804d37f9f369b38ff2357054c17ad',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c07/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '748f5ddbda96fef005f65e6fc87d37f96d8d185f31b25621cafd426582476e1e',
+        '7a51291b08d50e82bd8054249a3f612ae4ac80b1bfa9fb3aa3dc1aeea80afac9',
+      ],
+    },
+  },
+  C08: {
+    background: {
+      src: 'assets/cards/c08/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'af639ff3cfb741101ce4d068a3f8abdd7922c43eac32991fdd3d111ec30b9bea',
+        '3e2a4eaa3c7476e5859ef9d40469f33ad8cb5b5abaf43369eeccb3ff9ceb7ee8',
+        '658e9f1d8f8c7081e9475031967c56a9ee9c1c1540b51c6ca1ad5e4c20d606a5',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c08/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '915cfcc6a5fb054a39b538abbb73d7fddfa8b98a94b36bad8f7a7fc2ab6ad225',
+        '7dda0c0d3c0220298c71d8d522a115343c8574f6e899c320fc758e559952d106',
+        '2d518bf2ec98c321d312263ee82d2bc8a38b4870c905b9cdc781cba825c00a94',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c08/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '9fe80af9e36dcd7510184b6fec1b2273840e1214b29a6d025b0be2fa15367361',
+        'be05900dc16668c3ae2d901bc01e296a84a2be09b07ca800d6911ec0abce75fb',
+        '7de3cff24767e9b49f4e1ab5a7e7a69def7441a8f7187020a58565d5af7024dc',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c08/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '163e295aaf0d65705acbbf94c3f18387938beed9e3da20b61657a3f1a72871a2',
+        'dd41430ffbbce63837176ade2e46bc65fe7aff59922939f9ea9553d6bad12ccc',
+      ],
+    },
+  },
+  C09: {
+    background: {
+      src: 'assets/cards/c09/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'bb7f085665599e114738eb31127d95e8e9e2b22300ba27da553480e05abb4aa7',
+        '2df43bdf5c4433e9393a998eab932f51305510e296872b47ea96e45d2e00a8f3',
+        '06f22f3244204d0e24883f5fce1bb8cbba98549635594f66bf8fb4849a0c0195',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c09/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '886e3933ef290f1af32423c7dee1fcc77c7aa544c0d826a77dde4c09918e2b5b',
+        '21b74b9aa765a10a56ba451fd5f6aa1814d00249cafa26b45e81c6de5591ee83',
+        '584b9ba94045ee61afac423df83cf9a09d1f8cf52d1913227d7f2f62df32be05',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c09/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '200d489afb05e11f444e80799310d6e8cac79748324e5053c991a446a6d8d5c5',
+        'dbf9a2e4159b6b3f4c6f23a51c19c0ae02eabef5e21e0c2bd5b3ff16af5f2b95',
+        '3ecc262a7741b7bd54bd241db96b8fcb488342e7bff098ba352811c642e18239',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c09/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'effaf7c94302ecfc87339226f76238161776a4cf31ebcfc8070017ac3a29712e',
+        'd53b9542e79edfa26425967533b3ee341d82d4c1882696effedeaa0c9ffc4fbd',
+      ],
+    },
+  },
+  C10: {
+    background: {
+      src: 'assets/cards/c10/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'e14f8fcbf350bf949e348477fcec2b26c1e0c8bd425ecc1c0ce4328fa75e1924',
+        '52aa31f62ae5962dadc9d92a532ea602b77e32f8fe6e76dc112c2d0a7ec3baec',
+        'dd75edb20a508f618dda9eaa6305ed4aafdc5bb98e48086376d4c858c9ff3570',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c10/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '90240cdb8bed775abb44fb24171fb677d8e3c663a6f844a5d9d5bb79a14da417',
+        '80d3e054b65996aeeffe209ed8d44c90852ca4871af757002177ed6bff5e5516',
+        'df52f8d609609e5b4ca2e7f1c8c7247ab32f063f97d6b1bbcc7288b909bfd6de',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c10/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '6da3a9315d683b65cec9622bdc4c3c9db7675ee8283ccee8715619fa3979d480',
+        '690725108527e1334ca901d1440b79ecf3aee67d7b6e950f1e60978d7b19a1c0',
+        '13dbe61f147ece65444615350090b1e2b15e4df6577f0e25237d96d5eb2a6e62',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c10/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '830f34c69c923c38db61cff7d6b7cc2991712e6d90159cfa4a4d25c69763a46f',
+        '3eac0f443917c1382fc94f61f54ac73999ed568e3826972db9decb701ae35b98',
+      ],
+    },
+  },
+  C11: {
+    background: {
+      src: 'assets/cards/c11/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '302eaa6f9b5e15e4157bc67fa7a6628a501ae793ab43c32d1d6d5335cb8f864c',
+        'e2b220b1bbdaa8e03f0c90a547b7bf0a8b606a816ee42cb0e5fa3b4be5c400e1',
+        '8714c4a585494c9512e200ac712a29bbb4861c3ebc010db19e4007c24a0e4127',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c11/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '95108391f56d3b098383d3ca12475f984518203e2026b8991b3e3836eac99a62',
+        'd33ebec9d9de48bd2ff26a4c2eb66da0e10fd58a735d5b615c6f5009219a60d8',
+        '2dfa8ae4e5252ec5627056595c0971dbefbf134b2da583de218a594d2adefe3e',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c11/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        '746b48b1f73159c0259c50b3334873250c62cd94e7025dfa04720c45da992407',
+        '4084877ff961afa6429f85939753324ab905731f4391bdb0543b9d29dcdd6c7a',
+        '97804b226345db31a1325a1cce8052caac325d0879245d8830090256c3b0b6b0',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c11/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+  C12: {
+    background: {
+      src: 'assets/cards/c12/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '59c68b8c6819fa1cd6930e16d16ea8e5b95011c2e4840bd56fa3f5d7bb7c05f7',
+        'e9b0c0404696372849026cfc2eee10a1f4f245f0e75eccc6093b3e35facebf89',
+        'a5a6f58f405dc5713aff6ac35c80496146a34df218ece0c2adf9bdbc9364b2cb',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c12/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '26fbf076200836d761781c402e9bc5cfcc0d7bea99fe94720c500cf784668663',
+        'e2088806dfd4ae2668da204fe84d908d46d960c994e0457692e87aed54381708',
+        '90aa195796bd20cd4b8daa3703302a3a76c432282ae4f28148001ed96a2f5c66',
+      ],
+    },
+    thumbnail: {
+      src: 'assets/cards/c12/thumbnail.webp',
+      format: 'webp',
+      width: 992,
+      height: 992,
+      sha256: [
+        'c8e79a4a68c3635bbb9b5cac6175a253f4f5db0223878a31bbb5fb13040d6425',
+        'b094487a4dea56e50df09cf314faa40b9d34ab5afd577a0d7252d6f7bc350826',
+        '47a38a1ed8328c8c4cf1f3987b46ffa9a31138600a55298d61df2c785271c77b',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c12/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '97a2e3b2b48fb751e9ad22ac5184b51ea68bc7e036ae0ddc211e7ff669576842',
+        '67edadf5424991110f2649dcf905526bd58578957a42ac830011389798442e21',
+      ],
+    },
+  },
+  C13: {
+    background: {
+      src: 'assets/cards/c13/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'ab8cab406d4273a49a2b7904cce4b274eefd7848087cbdc985fc83615fcf693d',
+        'cd236e9fae4ce40392e89f526d7bf58f34646dd4a920f8fd6a7a71c9bac36748',
+        '351a17a8a6e514cd50489105fcb2d2e4fe3a02d9bc6931d4bd72b73052925f08',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c13/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '5739b4a4df580a1427c03649d116dad0a60f3a5388c36dbaa34f37c9d50fdc12',
+        '6fe472a87af6f2ff85fc5ec508d87e0e57420666af8b3ef5c842601d79bf6125',
+        '135d5b2546c99cf84f350cecb131dc6507e6cc5aae4e8c6ba84e40db1807937d',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c13/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'faedfcd402df89699646d0a98fd562a37d4da3f3975eeb196001846c47632a33',
+        '693cdaf05e162b6a76b602a8c6c768fb74a40c1f32cdf14c19524f820a2ca64a',
+      ],
+    },
+  },
+  C14: {
+    background: {
+      src: 'assets/cards/c14/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '9d944d5029ce5c50562c1dd085d12057fd353b69dd2943587d5c4cd1e76d2b0c',
+        'c76c2943a505704fe4dc4f2c3f2fb9ca701af464f2a8a62d8a6a6d7ca495956b',
+        'cc0a72774a377bc96df4c71896f7a99d23f16765e42550e08423775c08388f10',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c14/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '3e840fe924c61f4fd6b3dc3cdaf465e89246a71b2893e7cea1084643749bed4f',
+        'daf24274978437093adb63fe5171da31a0043256384c01190ee8b0f6ab771829',
+        '3b4fe8890fd1d57fa196902bc885a801bf62ab045dce5025ee7e46cdb2adecee',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c14/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+  C15: {
+    background: {
+      src: 'assets/cards/c15/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '5a496991423b8f06f3b925f8c11f63b78658f16ee09bccfea6a0949f3d9200ff',
+        'fad64e138d112b74ba1532ca37b93933f398e408d6ee84f7ea096ff7f5721568',
+        '23bf3102db4d26ffd6aab7f397db84f1e8ef986b9526316aa4ea590792fda9a3',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c15/character.webp',
+      format: 'webp',
+      width: 1056,
+      height: 1424,
+      sha256: [
+        'ab791e837509a2f8288acfea4c8904b8ca19d2889a7a69e01440a521922df004',
+        '58607ead1b9493f1c9b73aac81d5e9017b9f1c22d11231aeebcd7ea47e379ffa',
+        'ed17770379fa867c277175de5eef931f51f79c1a7fd647b40e0b3ee43d24078c',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c15/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '610651f36fd5be178228c93a34ee342204f43e48c317e0e2e4160a08f718da71',
+        '3ceebd07b1637c7a79f75489ddeb642c0a08dbed3b2d8751766b562027d7b78a',
+      ],
+    },
+  },
+  C16: {
+    background: {
+      src: 'assets/cards/c16/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '01faff54059b17beafb73a65e83a2cf93253c4e11bfa89f67694de663e6b7ac3',
+        '52a4fecc94250912a90c47edfd14379e101784964fbcb67b29b6159b350b47fb',
+        '5c9d4f6b2df630fbc8e005101ca515c60562d72ea0d57bc75750e873b681b0fb',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c16/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'f8c90a0fa6ae15747a1fe6de49bd972819ff7ebc1620848e3c322ff99bd42ef6',
+        '0a5081057c66aba6aaf0c70b4b04019800cd1116652ae665e61555bfba5eaea0',
+        '4f47dba0777f76985d8cc7b9567308f070105ea913658817dfde1d7b84a78f80',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c16/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '748f5ddbda96fef005f65e6fc87d37f96d8d185f31b25621cafd426582476e1e',
+        '7a51291b08d50e82bd8054249a3f612ae4ac80b1bfa9fb3aa3dc1aeea80afac9',
+      ],
+    },
+  },
+  C17: {
+    background: {
+      src: 'assets/cards/c17/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '264bd9d6a9ee70444550dc5098b7f85405f8ebfc14718c78d4c512f4a0e544fa',
+        '840ea50b755000741e48dd58f034ad65570959d11959fd17bcd72f472aac1338',
+        'ccb3cedff5b05838334a3e550f28e5520be2a01ca5208d9e901f45f0c399a56a',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c17/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'f91a68d4d107efa6d3551f80f31807608860a60cda0a561ddb4a1fcee3ae6299',
+        'b82db1085f1c057230e07566ca9eb3a53340e62bd87394002e3bf86460ff76ac',
+        '3fe70d8d677528366ae98461476c8a4c037dd3fb904b89d0fc895930b7942ea3',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c17/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'fcbf0bb2d8d2e450f0c295208e5536b038201f03c3c8e8147b5f12c9217154ff',
+        'edd6247bcd4da83178b0781f0ca60bf8059652da9ef058569c63e63897a2e0ac',
+      ],
+    },
+  },
+  C18: {
+    background: {
+      src: 'assets/cards/c18/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '01317d70c6e363f6f5d8c4396ebe613801f6dc316a56ebd77c253b3254a3ccfa',
+        '735d0b237c08a2ad0ad97806829785ce68ec519c23957d5a029460f5bfc60e7d',
+        'cec361c93375bb405c85f2de2dc0baaf0934ddbdd472dc19baa248a10a42607c',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c18/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'ab5d06730be71a5a587b5bf48b1f733962384bc62b2a183bd5a659da5583b809',
+        '9eef35c22f6ae5b8a76f4f62e74b75a82c6eb57c79eb66bad754ea9ec30c2021',
+        '625b8056a5da4ff107a139e24cc49153ff4bc4171743cfa858d83e71afebfdb7',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c18/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '9adbb4614617329f4a95205bb02b7d1b4438e1cd17600973cf2c70a453d48930',
+        'ba4b81d092f90e4839df5e47b57637f1305894744b3ede565d54684796b73bcf',
+      ],
+    },
+  },
+  C19: {
+    background: {
+      src: 'assets/cards/c19/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '5c3485dd37ceefd491bae4fc9f2fe14ebecfc517309f145ad2b16db086f9b42c',
+        'f9dc6b9d93d8eaf9ce75a5b123c5776de0578ec33e90becc5265aa471d5ab55e',
+        '19e3fbde4a8f72644a7450407a3c39653364efded13c000522f9f5bc17140e7c',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c19/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'caa72d0d2bb33740fbb9955d82d9089802b97f2618d8ac8ece9a7dbe0ab7cbb8',
+        '2be4d3c5394902fa63796867e238ec40f544918cd0cbcdf0056bc20223d5ce9c',
+        '20cda55eb07256d0d2ce4cf656672d86d4dddb22b74325666d268604cdff2e0e',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c19/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'faedfcd402df89699646d0a98fd562a37d4da3f3975eeb196001846c47632a33',
+        '693cdaf05e162b6a76b602a8c6c768fb74a40c1f32cdf14c19524f820a2ca64a',
+      ],
+    },
+  },
+  C20: {
+    background: {
+      src: 'assets/cards/c20/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '0d00d2a05b6f09abcd224eeccd937ed531e9c0dd45c5f474249337db5b56e77a',
+        '93dbe8d40be7c391ff6d5a6396e552fb1458723eac239e85587aafb4ccccecc7',
+        '2cec92267fd030ac7b554557fdbec45356d220faa6f3ab2daf7c8a21eaf9c0bc',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c20/character.webp',
+      format: 'webp',
+      width: 1056,
+      height: 1424,
+      sha256: [
+        '9134bef8698eaeb9a96bac35f0d63f44161004b43c3a3ad31e77314578d94064',
+        'ab00bd643346031620c0c72c024cfffe2c84a53043cc3c39d89a355b8f9390e4',
+        'b84e47b22e05040b5b7828439b02978cfd30186598373c62488dc3fa41ece9bb',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c20/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'fcbf0bb2d8d2e450f0c295208e5536b038201f03c3c8e8147b5f12c9217154ff',
+        'edd6247bcd4da83178b0781f0ca60bf8059652da9ef058569c63e63897a2e0ac',
+      ],
+    },
+  },
+  C21: {
+    background: {
+      src: 'assets/cards/c21/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '8f7345a462c3aecff81f16b9ca33332b6397e91090a061bcda8dd330060889e8',
+        '910b2aac23a6651aaf6f046496db9ea91a96c15642430faba71935bd02d6a455',
+        '91941efbc70665ba8157a8d98bc72eb12f248e3eed1e742a1b84e84694f56d67',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c21/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '1242c4ca62abdf4c951c452c624b387bdc15a5b32d59efe875744a299076fe18',
+        '7c993d58e7653b690898ed70d88e78d8d3df5d7b90465febbf5603f7b7803962',
+        'b21904835e60916ffc33d65c54f6d0dcf093be76092474a4976cbec48060b0cf',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c21/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '9adbb4614617329f4a95205bb02b7d1b4438e1cd17600973cf2c70a453d48930',
+        'ba4b81d092f90e4839df5e47b57637f1305894744b3ede565d54684796b73bcf',
+      ],
+    },
+  },
+  C22: {
+    background: {
+      src: 'assets/cards/c22/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'd4ec88acbb3324256639d7f2a98fe36cf427665c92f8dc7051695353bb208188',
+        '440d35980b0b92c95c32494c42e8dc9f0115c4aa98721c7748c22c29b70fbc31',
+        '3d8f7f2888cb8b851b77ac7ef00f7d25d4bd169da1f8828cd7c53be7a2004fca',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c22/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'b19080bf5d264c9c8cfb320d98d493fb4a925d9f613f9f6687b099fed1dd57ae',
+        '9b9875606cc02a9ce0003282ea939fe16cf806351a906f116e6f47868a406665',
+        '87bf174ebe7f0fa3777141c6b7786cf5a887ae957de6cbf82449833483c790bd',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c22/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '830f34c69c923c38db61cff7d6b7cc2991712e6d90159cfa4a4d25c69763a46f',
+        '3eac0f443917c1382fc94f61f54ac73999ed568e3826972db9decb701ae35b98',
+      ],
+    },
+  },
+  C23: {
+    background: {
+      src: 'assets/cards/c23/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '2dab98e34d97d7d7ae719b469d5c9a115cebcb8f728c80ab8e07592bfc4fba63',
+        'd1292bb0eaa5fdfbb34910a75ac73cb2f7afbb2838a0baa80dd29e9636c53539',
+        'c70c3e46556a382676a92944ee71a0b313ccc550e4aadca743144d6becfbd475',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c23/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'a8761bdf196dd0f06ebc02c049b9fb2950cab8154e01e73300ac8b55321b8d87',
+        '2b040be2fbe6f0ac9feced6e00f1a7a8ef6c3cd9cb32124bb1b3b61b566080fd',
+        '55bd411e901ae03bc8a1ae1c3de4690d7ee578056dcd17b2653f72c26c7005a3',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c23/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+  C24: {
+    background: {
+      src: 'assets/cards/c24/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '9542aa7edb1021b2bfad77aff1332b4e8f39c4dfa8ea105832502598f69f7aa8',
+        '74e04b9ccddf8dd1931bcc9dbedc961e9c886993eca854696c353c8f6e7b44c9',
+        '1182a0d57ae41d1bd79ae818a997bafa4a1452892d972ab80be32491ed9dabff',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c24/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '1eff9f23b046e53785b4b99d54245506340a68eb427fbd154399b2d136cf43b2',
+        '8a3c1f7a62eb1d21a4ddbec4492d7352fd3460ff84971a53ca82bc0d3d2d19c7',
+        '5be672b0223a5ae05746e9fc891966827d4224785cbf710b21e3e2032e14fc76',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c24/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'faedfcd402df89699646d0a98fd562a37d4da3f3975eeb196001846c47632a33',
+        '693cdaf05e162b6a76b602a8c6c768fb74a40c1f32cdf14c19524f820a2ca64a',
+      ],
+    },
+  },
+  C25: {
+    background: {
+      src: 'assets/cards/c25/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '6bb19dec6110e5ae1a4efc3f1541dc8562f0f8eccab212cef87407121cf8bd4c',
+        'ae766d2cf713b4f5444d8e80a4533613bf9dba71cf8e7f789bb6598938e21be0',
+        '0c0c4ea0f7e68007108de0c0a92790ddef7537c3cbf19c66ce2a8b3e5d5d269f',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c25/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '995818ea7cb9facd45a4c9001375bac50d40f8d497ad639a170ea77e43858a09',
+        '2c119537d10d0783d6d31473420d78052b5f44e5543e84f33c0a4326fe87489a',
+        '291b78b86ec22a664fba759f35ba18e97859b2085b1a0bcf9860ad348b0b6c9d',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c25/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '748f5ddbda96fef005f65e6fc87d37f96d8d185f31b25621cafd426582476e1e',
+        '7a51291b08d50e82bd8054249a3f612ae4ac80b1bfa9fb3aa3dc1aeea80afac9',
+      ],
+    },
+  },
+  C26: {
+    background: {
+      src: 'assets/cards/c26/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'fb3286378c50f9d6237f217810b36f6a81963e56deb9e63d3b7e8569db759df0',
+        '2bf5baa7765bf74ee684b6b7dcf62e3b0beb49b808b8d2002bec079cc0c23a83',
+        'c4fb58b0692707492b21e62335c90987c64d2350b6f08e9023b30be1419ff74f',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c26/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '5afd54a39bed09857dfafd61208bc7d3ba632f0408b5c882b28636e33d8e6805',
+        'e024e90af9abfb85458943ba95f4b120a76230430af7858d9af3dd93a99516e9',
+        'e16468b4707547c92b273e6a6aaca77a9fc009631981368d8e251360bbb72895',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c26/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'faedfcd402df89699646d0a98fd562a37d4da3f3975eeb196001846c47632a33',
+        '693cdaf05e162b6a76b602a8c6c768fb74a40c1f32cdf14c19524f820a2ca64a',
+      ],
+    },
+  },
+  C27: {
+    background: {
+      src: 'assets/cards/c27/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'fb1fac3c298f75067c465eba48d19645745246e6fb5a9ac13e6e5629631f4b78',
+        '269a04b7b1daf3f07d7b690bf883c11bc989223aae10a6e43db571e28f8b9545',
+        '8e1d9b13db6ecbf069bcf0126913745fd87ba7267e04f0cff920eacf068f1315',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c27/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '4fb796ae74ea9a350ef5c7530573bd6c3ebbe525e6f99647e6ea44aa9cd566b9',
+        '7332cc09161cd28c97880e3efe9dd9e873b096a23283d19a655df0d08ed0254b',
+        'f297f5c322ccf581a6f798f51151930bfaefba3e55976af99d87fb6f80b0af41',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c27/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '97a2e3b2b48fb751e9ad22ac5184b51ea68bc7e036ae0ddc211e7ff669576842',
+        '67edadf5424991110f2649dcf905526bd58578957a42ac830011389798442e21',
+      ],
+    },
+  },
+  C28: {
+    background: {
+      src: 'assets/cards/c28/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'cbd42c75e86ef83787ff1bc5a7852cea3d39a871bd5405eb2883a98f0ed933cb',
+        '93e64a4b13d37a2509d7b63829498159cefb26ada50b6da508305fcb85de865a',
+        '8793514aff8dbbdfc4a6e7dd1f1fac16ed0bf022a90e2f0e34b43b5fa6104d3f',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c28/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '99e2d67efc8ea391de43592a36c96f75d08d10f3fee8b3e5a4083f836e8b4319',
+        'a76066759f87543edbebf49db228b0ddff9bda7b8017199cb03ea5d76e19e673',
+        '230b798f6ed80355d89716afb4172bd02b7b6dc6519720befde3983f154c6424',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c28/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '610651f36fd5be178228c93a34ee342204f43e48c317e0e2e4160a08f718da71',
+        '3ceebd07b1637c7a79f75489ddeb642c0a08dbed3b2d8751766b562027d7b78a',
+      ],
+    },
+  },
+  C29: {
+    background: {
+      src: 'assets/cards/c29/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '07c03bbedde985d6461743449c2953ba797302f684cbc5339b69c42e7e8bd048',
+        '3b5ba41e1cd536391b010e799c354159242a36e444c21e09444874552d0bd169',
+        '03679228df2dc4311f18822cb555da18b43efaa62b3ee8d3ee30b68c6999b3c0',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c29/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'ea6ebce227976de1ee0bcccb7c8b0b2be9a1552f35a5230b4fced8f942a1137c',
+        'e036c9f7bc86ec200fc65ec35f90f846e1724acd1ccb9674d25b3c939355bb1b',
+        '2995a2255afa0daa34dfa174e25a3a7fcbd1dce51465f0b124567598abd76844',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c29/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '830f34c69c923c38db61cff7d6b7cc2991712e6d90159cfa4a4d25c69763a46f',
+        '3eac0f443917c1382fc94f61f54ac73999ed568e3826972db9decb701ae35b98',
+      ],
+    },
+  },
+  C30: {
+    background: {
+      src: 'assets/cards/c30/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '59a81a4ee919fe21331ad830ede766a3c966a2786e847123aa74b9b10cf5b783',
+        '464b819f229b2749840fa809d81e8ec071e5ec8a5cbf7d1159abc4cad1759fea',
+        '609e9fa4fcf6c0538888e2b5b5aa6198baab7c80ab8e68fc8b82e470f09262a5',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c30/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '6a4d7ec340e35536dbb671947122cf24340bb2033dc43ae63be44c4fc7ba2415',
+        'd1bec028132a2b8d6e084b8e700f68ec28a4ab6ab4c1d4e1302a194bf7d1f0ea',
+        'c80aebc7123a56914d7280183fc595fbc92a0771a3518483585557941382f540',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c30/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        '163e295aaf0d65705acbbf94c3f18387938beed9e3da20b61657a3f1a72871a2',
+        'dd41430ffbbce63837176ade2e46bc65fe7aff59922939f9ea9553d6bad12ccc',
+      ],
+    },
+  },
+  C31: {
+    background: {
+      src: 'assets/cards/c31/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '59634aa41b310e2908430db843a9ce9fb6dab59da8b7c6a329b29a52565f63f7',
+        '3f206ad59b979eed1899fe13b3f873f70078892d88a90771fd4d0e037fe8aeab',
+        '42995faa567a2a42f4cc65d0a80de8e12a591fc2b3533fe6ca360c56b62d923c',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c31/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '3866955137fc4595c8b8d9e44b9c7fc4c0c703cf7f840888160e462440b23685',
+        '9d96c183c9e6081be90d165a546fe9ab74a968eb3e9999668cbb94aefafc564f',
+        '061b057e9569431e46f4310580ed0311a99c007152e5040349fa1fa5f45a5d79',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c31/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+  C32: {
+    background: {
+      src: 'assets/cards/c32/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '7e9c846137a40f5dd799e18ba069696b0bcd3e8cbdeee5f410a9b4029e77c3cc',
+        '7f8e19e0deb6ee105b6a40a9f0b1190d298510bfff285d56c166c8d2742f5ba2',
+        'a786620f8c8b891dba92c5fd3cd95418affe85e17c003336287ae0a690a8da45',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c32/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        '66dc25bdaee250f24a95c605c041c925e1824aa7022daf383edc7ef565377a93',
+        'af23e02cbf7f4c871ed219f3f9a32db05071cb62a327cae67c744012368cfcd5',
+        'a27d7804e4caa651515138c520df2a12f1040e1a36f471c72ff6e5c311c6c6f1',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c32/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'effaf7c94302ecfc87339226f76238161776a4cf31ebcfc8070017ac3a29712e',
+        'd53b9542e79edfa26425967533b3ee341d82d4c1882696effedeaa0c9ffc4fbd',
+      ],
+    },
+  },
+  C33: {
+    background: {
+      src: 'assets/cards/c33/background.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'fc0e40686292297c5e201032ec7bf83371f13d1d1a6944da4068dc7b1a530521',
+        '19171effb31d2025e39a9916e23c4b890dd33df29ef0a9d7cbd92dcd70cff07b',
+        '2884a9abea0b01e1916fb1de021b72bbe1c108d24836a6133e636557efb0e890',
+      ],
+    },
+    character: {
+      src: 'assets/cards/c33/character.webp',
+      format: 'webp',
+      width: 1080,
+      height: 1456,
+      sha256: [
+        'f6ef7301a7a73ee4f7d7e6bd5144527a62f568c6dc6231be2b0e5c70f4c15ac1',
+        '992acad9a04319a2c7e7441a9d421c2857ffde13cb08ca17fba34c1ade2fd89d',
+        '86caf42958cf9653231b10ea459b78a10b1fcd1ba0aac12a3807561a2a054b44',
+      ],
+    },
+    nameplate: {
+      src: 'assets/cards/c33/nameplate.webp',
+      format: 'webp',
+      width: 2048,
+      height: 762,
+      sha256: [
+        'a3920f0134a3c0ee8ecbc9ec593362a5d802d5d5fd4cb5c279e40f77c39b0384',
+        'ddcbc4b8dafd08e1e623b28e135d3f460cea776e024914dfa7d2e19259ff4dbe',
+      ],
+    },
+  },
+};
