@@ -4,6 +4,8 @@
 // 형식은 모듈 단위(modules.characters …)라 이후 전투 수치·아이템 같은 관리 메뉴가 생기면 같은 파일에 더한다.
 // 버전 2(v0.25.0): 캐릭터 항목에 thumbnailImage(인게임 썸네일)·stats(기본 능력치 10개, null = 바꾸지 않음) 추가.
 //   버전 1 파일도 가져오기 도구가 그대로 읽는다(없는 항목 = 바꾸지 않음). 모르는 항목은 무시하고 알린다.
+// 버전 3(v0.26.0): frameImage·nameplateImage(이 캐릭터만의 카드 프레임·이름표, null = 공통 기본 그림으로 복구),
+//   그림은 cards/<ID>/frame.<확장자>·nameplate.<확장자>.
 import S, { type CardSettings, type StoredImage } from '../core/card-settings.ts';
 import C from '../core/collection.ts';
 import U, { type UnitStats } from '../core/unit-stats.ts';
@@ -11,7 +13,7 @@ import { sha256 } from './bakedCards.ts';
 import { makeZip, type ZipEntry } from './zip.ts';
 
 export const EXPORT_FORMAT = 'autochess-admin-export';
-export const EXPORT_VERSION = 2;
+export const EXPORT_VERSION = 3;
 
 const ext = { png: 'png', jpeg: 'jpg', webp: 'webp' } as const;
 
@@ -31,6 +33,8 @@ export interface ExportedCard {
   backgroundImage: ExportedImage | null; // null = 그림 없음(플레이스홀더)
   characterImage: ExportedImage | null;
   thumbnailImage: ExportedImage | null; // null = 등록 안 함(게임 기본 썸네일)
+  frameImage: ExportedImage | null; // null = 공통 기본 프레임(개별 프레임 없음·삭제)
+  nameplateImage: ExportedImage | null; // null = 공통 기본 이름표
   stats: UnitStats | null; // null = 기본 능력치 바꾸지 않음, 숫자 10개 = 그 값으로(원본과 같은 키는 덮어쓰지 않음)
   imageTransform: CardSettings['imageTransform'] | null;
   updatedAt: string;
@@ -70,6 +74,8 @@ export function checkRecords(records: CardSettings[]): ExportProblem[] {
       ['카드 그림', r.characterImage],
       ['배경 그림', r.backgroundImage],
       ['인게임 썸네일', r.thumbnailImage ?? null],
+      ['카드 프레임', r.frameImage ?? null],
+      ['카드 이름표', r.nameplateImage ?? null],
     ] as const)
       if (
         img &&
@@ -99,7 +105,7 @@ export async function buildExport(
     .sort((a, b) => a.characterId.localeCompare(b.characterId));
   for (const r of sorted) {
     const image = async (
-      slot: 'background' | 'character' | 'thumbnail',
+      slot: 'background' | 'character' | 'thumbnail' | 'frame' | 'nameplate',
       img: StoredImage | null,
     ) => {
       if (!img) return null;
@@ -123,6 +129,8 @@ export async function buildExport(
       backgroundImage: await image('background', r.backgroundImage),
       characterImage: await image('character', r.characterImage),
       thumbnailImage: await image('thumbnail', r.thumbnailImage ?? null),
+      frameImage: await image('frame', r.frameImage ?? null),
+      nameplateImage: await image('nameplate', r.nameplateImage ?? null),
       stats: r.stats ? { ...r.stats } : null,
       imageTransform: r.imageTransform ?? null,
       updatedAt: new Date(r.updatedAt || now.getTime()).toISOString(),
@@ -160,6 +168,8 @@ function applyGuide(cards: ExportedCard[], gameVersion: string, now: Date) {
       c.characterImage ? '카드 그림' : '',
       c.backgroundImage ? '배경' : '',
       c.thumbnailImage ? '인게임 썸네일' : '',
+      c.frameImage ? '개별 프레임' : '',
+      c.nameplateImage ? '개별 이름표' : '',
       c.stats ? '기본 능력치' : '',
     ].filter(Boolean);
     return `- ${c.characterId} ${c.originalName}: ${parts.join(', ') || '설정 지움(기본으로)'}`;
@@ -183,7 +193,8 @@ function applyGuide(cards: ExportedCard[], gameVersion: string, now: Date) {
     '## 도구가 바꾸는 저장소 경로',
     '',
     '- 카드 이름·카드 그림·배경·인게임 썸네일 반영본: `src/ui/art/card-art.generated.ts`',
-    '- 그림 배포본(WebP): `public/assets/cards/<id>/background.webp`·`character.webp`·`thumbnail.webp` (id는 소문자, 예: c01)',
+    '- 그림 배포본(WebP): `public/assets/cards/<id>/background.webp`·`character.webp`·`thumbnail.webp`·`frame.webp`·`nameplate.webp` (id는 소문자, 예: c01, 프레임·이름표는 무손실)',
+    '- 개별 프레임·이름표가 null인 캐릭터는 반영본에서 지워져 공통 기본 그림(`public/assets/cards/card-frame.webp`·`card-nameplate.webp`)으로 돌아갑니다(공통 그림은 바뀌지 않음).',
     '- 그림 원본: `assets-src/images/cards/<id>/`',
     '- 기본 능력치 반영본(원본과 다른 키만): `src/core/data/unit-stat-overrides.generated.js`',
     '',

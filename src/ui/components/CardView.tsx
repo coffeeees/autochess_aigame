@@ -15,6 +15,9 @@ export interface CardViewData {
   cost: number;
   background: string | null; // 그림 주소(정적 경로나 객체 URL)
   character: string | null;
+  /** 이 카드만의 프레임·이름표(v0.26.0). null이면 공통 기본 그림 */
+  frame?: string | null;
+  nameplate?: string | null;
   transform?: Partial<Record<'background' | 'character', ImageTransform>>; // 예약
 }
 
@@ -53,7 +56,14 @@ export function CardFace({ card }: { card: CardViewData }) {
         </div>
         <div class={styles.vignette} />
       </div>
-      <img class={styles.frame} data-layer="frame" src={cardFrame} alt="" draggable={false} />
+      <img
+        class={styles.frame}
+        data-layer="frame"
+        data-custom={!!card.frame}
+        src={card.frame || cardFrame}
+        alt=""
+        draggable={false}
+      />
       {ch ? (
         <img
           class={styles.character}
@@ -82,7 +92,12 @@ export function CardFace({ card }: { card: CardViewData }) {
       </span>
       <div class={styles.glint} data-layer="glint" />
       <div class={styles.nameplate} data-layer="nameplate">
-        <img src={cardNameplate} alt="" draggable={false} />
+        <img
+          src={card.nameplate || cardNameplate}
+          data-custom={!!card.nameplate}
+          alt=""
+          draggable={false}
+        />
         <div class={styles.name} data-card-name>
           {card.name}
         </div>
@@ -212,6 +227,8 @@ export function useCardViewData(
         displayNameOverride: string | null;
         backgroundImage: { blob: Blob } | null;
         characterImage: { blob: Blob } | null;
+        frameImage?: { blob: Blob } | null;
+        nameplateImage?: { blob: Blob } | null;
         imageTransform?: CardViewData['transform'];
       }
     | null
@@ -219,6 +236,8 @@ export function useCardViewData(
 ): CardViewData {
   const bgUrl = useBlobUrl(settings?.backgroundImage?.blob);
   const chUrl = useBlobUrl(settings?.characterImage?.blob);
+  const frameUrl = useBlobUrl(settings?.frameImage?.blob);
+  const plateUrl = useBlobUrl(settings?.nameplateImage?.blob);
   const base = C.entry(characterId);
   if (settings)
     return {
@@ -227,6 +246,8 @@ export function useCardViewData(
       cost: base?.cost ?? 1,
       background: bgUrl,
       character: chUrl,
+      frame: frameUrl,
+      nameplate: plateUrl,
       transform: settings.imageTransform,
     };
   const baked = bakedCard(characterId);
@@ -237,6 +258,8 @@ export function useCardViewData(
     cost: base?.cost ?? 1,
     background: art.background,
     character: art.character,
+    frame: baked?.frame?.src ?? null,
+    nameplate: baked?.nameplate?.src ?? null,
     transform: baked?.imageTransform,
   };
 }

@@ -54,7 +54,8 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  /* 기본 프레임은 카드와 같은 714:1000이라 그대로 꽉 차고, 비율이 다른 개별 프레임(v0.26.0)은 늘리지 않는다 */
+  object-fit: contain;
 }
 .character {
   position: absolute;
