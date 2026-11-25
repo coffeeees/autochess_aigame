@@ -7,7 +7,12 @@ import type { GameProps } from '../Game.tsx';
 import { adminModules } from './modules.ts';
 import { CharacterSettings } from './CharacterSettings.tsx';
 import { useCardAssets } from '../../cardAssetStore.ts';
-import { buildExport, download, exportFileName, ExportError } from '../../adminExport.ts';
+import { buildExportParts, download, exportFileName, ExportError } from '../../adminExport.ts';
+import { compressForExport } from '../../imageEncode.ts';
+
+/** 내보내기 파일 하나의 최대 크기(대화창 첨부 한도 안쪽, v0.26.1) */
+const PART_BYTES = 25 * 1024 * 1024;
+const mb = (n: number) => (n / 1048576).toFixed(n < 10 * 1048576 ? 1 : 0) + 'MB';
 import styles from './Admin.module.css';
 
 type Props = Pick<GameProps, 'ui' | 'actions'>;
@@ -28,12 +33,26 @@ export function AdminPage({ ui, actions }: Props) {
       const notes = (await import('../../../content/patch-notes.js')).default as {
         current: string;
       };
-      const name = exportFileName();
-      const { zip, manifest } = await buildExport(Object.values(assets.byId), notes.current);
-      download(zip, name);
+      setExportMsg('그림을 게임에 맞는 크기로 줄여 담는 중…');
+      const now = new Date();
+      const { parts, manifest, sourceBytes } = await buildExportParts(
+        Object.values(assets.byId),
+        notes.current,
+        { now, maxPartBytes: PART_BYTES, encode: compressForExport },
+      );
+      const names = parts.map((p) => exportFileName(now, p.manifest.part));
+      // 여러 파일이면 브라우저가 "여러 파일 다운로드 허용"을 물을 수 있다
+      for (const [i, p] of parts.entries()) {
+        download(p.zip, names[i]);
+        if (i < parts.length - 1) await new Promise((r) => setTimeout(r, 400));
+      }
       const n = manifest.modules.characters.cards.length;
+      const total = parts.reduce((t, p) => t + p.zip.length, 0);
       setExportMsg(
-        `${name} · 캐릭터 카드 ${n}명` +
+        `캐릭터 카드 ${n}명 · 그림 원본 ${mb(sourceBytes)} → 내보내기 ${mb(total)}` +
+          (parts.length > 1
+            ? ` · 25MB 이하 ${parts.length}개 파일로 나눔(${names.join(', ')}) — 모두 첨부해 주세요`
+            : ` · ${names[0]}`) +
           (dirty.current ? ' · 저장하지 않은 지금 편집 중인 변경은 빠졌습니다' : ''),
       );
     } catch (e) {
@@ -75,7 +94,7 @@ export function AdminPage({ ui, actions }: Props) {
           </button>
           <small>
             {count
-              ? '이 브라우저에 저장한 설정을 ZIP으로 받습니다. 대화창에 첨부하면 게임에 반영해 드립니다.'
+              ? '이 브라우저에 저장한 설정을 ZIP으로 받습니다(그림은 게임 크기로 줄이고, 크면 25MB 이하 여러 파일로 나눔). 대화창에 첨부하면 게임에 반영해 드립니다.'
               : '내보낼 설정이 없습니다(저장한 카드 설정이 있으면 켜집니다).'}
           </small>
           {exportMsg && <small role="status">{exportMsg}</small>}

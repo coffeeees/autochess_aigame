@@ -24,6 +24,8 @@ export interface ExportedImage {
   height: number;
   size: number;
   sha256: string;
+  /** 브라우저에 저장된 원본의 sha256(내보내기 때 줄여 담았으면 sha256과 다름, v0.26.1) */
+  sourceSha256?: string;
   originalName: string;
 }
 export interface ExportedCard {
@@ -47,11 +49,18 @@ export interface ExportManifest {
   gameVersion: string;
   note: string;
   modules: { characters: { cards: ExportedCard[] } };
+  /** 나눠 받은 파일이면 몇 번째인지(v0.26.1). 파일마다 독립적으로 가져올 수 있다 */
+  part?: { index: number; total: number };
 }
 
+export type ImageEncoder = (
+  slot: 'background' | 'character' | 'thumbnail' | 'frame' | 'nameplate',
+  img: StoredImage,
+) => Promise<StoredImage>;
+
 const pad = (n: number) => String(n).padStart(2, '0');
-export const exportFileName = (d = new Date()) =>
-  `autochess-admin-export-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.zip`;
+export const exportFileName = (d = new Date(), part?: { index: number; total: number }) =>
+  `autochess-admin-export-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${part ? `-part${part.index}of${part.total}` : ''}.zip`;
 
 export interface ExportProblem {
   characterId: string;
@@ -90,39 +99,65 @@ export function checkRecords(records: CardSettings[]): ExportProblem[] {
   return out;
 }
 
-/** 저장된 카드 설정들 → ZIP 바이트와 요약. 검사에 걸리면 예외(ExportError) */
+/** 저장된 카드 설정들 → ZIP 하나(줄이지 않음·나누지 않음). 검사에 걸리면 예외(ExportError) */
 export async function buildExport(
   records: CardSettings[],
   gameVersion: string,
   now = new Date(),
 ): Promise<{ zip: Uint8Array; manifest: ExportManifest }> {
+  const { parts } = await buildExportParts(records, gameVersion, { now, maxPartBytes: Infinity });
+  return parts[0];
+}
+
+/**
+ * 내보내기(v0.26.1): 그림을 encode로 줄여 담고, ZIP 하나가 maxPartBytes를 넘으면 캐릭터 단위로 여러 파일로 나눈다.
+ * 한 캐릭터의 그림은 한 파일에만 들어가고, 파일마다 manifest·README가 있어 따로 가져올 수 있다.
+ */
+export async function buildExportParts(
+  records: CardSettings[],
+  gameVersion: string,
+  opts: { now?: Date; maxPartBytes?: number; encode?: ImageEncoder } = {},
+): Promise<{
+  parts: { zip: Uint8Array; manifest: ExportManifest }[];
+  manifest: ExportManifest;
+  sourceBytes: number;
+}> {
+  const now = opts.now ?? new Date();
+  const maxPartBytes = opts.maxPartBytes ?? Infinity;
   const problems = checkRecords(records);
   if (problems.length) throw new ExportError(problems);
-  const entries: ZipEntry[] = [];
-  const cards: ExportedCard[] = [];
   const sorted = [...records]
     .filter((r) => S.isCharacterId(r.characterId))
     .sort((a, b) => a.characterId.localeCompare(b.characterId));
+  let sourceBytes = 0;
+  // 캐릭터별로 카드 정보와 그림 파일을 만든다
+  const groups: { card: ExportedCard; entries: ZipEntry[]; bytes: number }[] = [];
   for (const r of sorted) {
+    const entries: ZipEntry[] = [];
     const image = async (
       slot: 'background' | 'character' | 'thumbnail' | 'frame' | 'nameplate',
-      img: StoredImage | null,
-    ) => {
-      if (!img) return null;
+      original: StoredImage | null,
+    ): Promise<ExportedImage | null> => {
+      if (!original) return null;
+      sourceBytes += original.size;
+      const img = opts.encode ? await opts.encode(slot, original) : original;
       const file = `cards/${r.characterId}/${slot}.${ext[img.format]}`;
       const data = new Uint8Array(await img.blob.arrayBuffer());
       entries.push({ name: file, data });
+      const hash = await sha256(img.blob);
+      const sourceHash = img === original ? hash : await sha256(original.blob);
       return {
         file,
         format: img.format,
         width: img.width,
         height: img.height,
         size: data.length,
-        sha256: await sha256(img.blob),
+        sha256: hash,
+        ...(sourceHash !== hash ? { sourceSha256: sourceHash } : {}),
         originalName: img.name,
       };
     };
-    cards.push({
+    const card: ExportedCard = {
       characterId: r.characterId,
       originalName: C.entry(r.characterId)?.displayName ?? r.characterId,
       displayNameOverride: r.displayNameOverride,
@@ -134,9 +169,25 @@ export async function buildExport(
       stats: r.stats ? { ...r.stats } : null,
       imageTransform: r.imageTransform ?? null,
       updatedAt: new Date(r.updatedAt || now.getTime()).toISOString(),
-    });
+    };
+    groups.push({ card, entries, bytes: entries.reduce((n, e) => n + e.data.length, 0) });
   }
-  const manifest: ExportManifest = {
+  // 캐릭터 단위로 파일 나누기(한 캐릭터가 한도보다 크면 그 캐릭터만 한 파일)
+  const buckets: (typeof groups)[] = [];
+  let cur: typeof groups = [];
+  let curBytes = 0;
+  const overhead = 64 * 1024; // manifest·README·ZIP 머리
+  for (const g of groups) {
+    if (cur.length && curBytes + g.bytes + overhead > maxPartBytes) {
+      buckets.push(cur);
+      cur = [];
+      curBytes = 0;
+    }
+    cur.push(g);
+    curBytes += g.bytes;
+  }
+  buckets.push(cur);
+  const base = (cards: ExportedCard[]): ExportManifest => ({
     format: EXPORT_FORMAT,
     version: EXPORT_VERSION,
     schemaVersion: EXPORT_VERSION,
@@ -144,14 +195,24 @@ export async function buildExport(
     gameVersion,
     note: '각 캐릭터 항목은 그 캐릭터의 전체 상태다(그림 null = 그림 없음/기본 그림, stats null = 능력치 그대로). 들어 있지 않은 캐릭터는 바꾸지 않는다.',
     modules: { characters: { cards } },
-  };
+  });
   const enc = new TextEncoder();
-  const readme = applyGuide(cards, gameVersion, now);
-  entries.unshift(
-    { name: 'manifest.json', data: enc.encode(JSON.stringify(manifest, null, 2) + '\n') },
-    { name: 'README_APPLY.md', data: enc.encode(readme) },
-  );
-  return { zip: makeZip(entries, now), manifest };
+  const total = buckets.length;
+  const parts = buckets.map((bucket, i) => {
+    const cards = bucket.map((g) => g.card);
+    const manifest: ExportManifest = {
+      ...base(cards),
+      ...(total > 1 ? { part: { index: i + 1, total } } : {}),
+    };
+    const readme = applyGuide(cards, gameVersion, now, total > 1 ? { index: i + 1, total } : null);
+    const entries: ZipEntry[] = [
+      { name: 'manifest.json', data: enc.encode(JSON.stringify(manifest, null, 2) + '\n') },
+      { name: 'README_APPLY.md', data: enc.encode(readme) },
+      ...bucket.flatMap((g) => g.entries),
+    ];
+    return { zip: makeZip(entries, now), manifest };
+  });
+  return { parts, manifest: base(groups.map((g) => g.card)), sourceBytes };
 }
 
 export class ExportError extends Error {
@@ -161,7 +222,12 @@ export class ExportError extends Error {
 }
 
 /** ZIP 안 적용 안내(실제 저장소 경로) */
-function applyGuide(cards: ExportedCard[], gameVersion: string, now: Date) {
+function applyGuide(
+  cards: ExportedCard[],
+  gameVersion: string,
+  now: Date,
+  part: { index: number; total: number } | null = null,
+) {
   const row = (c: ExportedCard) => {
     const parts = [
       c.displayNameOverride ? `카드 이름 「${c.displayNameOverride}」` : '',
@@ -179,6 +245,11 @@ function applyGuide(cards: ExportedCard[], gameVersion: string, now: Date) {
     '',
     `- 내보낸 시각: ${now.toLocaleString('ko-KR')} · 게임 버전 ${gameVersion} · 형식 autochess-admin-export v${EXPORT_VERSION}`,
     `- 캐릭터 ${cards.length}명`,
+    ...(part
+      ? [
+          `- **나눠 받은 파일 ${part.index}/${part.total}**: 용량 때문에 캐릭터 단위로 나눴습니다. 같은 시각에 받은 ${part.total}개 파일을 모두 첨부해 주세요(순서 무관).`,
+        ]
+      : []),
     ...cards.map(row),
     '',
     '## 적용 방법',

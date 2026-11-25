@@ -116,14 +116,16 @@ test('반영본 등록표: 캐릭터 ID·배포 파일·해시 형식이 맞다(
       if (!im) continue;
       a(fs.existsSync('public/' + im.src), im.src);
       a(
-        im.sha256.length === 2 && im.sha256.every((h) => /^[0-9a-f]{64}$/.test(h)),
+        im.sha256.length >= 2 &&
+          im.sha256.length <= 3 &&
+          im.sha256.every((h) => /^[0-9a-f]{64}$/.test(h)),
         `${id} ${slot}`,
       );
       a.equal(
         createHash('sha256')
           .update(fs.readFileSync('public/' + im.src))
           .digest('hex'),
-        im.sha256[1],
+        im.sha256.at(-1),
         `${id} ${slot} 배포본 해시`,
       );
     }

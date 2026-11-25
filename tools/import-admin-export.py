@@ -1,4 +1,4 @@
-# 관리자 내보내기 ZIP(autochess-admin-export, v1·v2·v3)을 게임 파일(반영본)에 넣는다.
+# 관리자 내보내기 ZIP(autochess-admin-export, v1·v2·v3)을 게임 파일(반영본)에 넣는다. 나눠 받은 ZIP은 한 번에 여러 개 넣는다(v0.26.1).
 # v3(v0.26.0): 캐릭터별 카드 프레임·이름표(frame·nameplate, 무손실 WebP). null이면 개별 그림을 지워 공통 기본으로.
 #   python3 tools/import-admin-export.py <내보내기.zip> [--dry-run]
 # - 검사: 형식·버전, 캐릭터 ID(data/units.js 명단), 그림 매직 바이트·sha256·10MB·디코드.
@@ -89,110 +89,118 @@ def normalize_name(name, original):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     dry = '--dry-run' in sys.argv
-    if len(args) != 1:
-        fail('사용법: python3 tools/import-admin-export.py <내보내기.zip> [--dry-run]')
-    z = zipfile.ZipFile(args[0])
-    try:
-        manifest = json.loads(z.read('manifest.json'))
-    except KeyError:
-        fail('manifest.json이 없습니다(관리자 내보내기 ZIP이 아님).')
-    if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2, 3):
-        fail(f"지원하지 않는 형식: {manifest.get('format')} v{manifest.get('version')}")
+    if not args:
+        fail('사용법: python3 tools/import-admin-export.py <내보내기.zip> [더 많은 ZIP …] [--dry-run]')
     names = roster()
     baked = read_generated()
     stat_overrides = read_stat_overrides()
-    version = manifest['version']
-    cards = manifest.get('modules', {}).get('characters', {}).get('cards', [])
     report = []
-    for card in cards:
-        cid = card.get('characterId')
-        if cid not in names:
-            fail(f'없는 캐릭터 ID: {cid}')
-        prev = baked.get(cid, {})
-        entry = {}
-        unknown = set(card) - KNOWN_CARD_KEYS
-        if unknown:
-            print(f'   (알림) {cid}: 모르는 항목 무시 {sorted(unknown)}')
-        name = normalize_name(card.get('displayNameOverride'), names[cid])
-        if name:
-            entry['displayName'] = name
-        lines = [f"{cid} {names[cid]}: 이름 {name or '(원래 이름)'}"]
-        slots = ['background', 'character']
-        if version >= 2:
-            slots.append('thumbnail')
-        if version >= 3:
-            slots += ['frame', 'nameplate']
-        for keep in ('thumbnail', 'frame', 'nameplate'):
-            if keep not in slots and prev.get(keep):
-                entry[keep] = prev[keep]  # 예전 형식 파일은 그 항목을 바꾸지 않는다
-        for slot in slots:
-            img = card.get(slot + 'Image')
-            folder = cid.lower()
-            if not img:
-                lines.append(f'{slot} 없음')
+    total_cards = 0
+    for path in args:
+        z = zipfile.ZipFile(path)
+        try:
+            manifest = json.loads(z.read('manifest.json'))
+        except KeyError:
+            fail('manifest.json이 없습니다(관리자 내보내기 ZIP이 아님).')
+        if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2, 3):
+            fail(f"지원하지 않는 형식: {manifest.get('format')} v{manifest.get('version')}")
+        version = manifest['version']
+        cards = manifest.get('modules', {}).get('characters', {}).get('cards', [])
+        total_cards += len(cards)
+        report.append(f"[{pathlib.Path(path).name}] 내보낸 시각 {manifest.get('exportedAt')} · 게임 {manifest.get('gameVersion')}"
+                  + (f" · 나눠 받은 파일 {manifest['part']['index']}/{manifest['part']['total']}" if manifest.get('part') else '')
+                  + f" · 캐릭터 {len(cards)}명")
+        for card in cards:
+            cid = card.get('characterId')
+            if cid not in names:
+                fail(f'없는 캐릭터 ID: {cid}')
+            prev = baked.get(cid, {})
+            entry = {}
+            unknown = set(card) - KNOWN_CARD_KEYS
+            if unknown:
+                print(f'   (알림) {cid}: 모르는 항목 무시 {sorted(unknown)}')
+            name = normalize_name(card.get('displayNameOverride'), names[cid])
+            if name:
+                entry['displayName'] = name
+            lines = [f"{cid} {names[cid]}: 이름 {name or '(원래 이름)'}"]
+            slots = ['background', 'character']
+            if version >= 2:
+                slots.append('thumbnail')
+            if version >= 3:
+                slots += ['frame', 'nameplate']
+            for keep in ('thumbnail', 'frame', 'nameplate'):
+                if keep not in slots and prev.get(keep):
+                    entry[keep] = prev[keep]  # 예전 형식 파일은 그 항목을 바꾸지 않는다
+            for slot in slots:
+                img = card.get(slot + 'Image')
+                folder = cid.lower()
+                if not img:
+                    lines.append(f'{slot} 없음')
+                    if not dry:
+                        for f in list((SRC_DIR / folder).glob(slot + '.*')) + list((OUT_DIR / folder).glob(slot + '.*')):
+                            f.unlink()
+                    continue
+                data = z.read(img['file'])
+                fmt = sniff(data)
+                if not fmt or fmt != img.get('format'):
+                    fail(f"{cid} {slot}: PNG·JPG·WebP가 아니거나 형식이 다름")
+                if len(data) > MAX_BYTES:
+                    fail(f'{cid} {slot}: 10MB 초과')
+                sha = hashlib.sha256(data).hexdigest()
+                if sha != img.get('sha256'):
+                    fail(f'{cid} {slot}: 파일이 손상됨(sha256 불일치)')
+                old = prev.get(slot)
+                src_sha = img.get('sourceSha256')  # 내보낼 때 줄여 담았으면 브라우저 원본 해시(v0.26.1)
+                if old and (sha in old.get('sha256', []) or (src_sha and src_sha in old.get('sha256', []))):
+                    entry[slot] = old
+                    lines.append(f'{slot} 그대로(반영본과 같음)')
+                    continue
+                im = Image.open(io.BytesIO(data))
+                im.load()
+                ext = {'png': 'png', 'jpeg': 'jpg', 'webp': 'webp'}[fmt]
+                src = SRC_DIR / folder / f'{slot}.{ext}'
+                out = OUT_DIR / folder / f'{slot}.webp'
                 if not dry:
-                    for f in list((SRC_DIR / folder).glob(slot + '.*')) + list((OUT_DIR / folder).glob(slot + '.*')):
+                    src.parent.mkdir(parents=True, exist_ok=True)
+                    out.parent.mkdir(parents=True, exist_ok=True)
+                    for f in (SRC_DIR / folder).glob(slot + '.*'):
                         f.unlink()
-                continue
-            data = z.read(img['file'])
-            fmt = sniff(data)
-            if not fmt or fmt != img.get('format'):
-                fail(f"{cid} {slot}: PNG·JPG·WebP가 아니거나 형식이 다름")
-            if len(data) > MAX_BYTES:
-                fail(f'{cid} {slot}: 10MB 초과')
-            sha = hashlib.sha256(data).hexdigest()
-            if sha != img.get('sha256'):
-                fail(f'{cid} {slot}: 파일이 손상됨(sha256 불일치)')
-            old = prev.get(slot)
-            if old and sha in old.get('sha256', []):
-                entry[slot] = old
-                lines.append(f'{slot} 그대로(반영본과 같음)')
-                continue
-            im = Image.open(io.BytesIO(data))
-            im.load()
-            ext = {'png': 'png', 'jpeg': 'jpg', 'webp': 'webp'}[fmt]
-            src = SRC_DIR / folder / f'{slot}.{ext}'
-            out = OUT_DIR / folder / f'{slot}.webp'
-            if not dry:
-                src.parent.mkdir(parents=True, exist_ok=True)
-                out.parent.mkdir(parents=True, exist_ok=True)
-                for f in (SRC_DIR / folder).glob(slot + '.*'):
-                    f.unlink()
-                src.write_bytes(data)
-                if slot in ('frame', 'nameplate'):
-                    # 공통 프레임·이름표처럼 원본 픽셀 그대로(무손실)
-                    im.convert('RGBA').save(out, 'WEBP', lossless=True, quality=100, method=6, exact=True)
-                elif slot in ('character', 'thumbnail'):
-                    im.convert('RGBA').save(out, 'WEBP', quality=90, alpha_quality=100, method=6)
+                    src.write_bytes(data)
+                    if slot in ('frame', 'nameplate'):
+                        # 공통 프레임·이름표처럼 원본 픽셀 그대로(무손실)
+                        im.convert('RGBA').save(out, 'WEBP', lossless=True, quality=100, method=6, exact=True)
+                    elif slot in ('character', 'thumbnail'):
+                        im.convert('RGBA').save(out, 'WEBP', quality=90, alpha_quality=100, method=6)
+                    else:
+                        im.convert('RGB').save(out, 'WEBP', quality=88, method=6)
+                    webp_sha = hashlib.sha256(out.read_bytes()).hexdigest()
                 else:
-                    im.convert('RGB').save(out, 'WEBP', quality=88, method=6)
-                webp_sha = hashlib.sha256(out.read_bytes()).hexdigest()
+                    webp_sha = '(dry-run)'
+                entry[slot] = {
+                    'src': f'assets/cards/{folder}/{slot}.webp',
+                    'format': 'webp',
+                    'width': im.width,
+                    'height': im.height,
+                    # 같은 그림 판정용: [브라우저 원본, 보낸 파일, 배포본] (중복 제거)
+                'sha256': list(dict.fromkeys([h for h in (src_sha, sha, webp_sha) if h])),
+                }
+                lines.append(f"{slot} 새 그림 {im.width}×{im.height} {len(data)//1024}KB → {out.relative_to(ROOT)}" + (f' {out.stat().st_size//1024}KB' if not dry else ''))
+            if card.get('imageTransform'):
+                entry['imageTransform'] = card['imageTransform']
+            if version >= 2 and card.get('stats') is not None:
+                diff = check_stats(cid, card['stats'])
+                if diff:
+                    stat_overrides[cid] = diff
+                else:
+                    stat_overrides.pop(cid, None)
+                lines.append('능력치 ' + (', '.join(f'{k} {v}' for k, v in diff.items()) if diff else '원본 그대로'))
+            elif version >= 2:
+                lines.append('능력치 바꾸지 않음')
+            if entry:
+                baked[cid] = entry
             else:
-                webp_sha = '(dry-run)'
-            entry[slot] = {
-                'src': f'assets/cards/{folder}/{slot}.webp',
-                'format': 'webp',
-                'width': im.width,
-                'height': im.height,
-                'sha256': [sha, webp_sha],
-            }
-            lines.append(f"{slot} 새 그림 {im.width}×{im.height} {len(data)//1024}KB → {out.relative_to(ROOT)}" + (f' {out.stat().st_size//1024}KB' if not dry else ''))
-        if card.get('imageTransform'):
-            entry['imageTransform'] = card['imageTransform']
-        if version >= 2 and card.get('stats') is not None:
-            diff = check_stats(cid, card['stats'])
-            if diff:
-                stat_overrides[cid] = diff
-            else:
-                stat_overrides.pop(cid, None)
-            lines.append('능력치 ' + (', '.join(f'{k} {v}' for k, v in diff.items()) if diff else '원본 그대로'))
-        elif version >= 2:
-            lines.append('능력치 바꾸지 않음')
-        if entry:
-            baked[cid] = entry
-        else:
-            baked.pop(cid, None)
-        report.append(' · '.join(lines))
+                baked.pop(cid, None)
+            report.append(' · '.join(lines))
     ordered = {k: baked[k] for k in sorted(baked)}
     if not dry:
         GENERATED.write_text(HEADER + json.dumps(ordered, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
@@ -201,9 +209,9 @@ def main():
                                    encoding='utf-8')
         subprocess.run(['npx', 'prettier', '--write', str(GENERATED), str(STATS_GENERATED)], cwd=ROOT, check=True,
                        capture_output=True)
-    print(f"{'(dry-run) ' if dry else ''}내보낸 시각 {manifest.get('exportedAt')} · 게임 {manifest.get('gameVersion')} · 캐릭터 {len(cards)}명")
+    print(f"{'(dry-run) ' if dry else ''}ZIP {len(args)}개 · 캐릭터 {total_cards}명")
     for r in report:
-        print(' - ' + r)
+        print((' ' if r.startswith('[') else ' - ') + r)
 
 
 main()
