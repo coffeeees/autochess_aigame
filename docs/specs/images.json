@@ -37,10 +37,10 @@
   },
   "cards/card-frame.webp": {
     "source": "assets-src/images/cards/card-frame.png",
-    "sourceSha256": "9ff023364e132eb6835af6957cf1eef7a0b8ed1daa208a464e094a1f6239d336",
+    "sourceSha256": "39df25fc1e94e7dd60f01acc262efaa8ae1522196f86f5918bb4b5e4a0740f9c",
     "size": [
-      714,
-      1000
+      1060,
+      1484
     ],
     "mode": "lossless"
   },
