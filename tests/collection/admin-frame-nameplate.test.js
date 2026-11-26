@@ -60,7 +60,7 @@ test('내보내기 v3: C01 프레임·이름표 파일과 경로, 이름표만 �
     ],
     'test',
   );
-  a.equal(manifest.version, 3);
+  a.equal(manifest.version, 4);
   const [c01, c02] = manifest.modules.characters.cards;
   a.equal(c01.frameImage.file, 'cards/C01/frame.png');
   a.equal(c01.nameplateImage.file, 'cards/C01/nameplate.png');
@@ -84,7 +84,7 @@ test('카드 렌더러: 개별 그림이 없으면 공통 기본, 프레임은 �
   a(/\.frame \{[^}]*object-fit: contain;/.test(css));
   const tool = fs.readFileSync('tools/import-admin-export.py', 'utf8');
   a(
-    tool.includes('(1, 2, 3)') &&
+    tool.includes('(1, 2, 3, 4)') &&
       tool.includes("slot in ('frame', 'nameplate')") &&
       tool.includes('lossless=True'),
   );

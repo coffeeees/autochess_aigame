@@ -403,12 +403,11 @@ test('캐릭터 45명 개명: C01 녹스 유지, 여 36 / 남 9, ID·코스트·
   a.equal(D.byId('C01').name, '녹스');
   a.equal(D.byId('C02').name, '아젤리아');
   a.equal(D.byId('C45').name, '아바르크');
-  a.equal(D.roster.filter((u) => u.gender === 'female').length, 36);
-  a.equal(D.roster.filter((u) => u.gender === 'male').length, 9);
-  a.deepEqual(
-    [D.byId('C13').race, D.byId('C13').job, D.byId('C13').trait, D.byId('C13').cost],
-    ['드워프', '마법사', '빙결', 2],
-  );
+  // 원본 값으로 확인(관리자 반영본은 v0.26.4부터 따로)
+  a.equal(D.roster.filter((u) => u.sourceProfile.gender === 'female').length, 36);
+  a.equal(D.roster.filter((u) => u.sourceProfile.gender === 'male').length, 9);
+  const c13 = D.byId('C13').sourceProfile;
+  a.deepEqual([c13.race, c13.job, c13.trait, D.byId('C13').cost], ['드워프', '마법사', '빙결', 2]);
 });
 
 test('완성 장비 36종 각각을 낀 전투가 끝까지 오류 없이 돌고, 2개 중복 착용도 된다', () => {

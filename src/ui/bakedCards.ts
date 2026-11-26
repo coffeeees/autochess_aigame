@@ -5,11 +5,15 @@
 import S, { type CardSettings, type StoredImage } from '../core/card-settings.ts';
 import { bakedCard, type BakedImage } from './art/cards.ts';
 import U from '../core/unit-stats.ts';
+import PF from '../core/unit-profile.ts';
 import D from '../core/data/units.js';
 
 const statOverrides = D.statOverrides as Record<string, Record<string, number>>;
 /** 반영된 능력치가 있는 캐릭터 */
 export const hasBakedStats = (id: string) => Object.keys(statOverrides[id] || {}).length > 0;
+const profileOverrides = D.profileOverrides as Record<string, Record<string, string>>;
+/** 반영된 캐릭터 설정(종족·직업·특성·성별)이 있는 캐릭터(v0.26.4) */
+export const hasBakedProfile = (id: string) => Object.keys(profileOverrides[id] || {}).length > 0;
 
 const cache = new Map<string, Promise<CardSettings | null>>();
 
@@ -31,7 +35,8 @@ async function fetchImage(img: BakedImage | undefined): Promise<StoredImage | nu
 /** 반영본을 편집용 설정으로(반영본이 없으면 null). 같은 캐릭터는 같은 객체를 돌려준다 */
 export function bakedSettings(characterId: string): Promise<CardSettings | null> {
   const baked = bakedCard(characterId);
-  if (!baked && !hasBakedStats(characterId)) return Promise.resolve(null);
+  if (!baked && !hasBakedStats(characterId) && !hasBakedProfile(characterId))
+    return Promise.resolve(null);
   let p = cache.get(characterId);
   if (!p) {
     p = Promise.all([
@@ -49,6 +54,7 @@ export function bakedSettings(characterId: string): Promise<CardSettings | null>
       frameImage,
       nameplateImage,
       stats: hasBakedStats(characterId) ? U.gameStats(characterId)! : null,
+      profile: hasBakedProfile(characterId) ? PF.gameProfile(characterId)! : null,
       imageTransform: baked?.imageTransform,
     }));
     p.catch(() => cache.delete(characterId));
@@ -75,7 +81,7 @@ export type CardStatus = 'none' | 'baked' | 'local' | 'same';
 /** 캐릭터 카드 상태: 설정 없음 / 게임 반영본만 / 이 브라우저 수정(반영 안 됨) / 브라우저 설정이 반영본과 같음 */
 export async function cardStatus(characterId: string, local?: CardSettings): Promise<CardStatus> {
   const baked = bakedCard(characterId);
-  const anyBaked = !!baked || hasBakedStats(characterId);
+  const anyBaked = !!baked || hasBakedStats(characterId) || hasBakedProfile(characterId);
   if (!local) return anyBaked ? 'baked' : 'none';
   if (!anyBaked) return 'local';
   if (
@@ -83,6 +89,7 @@ export async function cardStatus(characterId: string, local?: CardSettings): Pro
   )
     return 'local';
   if (local.stats && !U.sameStats(local.stats, U.gameStats(characterId))) return 'local';
+  if (local.profile && !PF.sameProfile(local.profile, PF.gameProfile(characterId))) return 'local';
   const localImage = {
     background: local.backgroundImage,
     character: local.characterImage,

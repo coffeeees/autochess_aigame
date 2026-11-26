@@ -4,6 +4,13 @@
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
+  /* 그림 썸네일 뒤 코스트 색 그라데이션(v0.26.4, 투명 썸네일이면 보인다). SVG 아바타는 자체 배경 */
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--cost-color, #9699a2) 92%, #fff 8%) 0%,
+    color-mix(in srgb, var(--cost-color, #9699a2) 55%, #0d1018) 62%,
+    color-mix(in srgb, var(--cost-color, #9699a2) 25%, #0d1018) 100%
+  );
 }
 .frame :global(svg) {
   display: block;

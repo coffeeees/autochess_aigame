@@ -92,18 +92,24 @@
   color: #a9c2cc99;
   letter-spacing: 0.04em;
 }
+.frameLayer {
+  position: absolute;
+  inset: 0;
+}
+/* 코스트 숫자: 공통 프레임(1060×1484)의 왼쪽 위 원(가운데 12.9%·9.2%, 지름 카드 폭 13.8%) 안에 맞춘다 */
 .cost {
   position: absolute;
-  top: 3.6%;
-  left: 3%;
-  width: 24%;
-  height: 14%;
+  left: 6.04%;
+  top: 4.25%;
+  width: 13.77%;
+  height: 9.84%;
   display: grid;
   place-items: center;
   color: #0e1722;
   font-family: Georgia, serif;
   font-weight: 800;
-  font-size: 14.5cqw;
+  font-size: 9.6cqw;
+  line-height: 1;
   text-shadow: 0 1px 1px #fff7;
 }
 .glint {
@@ -174,15 +180,12 @@
 .stage .bg {
   transform: translateZ(1px);
 }
-.stage .frame {
+.stage .frameLayer {
   transform: translateZ(9px);
 }
 .stage .character,
 .stage .characterPlaceholder {
   transform: translate3d(0, 0, 55px) scale(0.99);
-}
-.stage .cost {
-  transform: translateZ(76px);
 }
 .stage .glint {
   transform: translateZ(70px);

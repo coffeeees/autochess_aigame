@@ -236,8 +236,11 @@
   margin-top: 11px;
   line-height: 1.8;
 }
-.patch {
+/* 오른쪽 위: 도감(v0.26.4)·패치노트 */
+.topRight {
   position: absolute;
   top: 20px;
   right: 24px;
+  display: flex;
+  gap: 8px;
 }

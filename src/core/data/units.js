@@ -2,6 +2,7 @@ import B from '../board.js';
 import higherDrafts from './higher-cost-drafts.js';
 import Bonds from './bonds.js';
 import statOverrides from './unit-stat-overrides.generated.js';
+import profileOverrides from './unit-profile-overrides.generated.js';
 
 const synergies = Bonds.definitions;
 const rosterRows = [
@@ -206,6 +207,20 @@ function applyStatOverrides(units, overrides) {
   return units;
 }
 applyStatOverrides(roster, statOverrides);
+const profileKeys = ['race', 'job', 'trait', 'gender'];
+/** 캐릭터 설정 반영본 합치기(v0.26.4, 테스트에서도 씀): 원본은 열거되지 않는 sourceProfile, 문자열이 아닌 값·모르는 키는 무시 */
+function applyProfileOverrides(units, overrides) {
+  for (const u of units) {
+    if (!u.sourceProfile)
+      Object.defineProperty(u, 'sourceProfile', {
+        value: Object.freeze(Object.fromEntries(profileKeys.map((k) => [k, u[k]]))),
+      });
+    for (const [k, v] of Object.entries(overrides[u.id] || {}))
+      if (profileKeys.includes(k) && typeof v === 'string' && v) u[k] = v;
+  }
+  return units;
+}
+applyProfileOverrides(roster, profileOverrides);
 const playableIds = roster.filter((x) => x.playable).map((x) => x.id);
 const skills = {
   C01: {
@@ -389,6 +404,8 @@ const api = {
   sourceStatsOf,
   statOverrides,
   applyStatOverrides,
+  applyProfileOverrides,
+  profileOverrides,
   evaluateSynergies,
   hasBond: Bonds.has,
 };

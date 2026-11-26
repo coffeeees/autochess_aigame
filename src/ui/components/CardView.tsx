@@ -56,14 +56,19 @@ export function CardFace({ card }: { card: CardViewData }) {
         </div>
         <div class={styles.vignette} />
       </div>
-      <img
-        class={styles.frame}
-        data-layer="frame"
-        data-custom={!!card.frame}
-        src={card.frame || cardFrame}
-        alt=""
-        draggable={false}
-      />
+      {/* 프레임과 코스트 숫자는 한 판(v0.26.4): 함께 움직이고, 숫자는 프레임 왼쪽 위 원 안에 */}
+      <div class={styles.frameLayer} data-layer="frame">
+        <img
+          class={styles.frame}
+          data-custom={!!card.frame}
+          src={card.frame || cardFrame}
+          alt=""
+          draggable={false}
+        />
+        <span class={styles.cost} aria-label={`${card.cost}코스트`}>
+          {card.cost}
+        </span>
+      </div>
       {ch ? (
         <img
           class={styles.character}
@@ -87,9 +92,6 @@ export function CardFace({ card }: { card: CardViewData }) {
           <small>그림 준비 중</small>
         </div>
       )}
-      <span class={styles.cost} data-layer="cost" aria-label={`${card.cost}코스트`}>
-        {card.cost}
-      </span>
       <div class={styles.glint} data-layer="glint" />
       <div class={styles.nameplate} data-layer="nameplate">
         <img
@@ -127,7 +129,6 @@ export function AnimatedCard({ card, label }: { card: CardViewData; label?: stri
       const bg = layer('bg'),
         frame = layer('frame'),
         character = layer('character'),
-        cost = layer('cost'),
         glint = layer('glint'),
         plate = layer('nameplate');
       el.style.transform = `rotateX(${(-cy * 11).toFixed(3)}deg) rotateY(${(cx * 16).toFixed(3)}deg)`;
@@ -137,8 +138,6 @@ export function AnimatedCard({ card, label }: { card: CardViewData; label?: stri
         character.style.transform = `translate3d(${(cx * 12).toFixed(2)}px,${(cy * 13).toFixed(2)}px,55px) scale(.99)`;
       if (frame)
         frame.style.transform = `translate3d(${(-cx * 1.2).toFixed(2)}px,${(-cy * 1.2).toFixed(2)}px,9px)`;
-      if (cost)
-        cost.style.transform = `translate3d(${(cx * 3).toFixed(2)}px,${(cy * 4).toFixed(2)}px,76px)`;
       if (plate)
         plate.style.transform = `translate3d(${(cx * 21).toFixed(2)}px,${(cy * 15).toFixed(2)}px,90px) rotateZ(${(cx * 1.5).toFixed(2)}deg)`;
       if (glint)

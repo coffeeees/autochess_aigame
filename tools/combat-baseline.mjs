@@ -49,6 +49,8 @@ const OLD_NAMES =
 D.roster.forEach((u, i) => (u.name = OLD_NAMES[i]));
 // 관리자 능력치 반영본(v0.25.0)은 데이터 변경이라 기준선(엔진 동작) 비교에서는 원본 능력치로 돌린다
 D.roster.forEach((u) => Object.assign(u.stats, u.sourceStats));
+// 캐릭터 설정 반영본(v0.26.4, 직업은 MP 획득에 영향)도 원본으로
+D.roster.forEach((u) => Object.assign(u, u.sourceProfile));
 
 const hash = (value) =>
   crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0, 16);

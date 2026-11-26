@@ -99,3 +99,12 @@
     transition: none;
   }
 }
+
+/* 얻지 못한 카드(v0.26.4): 흑백. 누르면 상세에서 컬러 2.5D(테스트) */
+.gridCard[data-owned='false'] {
+  filter: grayscale(1) brightness(0.82);
+}
+.gridCard[data-owned='false']:hover,
+.gridCard[data-owned='false']:focus-visible {
+  filter: grayscale(1) brightness(0.95) drop-shadow(0 6px 8px #0009);
+}

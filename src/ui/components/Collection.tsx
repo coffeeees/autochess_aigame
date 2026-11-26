@@ -1,9 +1,7 @@
-// 컬렉션(v0.22.0 UI 뼈대 → v0.23.0 관리자 등록 그림·표시 이름 반영).
-// - 목록: 보유한 캐릭터 카드만(core/collection.ts). 보유 기록이 없으면 빈 상태가 정상이다.
-//   그림을 등록해도 보유로 치지 않는다(카드 확인은 관리자 → 캐릭터 설정의 미리보기).
-// - 카드 그림·표시 이름은 카드 꾸미기 저장소(ui/cardAssetStore.ts, IndexedDB)에서 읽고, 렌더러는 CardView(관리자와 공용).
-// - 상세: 고른 카드 하나만 2.5D. 목록은 정적(약한 호버만).
-// - 개발용: 주소에 ?carddev 를 붙이면 45명 카드를 미리보기로 보여 준다(보유 아님, 아무것도 저장하지 않음).
+// 컬렉션(v0.22.0 UI 뼈대 → v0.23.0 관리자 등록 그림·표시 이름 → v0.26.4 45명 평면 목록·미보유 흑백).
+// - 목록: 45명 카드를 모두 평면으로, 보유하지 않은 카드는 흑백(보유 여부는 core/collection.ts, 지금은 모두 미보유).
+// - 카드 그림·표시 이름은 이 브라우저 관리자 설정 → 게임 반영본 → 플레이스홀더 순(CardView, 관리자와 공용).
+// - 상세: 누른 카드 하나만 컬러 2.5D(테스트 버전이라 미보유 카드도 볼 수 있음, 보유로 치지 않음).
 import C, { type CollectionEntry } from '../../core/collection.ts';
 import D from '../../core/data/units.js';
 import type { CardSettings } from '../../core/card-settings.ts';
@@ -14,24 +12,18 @@ import styles from './Collection.module.css';
 
 type Props = Pick<GameProps, 'ui' | 'actions'>;
 
-const devPreview = () =>
-  typeof location !== 'undefined' && new URLSearchParams(location.search).has('carddev');
-
-/** 화면에 보일 카드 목록: 보유 카드(기록이 없으면 빈 목록). ?carddev면 45명 미리보기(보유 아님) */
-function entries(ui: Props['ui']): { list: CollectionEntry[]; preview: boolean } {
-  if (devPreview())
-    return {
-      list: (D.roster as unknown as { id: string }[]).map((u) => C.entry(u.id, false)!),
-      preview: true,
-    };
-  return {
-    list: C.ownedEntries(ui.meta as unknown as Parameters<typeof C.ownedEntries>[0]),
-    preview: false,
-  };
+/**
+ * v0.26.4: 컬렉션은 45명 카드를 모두 평면으로 보여 주고, 보유하지 않은 카드는 흑백이다.
+ * 뽑기가 아직 없어 지금은 모두 미보유(흑백). 테스트 버전이라 누르면 컬러 2.5D로 크게 볼 수 있다.
+ * 보유 여부는 core/collection.ts(메타 프로필 collection.owned)를 읽기만 한다.
+ */
+function entries(ui: Props['ui']): CollectionEntry[] {
+  const owned = new Set(C.ownedIds(ui.meta as unknown as Parameters<typeof C.ownedIds>[0]));
+  return (D.roster as unknown as { id: string }[]).map((u) => C.entry(u.id, owned.has(u.id))!);
 }
 
 export function Collection({ ui, actions, card }: Props & { card: string | null }) {
-  const { list, preview } = entries(ui);
+  const list = entries(ui);
   const assets = useCardAssets();
   const open = (id: string | null) => actions.openOverlay({ kind: 'collection', card: id });
   const selected = card ? list.find((e) => e.characterId === card) : undefined;
@@ -43,32 +35,25 @@ export function Collection({ ui, actions, card }: Props & { card: string | null 
         back={() => open(null)}
       />
     );
+  const ownedCount = list.filter((e) => e.owned).length;
   return (
     <section class={styles.collection}>
       <span class={styles.eyebrow}>AUTOCHESS · COLLECTION</span>
       <h2>컬렉션</h2>
-      {preview ? (
-        <p class={styles.preview} role="note">
-          개발용 미리보기(?carddev) · 45명 카드를 보여 줄 뿐 보유한 것이 아니며 아무것도 저장하지
-          않습니다.
-        </p>
-      ) : (
-        <p class={styles.sub}>보유한 캐릭터 카드 {list.length}장</p>
-      )}
-      {list.length === 0 ? (
-        <div class={styles.empty} role="status">
-          <b>아직 획득한 카드가 없습니다.</b>
-          <span>캐릭터 카드를 얻으면 이곳에 모입니다. 카드 획득 방법은 준비 중입니다.</span>
-        </div>
-      ) : (
-        <ul class={styles.grid} aria-label="보유 카드 목록">
-          {list.map((e) => (
-            <li key={e.characterId}>
-              <GridCard entry={e} settings={assets.byId[e.characterId]} onOpen={open} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <p class={styles.sub}>
+        보유 {ownedCount} / {list.length}장 · 얻지 못한 카드는 흑백으로 보입니다.
+      </p>
+      <p class={styles.preview} role="note">
+        테스트 버전: 카드 획득이 아직 없어 모든 카드가 미보유(흑백)입니다. 카드를 누르면 컬러 2.5D로
+        미리 볼 수 있습니다(보유로 치지 않으며 아무것도 저장하지 않음).
+      </p>
+      <ul class={styles.grid} aria-label="카드 목록">
+        {list.map((e) => (
+          <li key={e.characterId}>
+            <GridCard entry={e} settings={assets.byId[e.characterId]} onOpen={open} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -86,7 +71,8 @@ function GridCard({
   return (
     <button
       class={styles.gridCard}
-      aria-label={`${card.name} 카드 크게 보기`}
+      data-owned={entry.owned}
+      aria-label={`${card.name} 카드 크게 보기${entry.owned ? '' : '(미보유)'}`}
       onClick={() => onOpen(entry.characterId)}
     >
       <CardFace card={card} />
@@ -124,6 +110,8 @@ function CardDetail({
           <dd>{entry.cost}</dd>
           <dt>캐릭터 ID</dt>
           <dd>{entry.characterId}</dd>
+          <dt>보유</dt>
+          <dd>{entry.owned ? '보유' : '미보유(테스트 보기)'}</dd>
         </dl>
       </div>
     </section>

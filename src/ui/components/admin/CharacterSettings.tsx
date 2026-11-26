@@ -16,7 +16,14 @@ import S, {
 import D from '../../../core/data/units.js';
 import { costColor } from '../../data.ts';
 import { cardAssets, useBlobUrl, useCardAssets } from '../../cardAssetStore.ts';
-import { bakedSettings, cardStatus, hasBakedStats, type CardStatus } from '../../bakedCards.ts';
+import {
+  bakedSettings,
+  cardStatus,
+  hasBakedProfile,
+  hasBakedStats,
+  type CardStatus,
+} from '../../bakedCards.ts';
+import PF, { type ProfileKey, type UnitProfile } from '../../../core/unit-profile.ts';
 import U, { type StatKey, type UnitStats } from '../../../core/unit-stats.ts';
 import { originalPortraitOf } from '../../art/characters.ts';
 import { unitDef } from '../../data.ts';
@@ -37,6 +44,7 @@ interface Draft {
   thumbnail: StoredImage | null;
   frame: StoredImage | null; // v0.26.0 이 캐릭터만의 카드 프레임(null = 공통 기본)
   nameplate: StoredImage | null; // v0.26.0 이 캐릭터만의 이름표(null = 공통 기본)
+  profile: UnitProfile; // v0.26.4 종족·직업·특성·성별
   stats: Record<StatKey, string>; // 입력 칸 글자 그대로
 }
 type Confirm = { kind: 'reset' } | { kind: 'switch'; to: string } | { kind: 'leave' } | null;
@@ -50,6 +58,7 @@ const fromSaved = (id: string, s?: CardSettings): Draft => ({
   thumbnail: s?.thumbnailImage ?? null,
   frame: s?.frameImage ?? null,
   nameplate: s?.nameplateImage ?? null,
+  profile: { ...(s?.profile ?? PF.gameProfile(id)!) },
   stats: statText(s?.stats ?? U.gameStats(id)!),
 });
 
@@ -143,6 +152,10 @@ function evaluate(id: string, d: Draft, base?: CardSettings) {
   const statErrors = U.checkStats(parsed);
   const statChanged = (k: StatKey) => !Object.is(parsed[k], baseStats[k]);
   const statsDirty = U.statKeys.some(statChanged);
+  const gameProf = PF.gameProfile(id)!;
+  const baseProfile = base?.profile ?? gameProf;
+  const profileChanged = (k: ProfileKey) => d.profile[k] !== baseProfile[k];
+  const profileDirty = PF.profileKeys.some(profileChanged);
   const dirty =
     override !== (base?.displayNameOverride ?? null) ||
     d.background !== (base?.backgroundImage ?? null) ||
@@ -150,6 +163,7 @@ function evaluate(id: string, d: Draft, base?: CardSettings) {
     d.thumbnail !== (base?.thumbnailImage ?? null) ||
     d.frame !== (base?.frameImage ?? null) ||
     d.nameplate !== (base?.nameplateImage ?? null) ||
+    profileDirty ||
     statsDirty;
   return {
     override,
@@ -158,6 +172,9 @@ function evaluate(id: string, d: Draft, base?: CardSettings) {
     statErrors,
     statChanged,
     statsDirty,
+    gameProf,
+    profileChanged,
+    profileDirty,
     dirty,
     invalid: Object.keys(statErrors).length > 0,
   };
@@ -201,7 +218,7 @@ export function CharacterSettings({
 
   const baseOf = (id: string): CardSettings | undefined =>
     assets.byId[id] ?? bakedBases[id] ?? undefined;
-  const needsBaked = (id: string) => !!bakedCard(id) || hasBakedStats(id);
+  const needsBaked = (id: string) => !!bakedCard(id) || hasBakedStats(id) || hasBakedProfile(id);
   const loadingBaked = needsBaked(selected) && !(selected in bakedBases);
   const saved = assets.byId[selected];
   const bakedBase = bakedBases[selected] ?? null;
@@ -315,6 +332,7 @@ export function CharacterSettings({
           nameplateImage: d.nameplate,
           // 지금 게임 값과 같으면 저장하지 않음(null = 게임 값 그대로)
           stats: U.sameStats(e.parsed, e.game) ? null : { ...e.parsed },
+          profile: PF.sameProfile(d.profile, e.gameProf) ? null : { ...d.profile },
           updatedAt: Date.now(),
         });
         done.push(id);
@@ -557,6 +575,81 @@ export function CharacterSettings({
           }}
         />
         <details class={styles.stats} open>
+          <summary>
+            캐릭터 설정 {ev.profileDirty && <em class={styles.changed}>● 변경 있음</em>}
+          </summary>
+          <p class={styles.statsNote}>
+            종족·직업·특성·성별은 지금 게임에 있는 값 중에서 고릅니다. 직업이
+            마법사·사제·주술사·소환사면 전투 MP 획득이 1.5배, 특성은 스킬·투사체 색에 쓰입니다.
+            유대·코스트·스킬은 여기서 바꾸지 않습니다. 저장한 값은 이 화면에만 보이고 게임에는
+            내보내기 → 반영 뒤 적용됩니다.
+          </p>
+          <table>
+            <tbody>
+              {PF.profileFields.map((f) => (
+                <tr key={f.key} data-profile={f.key} data-changed={ev.profileChanged(f.key)}>
+                  <th>
+                    {f.label}
+                    {f.note && <small>{f.note}</small>}
+                  </th>
+                  <td>
+                    게임 값{' '}
+                    {f.key === 'gender' ? PF.genderLabel[ev.gameProf[f.key]] : ev.gameProf[f.key]}
+                  </td>
+                  <td>
+                    <select
+                      aria-label={`${f.label} 편집값`}
+                      value={draft.profile[f.key]}
+                      disabled={loadingBaked}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          profile: {
+                            ...draft.profile,
+                            [f.key]: (e.target as HTMLSelectElement).value,
+                          },
+                        })
+                      }
+                    >
+                      {f.options.map((o) => (
+                        <option key={o} value={o}>
+                          {f.key === 'gender' ? PF.genderLabel[o] : o}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    {ev.profileChanged(f.key) && <small class={styles.changed}>● 바뀜</small>}
+                  </td>
+                </tr>
+              ))}
+              <tr>
+                <th>코스트 · 유대</th>
+                <td colSpan={3}>
+                  {unit.cost}코스트 · {unitDef(selected).bonds.join(' / ')}
+                  <small> (읽기 전용)</small>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class={styles.statButtons}>
+            <button
+              disabled={PF.sameProfile(draft.profile, ev.gameProf)}
+              onClick={() => setDraft({ ...draft, profile: { ...ev.gameProf } })}
+            >
+              설정만 게임 값으로
+            </button>
+            {!PF.sameProfile(ev.gameProf, PF.sourceProfile(selected)!) && (
+              <button
+                disabled={PF.sameProfile(draft.profile, PF.sourceProfile(selected)!)}
+                onClick={() => setDraft({ ...draft, profile: PF.sourceProfile(selected)! })}
+              >
+                설정만 원본 값으로
+              </button>
+            )}
+          </div>
+        </details>
+        <details class={styles.stats} open>
           <summary>기본 능력치 {statsDirty && <em class={styles.changed}>● 변경 있음</em>}</summary>
           <p class={styles.statsNote}>
             성급·장비·유대·증강·영구 강화가 붙기 전 기본값입니다. 여기서 저장한 값은 이 화면에만
@@ -638,7 +731,7 @@ export function CharacterSettings({
                 <span>
                   {bakedBase
                     ? `${unit.id}의 이 브라우저 설정을 지우고 게임 반영본으로 되돌릴까요? 다른 캐릭터는 그대로입니다.`
-                    : `${unit.id}의 이 브라우저 설정(카드 이름·카드 그림·배경·개별 프레임·개별 이름표·인게임 썸네일·기본 능력치)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
+                    : `${unit.id}의 이 브라우저 설정(카드 이름·카드 그림·배경·개별 프레임·개별 이름표·인게임 썸네일·캐릭터 설정·기본 능력치)을 모두 지울까요? 다른 캐릭터는 그대로입니다.`}
                 </span>
                 <button data-variant="danger" onClick={reset}>
                   {bakedBase ? '되돌리기' : '초기화'}
