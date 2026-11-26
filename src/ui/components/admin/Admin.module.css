@@ -504,3 +504,16 @@
 .thumb img[data-fallback] {
   opacity: 0.55;
 }
+
+/* ─── 한꺼번에 저장(v0.26.3) ─── */
+.saveBar {
+  display: flex;
+  gap: 8px;
+}
+.saveBar button {
+  padding: 8px 16px;
+}
+.badge[data-status='draft'] {
+  color: #ffd36b;
+  font-weight: 700;
+}

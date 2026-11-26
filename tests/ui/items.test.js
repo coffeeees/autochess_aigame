@@ -64,8 +64,8 @@ test('patch notes include v0.1..0.15.11 history and current equipment 8 + 36(v0.
     N.history.some((h) => h.version === '0.15.18'),
     '원본 마지막 버전 기록 보존',
   );
-  a.equal(N.history.at(-1).version, '0.26.2');
-  a.equal(N.current, '0.26.2');
+  a.equal(N.history.at(-1).version, '0.26.3');
+  a.equal(N.current, '0.26.3');
   const text = N.toMarkdown();
   a(text.includes('미구현'));
   a(text.includes('시작7G'));
