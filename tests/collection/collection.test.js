@@ -87,6 +87,7 @@ test('화면: 더보기 메뉴 맨 끝에 컬렉션 버튼, 기존 버튼 순서
     String(order),
   );
   const ui = fs.readFileSync('src/ui/components/Collection.tsx', 'utf8');
-  for (const word of ['뽑기', '돌파', '해금', 'setItem', 'localStorage'])
+  // 보유 기록을 저장하는 코드가 없다(안내 문구에 '뽑기' 낱말은 나옴, v0.26.4)
+  for (const word of ['setItem', 'localStorage', 'cardAssets.save', 'collection.owned ='])
     a(!ui.includes(word), word);
 });

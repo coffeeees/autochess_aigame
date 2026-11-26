@@ -152,6 +152,7 @@ class UnitView {
   stars: Text;
   frames: Texture[] | null = null;
   border: string;
+  fill: string;
   fps = 6;
   /** 화면 위치 보간(칸 이동) */
   from = { x: 0, y: 0 };
@@ -179,7 +180,9 @@ class UnitView {
     this.art.anchor.set(0.5);
     this.body.addChild(this.frame, this.art, this.flash, this.stars, this.label);
     this.root.addChild(this.body, this.bars);
-    this.border = enemy ? '#c44d63' : costColor(cost);
+    // v0.26.4: 아군 테두리는 금색, 코스트 색은 안쪽 배경 그라데이션
+    this.border = enemy ? '#c44d63' : '#e2b84a';
+    this.fill = costColor(cost);
     void spriteFrames(unit.id)
       .then((s) => {
         if (s) {
@@ -199,10 +202,17 @@ class UnitView {
     const size = Math.min(cell.w, cell.h) * 0.86;
     const half = size / 2;
     this.frame.clear();
-    this.frame
-      .roundRect(-half, -half, size, size, 6)
-      .fill({ color: '#161a26' })
-      .stroke({ width: 2, color: this.border });
+    this.frame.roundRect(-half, -half, size, size, 6).fill({ color: '#0d1018' });
+    // 코스트 색 세로 그라데이션(위 밝게 → 아래 어둡게), 띠 여러 개로 근사
+    const bands = 12;
+    for (let i = 0; i < bands; i++) {
+      const t = i / (bands - 1);
+      const y0 = -half + (size * i) / bands;
+      this.frame
+        .rect(-half + 1, y0, size - 2, size / bands + 0.5)
+        .fill({ color: this.fill, alpha: 0.95 - 0.7 * t });
+    }
+    this.frame.roundRect(-half, -half, size, size, 6).stroke({ width: 2, color: this.border });
     this.flash.clear();
     this.flash.roundRect(-half, -half, size, size, 6).fill({ color: '#ffffff' });
     this.flash.alpha = 0;

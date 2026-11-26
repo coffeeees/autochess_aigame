@@ -6,14 +6,16 @@
 //   버전 1 파일도 가져오기 도구가 그대로 읽는다(없는 항목 = 바꾸지 않음). 모르는 항목은 무시하고 알린다.
 // 버전 3(v0.26.0): frameImage·nameplateImage(이 캐릭터만의 카드 프레임·이름표, null = 공통 기본 그림으로 복구),
 //   그림은 cards/<ID>/frame.<확장자>·nameplate.<확장자>.
+// 버전 4(v0.26.4): profile(종족·직업·특성·성별, null = 바꾸지 않음).
 import S, { type CardSettings, type StoredImage } from '../core/card-settings.ts';
 import C from '../core/collection.ts';
 import U, { type UnitStats } from '../core/unit-stats.ts';
+import PF, { type UnitProfile } from '../core/unit-profile.ts';
 import { sha256 } from './bakedCards.ts';
 import { makeZip, type ZipEntry } from './zip.ts';
 
 export const EXPORT_FORMAT = 'autochess-admin-export';
-export const EXPORT_VERSION = 3;
+export const EXPORT_VERSION = 4;
 
 const ext = { png: 'png', jpeg: 'jpg', webp: 'webp' } as const;
 
@@ -37,6 +39,7 @@ export interface ExportedCard {
   thumbnailImage: ExportedImage | null; // null = 등록 안 함(게임 기본 썸네일)
   frameImage: ExportedImage | null; // null = 공통 기본 프레임(개별 프레임 없음·삭제)
   nameplateImage: ExportedImage | null; // null = 공통 기본 이름표
+  profile: UnitProfile | null; // null = 캐릭터 설정 바꾸지 않음
   stats: UnitStats | null; // null = 기본 능력치 바꾸지 않음, 숫자 10개 = 그 값으로(원본과 같은 키는 덮어쓰지 않음)
   imageTransform: CardSettings['imageTransform'] | null;
   updatedAt: string;
@@ -78,6 +81,9 @@ export function checkRecords(records: CardSettings[]): ExportProblem[] {
     }
     if (r.stats)
       for (const [k, m] of Object.entries(U.checkStats(r.stats)))
+        out.push({ characterId: r.characterId, field: k, message: m });
+    if (r.profile)
+      for (const [k, m] of Object.entries(PF.checkProfile(r.profile)))
         out.push({ characterId: r.characterId, field: k, message: m });
     for (const [field, img] of [
       ['카드 그림', r.characterImage],
@@ -166,6 +172,7 @@ export async function buildExportParts(
       thumbnailImage: await image('thumbnail', r.thumbnailImage ?? null),
       frameImage: await image('frame', r.frameImage ?? null),
       nameplateImage: await image('nameplate', r.nameplateImage ?? null),
+      profile: r.profile ? { ...r.profile } : null,
       stats: r.stats ? { ...r.stats } : null,
       imageTransform: r.imageTransform ?? null,
       updatedAt: new Date(r.updatedAt || now.getTime()).toISOString(),
@@ -236,6 +243,7 @@ function applyGuide(
       c.thumbnailImage ? '인게임 썸네일' : '',
       c.frameImage ? '개별 프레임' : '',
       c.nameplateImage ? '개별 이름표' : '',
+      c.profile ? '캐릭터 설정' : '',
       c.stats ? '기본 능력치' : '',
     ].filter(Boolean);
     return `- ${c.characterId} ${c.originalName}: ${parts.join(', ') || '설정 지움(기본으로)'}`;
@@ -268,6 +276,7 @@ function applyGuide(
     '- 개별 프레임·이름표가 null인 캐릭터는 반영본에서 지워져 공통 기본 그림(`public/assets/cards/card-frame.webp`·`card-nameplate.webp`)으로 돌아갑니다(공통 그림은 바뀌지 않음).',
     '- 그림 원본: `assets-src/images/cards/<id>/`',
     '- 기본 능력치 반영본(원본과 다른 키만): `src/core/data/unit-stat-overrides.generated.js`',
+    '- 캐릭터 설정(종족·직업·특성·성별) 반영본(원본과 다른 항목만): `src/core/data/unit-profile-overrides.generated.js`',
     '',
     '## 적용 뒤',
     '',

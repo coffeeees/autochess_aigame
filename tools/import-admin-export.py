@@ -1,5 +1,6 @@
 # 관리자 내보내기 ZIP(autochess-admin-export, v1·v2·v3)을 게임 파일(반영본)에 넣는다. 나눠 받은 ZIP은 한 번에 여러 개 넣는다(v0.26.1).
 # v3(v0.26.0): 캐릭터별 카드 프레임·이름표(frame·nameplate, 무손실 WebP). null이면 개별 그림을 지워 공통 기본으로.
+# v4(v0.26.4): profile(종족·직업·특성·성별) → src/core/data/unit-profile-overrides.generated.js(원본과 다른 항목만).
 #   python3 tools/import-admin-export.py <내보내기.zip> [--dry-run]
 # - 검사: 형식·버전, 캐릭터 ID(data/units.js 명단), 그림 매직 바이트·sha256·10MB·디코드.
 # - 그림: 원본은 assets-src/images/cards/<id>/<slot>.<확장자>, 배포본은 public/assets/cards/<id>/<slot>.webp
@@ -14,12 +15,17 @@ from PIL import Image
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GENERATED = ROOT / 'src/ui/art/card-art.generated.ts'
 STATS_GENERATED = ROOT / 'src/core/data/unit-stat-overrides.generated.js'
+PROFILE_GENERATED = ROOT / 'src/core/data/unit-profile-overrides.generated.js'
+PROFILE_HEADER = """// 캐릭터 설정(종족·직업·특성·성별) 반영본(관리자 내보내기 → tools/import-admin-export.py가 만든다). 손으로 고치지 않는다.
+// 캐릭터 ID → 원본과 다른 항목만. 없는 캐릭터·항목은 원본 그대로. data/units.js가 명단을 만들 때 합친다.
+export default """
 STATS_HEADER = """// 캐릭터 기본 능력치 반영본(관리자 내보내기 → tools/import-admin-export.py가 만든다). 손으로 고치지 않는다.
 // 캐릭터 ID → 원본(units.js·higher-cost-drafts.js)과 다른 능력치 키만. 없는 캐릭터·키는 원본 값 그대로.
 // data/units.js가 명단을 만들 때 합친다(전투·미리보기·상점 정보 모두 같은 값). 적군(E01~E08)은 원본 값을 쓴다.
 export default """
 KNOWN_CARD_KEYS = {'characterId', 'originalName', 'displayNameOverride', 'backgroundImage', 'characterImage',
-                   'thumbnailImage', 'frameImage', 'nameplateImage', 'stats', 'imageTransform', 'updatedAt'}
+                   'thumbnailImage', 'frameImage', 'nameplateImage', 'profile', 'stats', 'imageTransform',
+                   'updatedAt'}
 SRC_DIR = ROOT / 'assets-src/images/cards'
 OUT_DIR = ROOT / 'public/assets/cards'
 MAX_BYTES = 10 * 1024 * 1024
@@ -49,6 +55,20 @@ console.log(JSON.stringify({errors:U.checkStats(stats),diff:U.diffFromSource(id,
     if r['errors']:
         fail(f"{cid} 기본 능력치 오류: {r['errors']}")
     return r['diff']
+
+
+def check_profile(cid, profile):
+    """게임과 같은 규칙(src/core/unit-profile.ts)으로 검사하고 원본과 다른 항목만 돌려준다"""
+    r = node_json("""import P from './src/core/unit-profile.ts';
+let t='';process.stdin.on('data',d=>t+=d).on('end',()=>{const {id,profile}=JSON.parse(t);
+console.log(JSON.stringify({errors:P.checkProfile(profile),diff:P.profileDiff(id,profile)}))});""", {'id': cid, 'profile': profile})
+    if r['errors']:
+        fail(f"{cid} 캐릭터 설정 오류: {r['errors']}")
+    return r['diff']
+
+
+def read_profile_overrides():
+    return node_json("import m from './src/core/data/unit-profile-overrides.generated.js';console.log(JSON.stringify(m))")
 
 
 def read_stat_overrides():
@@ -94,6 +114,7 @@ def main():
     names = roster()
     baked = read_generated()
     stat_overrides = read_stat_overrides()
+    profile_overrides = read_profile_overrides()
     report = []
     total_cards = 0
     for path in args:
@@ -102,7 +123,7 @@ def main():
             manifest = json.loads(z.read('manifest.json'))
         except KeyError:
             fail('manifest.json이 없습니다(관리자 내보내기 ZIP이 아님).')
-        if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2, 3):
+        if manifest.get('format') != 'autochess-admin-export' or manifest.get('version') not in (1, 2, 3, 4):
             fail(f"지원하지 않는 형식: {manifest.get('format')} v{manifest.get('version')}")
         version = manifest['version']
         cards = manifest.get('modules', {}).get('characters', {}).get('cards', [])
@@ -196,6 +217,15 @@ def main():
                 lines.append('능력치 ' + (', '.join(f'{k} {v}' for k, v in diff.items()) if diff else '원본 그대로'))
             elif version >= 2:
                 lines.append('능력치 바꾸지 않음')
+            if version >= 4 and card.get('profile') is not None:
+                pdiff = check_profile(cid, card['profile'])
+                if pdiff:
+                    profile_overrides[cid] = pdiff
+                else:
+                    profile_overrides.pop(cid, None)
+                lines.append('설정 ' + (', '.join(f'{k} {v}' for k, v in pdiff.items()) if pdiff else '원본 그대로'))
+            elif version >= 4:
+                lines.append('설정 바꾸지 않음')
             if entry:
                 baked[cid] = entry
             else:
@@ -207,8 +237,11 @@ def main():
         stats_ordered = {k: stat_overrides[k] for k in sorted(stat_overrides)}
         STATS_GENERATED.write_text(STATS_HEADER + json.dumps(stats_ordered, ensure_ascii=False, indent=2) + ';\n',
                                    encoding='utf-8')
-        subprocess.run(['npx', 'prettier', '--write', str(GENERATED), str(STATS_GENERATED)], cwd=ROOT, check=True,
-                       capture_output=True)
+        profile_ordered = {k: profile_overrides[k] for k in sorted(profile_overrides)}
+        PROFILE_GENERATED.write_text(PROFILE_HEADER + json.dumps(profile_ordered, ensure_ascii=False, indent=2) + ';\n',
+                                     encoding='utf-8')
+        subprocess.run(['npx', 'prettier', '--write', str(GENERATED), str(STATS_GENERATED), str(PROFILE_GENERATED)],
+                       cwd=ROOT, check=True, capture_output=True)
     print(f"{'(dry-run) ' if dry else ''}ZIP {len(args)}개 · 캐릭터 {total_cards}명")
     for r in report:
         print((' ' if r.startswith('[') else ' - ') + r)

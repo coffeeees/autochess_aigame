@@ -57,6 +57,7 @@
   `data/units.js`가 합치고 원본은 `sourceStats`(열거 안 됨)·`D.sourceStatsOf`. 적군은 원본 값. 데이터 대조 테스트·기준선 도구는 원본으로 비교한다.
   썸네일 반영본은 `card-art.generated.ts`의 `thumbnail` → `art/characters.ts` `portraitOf`.
   v0.26.0: 매니페스트 v3(`frameImage`·`nameplateImage`, null = 공통 기본). 반영본 `frame`·`nameplate`(무손실 WebP) → `CardView`가 없으면 공통 `cardFrame`·`cardNameplate`.
+  v0.26.4: 매니페스트 v4(`profile` 종족·직업·특성·성별) → `core/data/unit-profile-overrides.generated.js`, 원본 `sourceProfile`(열거 안 됨). 직업은 전투 MP 획득에 영향. 컬렉션은 45명 평면·미보유 흑백.
   v0.26.1: 내보내기는 그림을 줄여 담고(`ui/imageEncode.ts`) 25MB 넘으면 `-partNofM.zip` 여러 개로 나눈다. 나눠 받은 ZIP은 도구에 한 번에 넘긴다(`import-admin-export.py a.zip b.zip …`).
 - `src/content/`: 패치노트·알림 조사표. 새 UI는 창을 열 때만 동적 import 한다.
 - 원본(v0.15.18)과 기능·표시가 달라지는 수정을 하면 `src/content/rebuild-changes.js`에 행을 추가한다(패치노트의 "재구축 변경 사항" 탭).

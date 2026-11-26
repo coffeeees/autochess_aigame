@@ -49,7 +49,9 @@ test('all roster combinations exactly match the supplied document', () => {
   assert.equal(rows.length, 45);
   for (const r of rows) {
     const u = D.byId(r.id);
-    for (const key of Object.keys(r)) assert.equal(u[key], r[key], `${r.id} ${key}`);
+    // 종족·직업·특성은 원본(관리자 반영본 전, v0.26.4)으로 비교
+    for (const key of Object.keys(r))
+      assert.equal(u.sourceProfile[key] ?? u[key], r[key], `${r.id} ${key}`);
   }
 });
 test('all ten proposed stats for C01-C12 exactly match the source table', () => {

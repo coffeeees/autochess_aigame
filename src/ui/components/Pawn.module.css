@@ -1,4 +1,5 @@
 .pawn {
+  --thumb-gold: #e2b84a;
   position: relative;
   width: 100%;
   height: 100%;
@@ -6,7 +7,8 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  border: 2px solid var(--cost-color);
+  /* v0.26.4: 테두리는 금색, 코스트 색은 썸네일 안쪽 배경(CharacterImage)으로 */
+  border: 2px solid var(--thumb-gold);
   border-radius: var(--radius-md);
   background: #161a26;
   overflow: hidden;

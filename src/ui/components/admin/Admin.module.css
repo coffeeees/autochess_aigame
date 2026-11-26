@@ -517,3 +517,10 @@
   color: #ffd36b;
   font-weight: 700;
 }
+.stats select {
+  min-width: 110px;
+  padding: 4px 6px;
+}
+.stats tr[data-changed='true'] select {
+  border-color: #ffd36b;
+}

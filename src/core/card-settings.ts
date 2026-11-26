@@ -4,6 +4,7 @@
 // 상점·전장·전투·도감의 이름은 바꾸지 않는다. 저장(IndexedDB)은 화면 쪽 ui/cardAssetStore.ts가 맡는다.
 import D from './data/units.js';
 import type { UnitStats } from './unit-stats.ts';
+import type { UnitProfile } from './unit-profile.ts';
 
 // v0.25.0: thumbnail = 인게임 썸네일(영입·대기석·전장), 카드 그림과 다른 자산
 // v0.26.0: frame·nameplate = 이 캐릭터 카드만 쓰는 프레임·이름표(없으면 공통 기본 그림)
@@ -36,6 +37,8 @@ export interface CardSettings {
   /** 카드 프레임·이름표 개별 그림(v0.26.0). null·없음 = 공통 기본 그림 */
   frameImage?: StoredImage | null;
   nameplateImage?: StoredImage | null;
+  /** 캐릭터 설정(종족·직업·특성·성별, v0.26.4). null·없음 = 지금 게임 값 그대로 */
+  profile?: UnitProfile | null;
   /** 기본 능력치 10개(v0.25.0). null·없음 = 지금 게임 값 그대로 */
   stats?: UnitStats | null;
   imageTransform?: Partial<Record<'background' | 'character', ImageTransform>>; // 예약
@@ -172,6 +175,7 @@ export const emptySettings = (characterId: string): CardSettings => ({
   thumbnailImage: null,
   frameImage: null,
   nameplateImage: null,
+  profile: null,
   stats: null,
   updatedAt: 0,
 });
@@ -184,6 +188,7 @@ export const isEmptySettings = (s: CardSettings) =>
   !s.thumbnailImage &&
   !s.frameImage &&
   !s.nameplateImage &&
+  !s.profile &&
   !s.stats;
 
 export default {

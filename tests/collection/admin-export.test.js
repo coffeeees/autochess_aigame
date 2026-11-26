@@ -55,7 +55,7 @@ const img = (bytes, format, name) => ({
   height: 20,
 });
 
-test('내보내기: 매니페스트(형식·버전 3·카드 전체 상태·sha256) + 원본 그림 + README_APPLY.md, 캐릭터 ID 순', async () => {
+test('내보내기: 매니페스트(형식·버전 4·카드 전체 상태·sha256) + 원본 그림 + README_APPLY.md, 캐릭터 ID 순', async () => {
   const records = [
     {
       ...S.emptySettings('C12'),
@@ -79,8 +79,8 @@ test('내보내기: 매니페스트(형식·버전 3·카드 전체 상태·sha2
   const m = JSON.parse(new TextDecoder().decode(files.get('manifest.json')));
   a.deepEqual(m, JSON.parse(JSON.stringify(manifest)));
   a.equal(m.format, EXPORT_FORMAT);
-  a.equal(m.version, 3);
-  a.equal(m.schemaVersion, 3);
+  a.equal(m.version, 4);
+  a.equal(m.schemaVersion, 4);
   a.equal(m.gameVersion, '0.24.0');
   const [c01, c12] = m.modules.characters.cards;
   a.equal(c01.characterId, 'C01');
