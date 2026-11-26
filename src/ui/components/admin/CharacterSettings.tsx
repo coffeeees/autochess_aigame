@@ -30,7 +30,8 @@ import { unitDef } from '../../data.ts';
 import { Pawn } from '../Pawn.tsx';
 import { CharacterImage } from '../CharacterImage.tsx';
 import shopStyles from '../ShopPopover.module.css';
-import { bakedCard, cardFrame, cardNameplate } from '../../art/cards.ts';
+import { bakedCard, cardFrame, cardNameplate, thumbnailWidths } from '../../art/cards.ts';
+import { thumbnailVariantBlobs } from '../../imageEncode.ts';
 import { AnimatedCard, CardFace, useCardViewData } from '../CardView.tsx';
 import styles from './Admin.module.css';
 
@@ -895,13 +896,37 @@ function StatusBadge({ status, long }: { status?: CardStatus; long?: boolean }) 
   );
 }
 
+/** 올린 썸네일을 게임과 같은 너비로 줄인 사본들의 srcset(v0.26.8). 만드는 동안은 undefined(원본으로 보임) */
+function useThumbSrcset(blob: Blob | undefined, width: number, url: string | null) {
+  const [srcset, setSrcset] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    setSrcset(undefined);
+    if (!blob || !url) return;
+    let urls: string[] = [];
+    let live = true;
+    void thumbnailVariantBlobs(blob, thumbnailWidths).then((list) => {
+      if (!live || !list.length) return;
+      urls = list.map((x) => URL.createObjectURL(x.blob));
+      setSrcset([...list.map((x, i) => `${urls[i]} ${x.width}w`), `${url} ${width}w`].join(', '));
+    });
+    return () => {
+      live = false;
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [blob, url, width]);
+  return srcset;
+}
+
 /**
  * 인게임 썸네일 미리보기: 실제 전장·대기석 말(Pawn)과 영입 카드(ShopPopover 스타일)로 그린다.
  * 그림이 없으면 원래 그림(일러스트 썸네일 또는 SVG 아바타).
  */
 function ThumbPreview({ id, image }: { id: string; image: StoredImage | null }) {
   const url = useBlobUrl(image?.blob);
-  const portrait = url ? { thumbnail: url, detail: url } : (originalPortraitOf(id) ?? null);
+  const srcset = useThumbSrcset(image?.blob, image?.width ?? 0, url);
+  const portrait = url
+    ? { thumbnail: url, thumbnailSrcset: srcset, detail: url }
+    : (originalPortraitOf(id) ?? null);
   const unit = unitDef(id);
   return (
     <section class={styles.thumbPreview} aria-label="인게임 썸네일 미리보기">

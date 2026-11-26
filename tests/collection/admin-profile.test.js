@@ -124,3 +124,37 @@ test('영입 카드(v0.26.7): 오른쪽 위 원형 표시(추천 별 위, 보유
     '금테 바깥·안쪽 선',
   );
 });
+
+test('썸네일 줄인 사본(v0.26.8): 반영된 썸네일마다 128·192·288·432px 사본이 있고 영입·대기석은 srcset으로 고른다', async () => {
+  const { bakedCardArt } = await import('../../src/ui/art/card-art.generated.ts');
+  const { thumbnailWidths, thumbnailSrcset } = await import('../../src/ui/art/cards.ts');
+  const { portraitOf } = await import('../../src/ui/art/characters.ts');
+  const tool = fs.readFileSync('tools/import-admin-export.py', 'utf8');
+  a(
+    tool.includes(`THUMB_WIDTHS = (${thumbnailWidths.join(', ')})`),
+    '도구와 화면의 너비 목록이 같다',
+  );
+  let n = 0;
+  for (const [id, e] of Object.entries(bakedCardArt)) {
+    const t = e.thumbnail;
+    if (!t) continue;
+    n++;
+    a.deepEqual(
+      t.variants,
+      thumbnailWidths.filter((w) => w < t.width),
+      id,
+    );
+    const dir = t.src.slice(0, t.src.lastIndexOf('/') + 1);
+    for (const w of t.variants) a(fs.existsSync(`public/${dir}thumbnail-${w}.webp`), `${id} ${w}`);
+    const set = portraitOf(id).thumbnailSrcset;
+    a.equal(set, thumbnailSrcset(t));
+    a(set.endsWith(`${t.src} ${t.width}w`) && set.includes(`thumbnail-128.webp 128w`), id);
+  }
+  a(n > 0);
+  const img = fs.readFileSync('src/ui/components/CharacterImage.tsx', 'utf8');
+  a(
+    img.includes('srcset={srcset}') &&
+      img.includes("shop: '140px'") &&
+      img.includes("bench: '90px'"),
+  );
+});

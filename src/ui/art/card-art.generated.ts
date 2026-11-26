@@ -36,6 +36,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '319a077a488102261f73ff70edd19516b1d068de11513c71e51c238b755893bd',
         '09d76085817e7c72183ec38cccd39ffca2f212988b579ee3b86dbcf7357f09c7',
       ],
+      variants: [128, 192, 288, 432],
     },
     frame: {
       src: 'assets/cards/c01/frame.webp',
@@ -135,6 +136,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'eeb51b808ba8c6b4da6eb51c35c6491240f151abedbf2af65bdb796a7b83f124',
         'd7cf291a1341b29e1e436a116f2cccc6d027eb2bc52ee7a5906ffa23a609ee2c',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c03/nameplate.webp',
@@ -180,6 +182,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '314e1532020b663a5dc50603de1d6810c7b19535e74765e2060550a082399da7',
         '087f8fbef715123c62d1dde0237ca303c402a7d425dbe057cba3a1364b143d04',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c04/nameplate.webp',
@@ -225,6 +228,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '4fa2caa1f3eee04a9b5df57c71f56c3b48ab1edfbe99388c0723d0352f546bab',
         '7e2782e7963ad6d87e0de852558cfdfa3888f0dfc537ff00631889ae0f179e49',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c05/nameplate.webp',
@@ -270,6 +274,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'a32fab853a12ef0d288da42273fcde7e7337848cc42eafc57e0d845929c389b5',
         '1a9b99adb8f55f88b3fd777478d721f48693f97f857fc1eea90fc2a6f2a24499',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c06/nameplate.webp',
@@ -315,6 +320,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '4339bae1c49daea281de784d1a5799272b1f2c10c5e18763f8921c253d5e4b5e',
         '5b107f0bafbdda9a03a4fe1cd92b5b597c8804d37f9f369b38ff2357054c17ad',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c07/nameplate.webp',
@@ -360,6 +366,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'be05900dc16668c3ae2d901bc01e296a84a2be09b07ca800d6911ec0abce75fb',
         '7de3cff24767e9b49f4e1ab5a7e7a69def7441a8f7187020a58565d5af7024dc',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c08/nameplate.webp',
@@ -405,6 +412,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'dbf9a2e4159b6b3f4c6f23a51c19c0ae02eabef5e21e0c2bd5b3ff16af5f2b95',
         '3ecc262a7741b7bd54bd241db96b8fcb488342e7bff098ba352811c642e18239',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c09/nameplate.webp',
@@ -450,6 +458,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '690725108527e1334ca901d1440b79ecf3aee67d7b6e950f1e60978d7b19a1c0',
         '13dbe61f147ece65444615350090b1e2b15e4df6577f0e25237d96d5eb2a6e62',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c10/nameplate.webp',
@@ -495,6 +504,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '4084877ff961afa6429f85939753324ab905731f4391bdb0543b9d29dcdd6c7a',
         '97804b226345db31a1325a1cce8052caac325d0879245d8830090256c3b0b6b0',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c11/nameplate.webp',
@@ -540,6 +550,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'b094487a4dea56e50df09cf314faa40b9d34ab5afd577a0d7252d6f7bc350826',
         '47a38a1ed8328c8c4cf1f3987b46ffa9a31138600a55298d61df2c785271c77b',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c12/nameplate.webp',
@@ -585,6 +596,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '73884a41727a6c014ea578f651bd245bb26611a8d4a2f711fd1eecd75536d782',
         'e1c5360beb7c0c7225ad51fcba17c75e760f48efbca3f83195809cd981b44f18',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c13/nameplate.webp',
@@ -630,6 +642,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '9476540ac790fd8e56ebb1db5256e6a80f64b295ee3e96ed9c603c7fe748ad19',
         '789f6ad7f4f804f28dbf43b630324efcba4db1c7992884c3504dd06765c2e9c8',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c14/nameplate.webp',
@@ -675,6 +688,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '87ece3b024f98bad6d11c2c4bbe5e22a6987adcf0f28c684b080626de163a556',
         'cc56d5925219cbcd7cb1e0ea28852dc1d673908b3bd769e2ede70c3b3e18488f',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c15/nameplate.webp',
@@ -720,6 +734,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '75f9642a4aaff09a83d7a1fd2f75c3656d86dce6f03f2aeae18346511113f198',
         '0dae2a3f6a99a0258e60ac2ac9a487e7ab27dd0d2225610dc5d4ca48c87e1d52',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c16/nameplate.webp',
@@ -765,6 +780,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '5ab2b18b6347ee473390f192e0426bb171a00ad85e8ee849549c4309258af470',
         '62b733806f38babc31536eb618ee57ef4738e5a3a980801ab6e80c69341142b3',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c17/nameplate.webp',
@@ -810,6 +826,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '440fd01f937b48e8a4ea5ddf4ada312b45392a8fb4b77c00ec74a6dc7a1e90ea',
         'bd3b887a3fa122571dfdc88d47d904ec853a266a4a9fd709b7e0437e8734ae3d',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c18/nameplate.webp',
@@ -855,6 +872,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '2eaf8faec935eddcd2f6ec823518c08cd16ed35dd79c52d8cfb51c80bd4f90a6',
         '64629dea27af3be9e1faa9724566ecd9764b62df3b55276d357fc1305c8f31f7',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c19/nameplate.webp',
@@ -900,6 +918,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '73fef8f132f21290032decfa619b950f3d7afa7bed7e601dc4c47a5bb18e9df6',
         '192489a89c132dd35a65c774ead73909338823bd867e009c1762084dffe3562c',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c20/nameplate.webp',
@@ -945,6 +964,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '8933bfa0443f8e17b5396d3674e26536125d1ff24385cd20db8e5b1b21f5df3b',
         '39107d37aaf6dd46d45f7d92bc492176ef0ce42ddbaa3bd6a8597b91fc733071',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c21/nameplate.webp',
@@ -990,6 +1010,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '6ac1a4466ae5ed226c043ac8e08677bf4536b98378e7bc13f3f3d1deca1064b8',
         'ab7061b1bec2f172af7820bafb18a7a92bddb1eb5e66844e8e3f9204f76c9864',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c22/nameplate.webp',
@@ -1035,6 +1056,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '5e580bdd397acfe968330da5e85c53ea846963a84f57f9c1aa43681e77e2caad',
         '41ccdd6a18d50f7e9a3b6fbd4bd14f7dab4efd2071f8f423d8dd96e7e9ce22e2',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c23/nameplate.webp',
@@ -1080,6 +1102,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '1e5e525a2b675646cbd26d171c4d6924c572606097fef89e643783cb45778e09',
         '53542475c07cd60f48bf1809e8ffc16a3abdef01019d9bbb27002ddbd297bd59',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c24/nameplate.webp',
@@ -1125,6 +1148,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '0ac2940a032c523f5bb0ad93e5fc4c932898f30998aaf98ad3f42841bde22736',
         'ecd9a06ab9ff094d683e19693a697c706a35fd3f6f537caadfd8ba66a09a9be6',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c25/nameplate.webp',
@@ -1170,6 +1194,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '098259506738c099518ac644a1578403dd5a9aff4889c11c43989e714ac50c6c',
         '545f9560d416e06b13f8376d79aa04cd5a9b966ac02773d1eea59f4083fdb59f',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c26/nameplate.webp',
@@ -1215,6 +1240,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '14238bd3513449e0db449441f4aaf0ba29803530f3655ee9e95d3aaf50de7860',
         '6a8f8a7d061dbb85666e87fdb228faa41ec6ac9d51d75fe87cb1c28c6631ad58',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c27/nameplate.webp',
@@ -1260,6 +1286,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'b0c32a3b0395cee6c3d7a0c1057a0bfbed7aa6b6b2eae33604ddaab806761a9f',
         '853a1818234253a1b04e6770fd39ca2e6e56366ef2702ce74098f11c44dcf083',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c28/nameplate.webp',
@@ -1305,6 +1332,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'ab14b09da558d35c7bfe6278120bc82118d74c450059c62256104104a7783b3e',
         '3962117bcda5352a00d32fe4591e1a7bc591cd94095bf6a026d288a813efcb00',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c29/nameplate.webp',
@@ -1350,6 +1378,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '956100412964733aff8e33c05d0e8450439ee6dec17b01388f81adb33f8139b6',
         '14c3b9031f9b02a7b030ab395815e82a41ca39aebb7bc553109d542612c6336f',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c30/nameplate.webp',
@@ -1395,6 +1424,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'a8d424827f5bab6fe5ae2c980251689b25e901732853780179f0c75c1d3596a4',
         '6ac4e87204f258e719da405cb0d86145de5391efe3317f3f7a4a7caf7284a9a3',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c31/nameplate.webp',
@@ -1440,6 +1470,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '1aaf484356aaf3fa7908dbd3e6f7437f51471de1fc4a18f3d975db0885966e53',
         'bb73f567287565d21e13dc1f660d72fc406033c03e244900fe5cb64ad9c896e8',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c32/nameplate.webp',
@@ -1485,6 +1516,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '57792b76c467b17b79f690534f2df212d89d50722d3fe1b2e3449729811d1458',
         '18c357c7b7660c2e872c498d3e092487b5cc270f84778367f6756cc72da4d277',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c33/nameplate.webp',
@@ -1530,6 +1562,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'acf902b2bbf99a70a6b10c7046a2072cbc2e2414dd8bd124c846ef93b2716a55',
         '2eccbd9613decbced50a435d5f831fb44e1c2b8cc9c7dc477bf9f061a357c579',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c34/nameplate.webp',
@@ -1575,6 +1608,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'e5c3efd7e4057ae7b1236e6d3279c79c669a32b75b76fb02f1b2ad72a1dfe5c4',
         '9c2ce5ecf20e3e27fe1ae9a0c078b1478475caaf19e8c75e250ada89f7c8a734',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c35/nameplate.webp',
@@ -1620,6 +1654,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '61b59f67cb9b804e514fd0f75d6b399029ab22d6cdf0946f9cca3aef5aaa6423',
         'a446392b267d935a79a0cb1abc0ca0bcf25b330d5c41b5f4c292bcdb9af5c80d',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c36/nameplate.webp',
@@ -1665,6 +1700,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '2c30ab60181f9fa0d2a6ede6397eb99dd92f14bd6f6d9803e696dc5dbc6ea20b',
         '212f539a43da40063bb8a13e7cb0ce3134be4e32b829847085f2bebb5bdb6f4f',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c37/nameplate.webp',
@@ -1710,6 +1746,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'c6242463946852350d605eaef02481168dae45000d2799390107a56937b247bc',
         '8fa0c71a593453f295a5a589b931f45da48603b712b7765a377ce18e2d4c53c1',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c38/nameplate.webp',
@@ -1755,6 +1792,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'fb7dd45269b7bc76e589c7a8daa43f76abeb54832845b18ae22d461b53cc1010',
         '2f7953b2e51c0e4511e15f54304b78b1aff70aad590beb936a2be719f9a65b89',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c39/nameplate.webp',
@@ -1800,6 +1838,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '3cd17d6e94aa4a48a01ad186f08b5a8c334bdd05655d870ebe9183d2b19debe8',
         'd380c2a2aca95886683323eb4b3079e04289bc0827f4c5f8ed2e249797623229',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c40/nameplate.webp',
@@ -1845,6 +1884,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'fc80d773dfcd50696bc2832d0646501bea43dbd868592989c35a07f20e23cd69',
         '0469d4e14da3a15b8fb9cd985cd07b0e3ddf707fad57fc7db05c5448f11431c2',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c41/nameplate.webp',
@@ -1890,6 +1930,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '44f67bb661da18d081943157847e2755dfaa419c8b280d622f0657efad33dffe',
         '4854410b04ac4206a9985c59ab9a6b5b8230eedecb8e240bb665e00c83917af1',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c42/nameplate.webp',
@@ -1935,6 +1976,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '05cee5bae9f3a4d0ef744b4257f4f7469c238e649c3399f637f8e6e1b99e5b79',
         '9327d031be995fc445910cf080c9348b84480cc502ccb4d8006e89c7f7106fd9',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c43/nameplate.webp',
@@ -1980,6 +2022,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         'd2114b5518ec0ecdb0f2cc7a4549bb9a392297a57cb635d01c2b2fce48784354',
         '7921b4963a0b2c455995cde9bc3082300c7212ac803a3453c727ec14a9be9aed',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c44/nameplate.webp',
@@ -2025,6 +2068,7 @@ export const bakedCardArt: Readonly<Record<string, BakedCardArt>> = {
         '25a9986b73a3e92210633ff63632fb8e0136c01f67ff00610e30d3e7f24597f4',
         'b12e9ace48afa6deed68b92f25dec983b098b6d118aaf794ea75d2c02f99a727',
       ],
+      variants: [128, 192, 288, 432],
     },
     nameplate: {
       src: 'assets/cards/c45/nameplate.webp',

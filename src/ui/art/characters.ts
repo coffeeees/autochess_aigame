@@ -5,7 +5,7 @@
 // 추가하면 캐릭터별로 하나씩 그림을 넣을 수 있다. 다른 곳은 고칠 필요 없다.
 // 파일은 public/assets/characters/에 영문 소문자·하이픈 이름으로 둔다.
 
-import { bakedCard } from './cards.ts';
+import { bakedCard, thumbnailSrcset } from './cards.ts';
 
 export type ArtContext = 'field' | 'bench' | 'shop' | 'detail';
 
@@ -17,6 +17,8 @@ export interface Framing {
 
 export interface Portrait {
   thumbnail: string; // 작은 정사각형에 가까운 잘라 쓰기용 그림
+  /** 미리 줄인 썸네일 사본들(v0.26.8, img srcset 형식). 있으면 영입·대기석·전장 칸 크기에 맞는 것을 쓴다 */
+  thumbnailSrcset?: string;
   detail: string; // 전체 일러스트
   framing?: Partial<Record<ArtContext, Framing>>;
 }
@@ -60,8 +62,13 @@ export const originalPortraitOf = (id: string): Portrait | undefined => characte
 
 export const portraitOf = (id: string): Portrait | undefined => {
   const base = characterArt[id]?.portrait;
-  const thumb = bakedCard(id)?.thumbnail?.src;
-  if (!thumb) return base;
-  return { thumbnail: thumb, detail: base?.detail ?? thumb };
+  const baked = bakedCard(id)?.thumbnail;
+  if (!baked) return base;
+  const thumb = baked.src;
+  return {
+    thumbnail: thumb,
+    thumbnailSrcset: thumbnailSrcset(baked),
+    detail: base?.detail ?? thumb,
+  };
 };
 export const spriteOf = (id: string): SpriteSheet | undefined => characterArt[id]?.sprite;

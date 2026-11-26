@@ -5,6 +5,16 @@ import { portraitOf, type ArtContext, type Portrait } from '../art/characters.ts
 import { combatant, costColor } from '../data.ts';
 import styles from './CharacterImage.module.css';
 
+/**
+ * 썸네일이 실제로 그려지는 너비(CSS px, v0.26.8 측정: 영입 카드 그림 약 138px, 대기석 말 최대 88px).
+ * srcset에서 이 너비 × 화면 배율 이상인 가장 작은 사본을 고르므로, 큰 그림을 한 번에 크게 줄이며 생기는 자글거림이 없다.
+ */
+const thumbSizes: Record<Exclude<ArtContext, 'detail'>, string> = {
+  shop: '140px',
+  bench: '90px',
+  field: '100px', // 전장 말 최대 96px
+};
+
 /** portrait를 주면 등록표 대신 그 그림을 쓴다(관리자 썸네일 미리보기, v0.25.0). null이면 SVG 아바타 */
 export function CharacterImage({
   id,
@@ -19,6 +29,7 @@ export function CharacterImage({
   const frame = portrait?.framing?.[context];
   if (portrait) {
     const src = context === 'detail' ? portrait.detail : portrait.thumbnail;
+    const srcset = context === 'detail' ? undefined : portrait.thumbnailSrcset;
     return (
       <span
         class={styles.frame}
@@ -28,6 +39,8 @@ export function CharacterImage({
         <img
           class={styles.image}
           src={src}
+          srcset={srcset}
+          sizes={srcset && context !== 'detail' ? thumbSizes[context] : undefined}
           alt=""
           draggable={false}
           style={
