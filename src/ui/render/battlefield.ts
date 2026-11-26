@@ -202,7 +202,7 @@ class UnitView {
     const size = Math.min(cell.w, cell.h) * 0.86;
     const half = size / 2;
     this.frame.clear();
-    this.frame.roundRect(-half, -half, size, size, 6).fill({ color: '#0d1018' });
+    this.frame.roundRect(-half, -half, size, size, 6).fill({ color: '#05070c' });
     // 코스트 색 세로 그라데이션(위 밝게 → 아래 어둡게), 띠 여러 개로 근사
     const bands = 12;
     for (let i = 0; i < bands; i++) {
@@ -210,9 +210,14 @@ class UnitView {
       const y0 = -half + (size * i) / bands;
       this.frame
         .rect(-half + 1, y0, size - 2, size / bands + 0.5)
-        .fill({ color: this.fill, alpha: 0.95 - 0.7 * t });
+        .fill({ color: this.fill, alpha: 0.88 - 0.62 * t }); // v0.26.5 진한 그라데이션
     }
-    this.frame.roundRect(-half, -half, size, size, 6).stroke({ width: 2, color: this.border });
+    // v0.26.5: 테두리 3px, 아군은 바깥에 은은한 금빛
+    if (this.unit.team !== 'enemy')
+      this.frame
+        .roundRect(-half - 2, -half - 2, size + 4, size + 4, 8)
+        .stroke({ width: 4, color: this.border, alpha: 0.22 });
+    this.frame.roundRect(-half, -half, size, size, 6).stroke({ width: 3, color: this.border });
     this.flash.clear();
     this.flash.roundRect(-half, -half, size, size, 6).fill({ color: '#ffffff' });
     this.flash.alpha = 0;
