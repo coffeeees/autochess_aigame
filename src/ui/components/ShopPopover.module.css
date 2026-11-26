@@ -104,17 +104,94 @@
   box-shadow: var(--gold-frame-glow);
   text-align: left;
 }
-/* 추천 카드(v0.17.1): 금색 외곽선(코스트 테두리 2px + 안쪽 1px = 약 3px), 바깥 발광, 안쪽 금색 그라데이션.
-   발광은 2초 주기로 부드럽게 강약만 바뀐다(점멸 없음). 테두리 두께는 그대로라 카드 크기가 바뀌지 않는다. */
+/* 추천 카드(v0.17.1 → v0.26.7): 안쪽 금색 그라데이션 + 바깥 발광은 그대로.
+   테두리는 불꽃처럼 주황·금·흰빛이 흐르는 그라데이션(blazeFlow)과 고르지 않게 흔들리는 발광(blazeFlicker)으로
+   "이글거리는" 느낌. 테두리 두께는 그대로라 카드 크기가 바뀌지 않는다. */
 .card[data-recommended='true'] {
-  border-color: var(--recommend-gold);
-  background: linear-gradient(180deg, #ffd54a33 0%, #ffd54a0d 45%, #161a26 70%);
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, #ffd54a33 0%, #ffd54a0d 45%, #161a26 70%) padding-box,
+    linear-gradient(
+        115deg,
+        #ff8a1a 0%,
+        #ffd54a 14%,
+        #fff6c8 22%,
+        #ffb22e 34%,
+        #ff7a12 46%,
+        #ffe066 58%,
+        #fffbe6 64%,
+        #ffb22e 76%,
+        #ff8a1a 88%,
+        #ffd54a 100%
+      )
+      border-box;
+  background-size:
+    100% 100%,
+    300% 300%;
   box-shadow:
     inset 0 0 0 1px var(--recommend-gold),
     0 0 10px 2px #ffd54a88;
   animation:
     shopCardIn 160ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(60ms + var(--i, 0) * 25ms) both,
-    recommendGlow 2s ease-in-out 0.3s infinite;
+    blazeFlow 2.4s linear infinite,
+    blazeFlicker 1.7s steps(1, end) infinite;
+}
+@keyframes blazeFlow {
+  0% {
+    background-position:
+      0 0,
+      0% 50%;
+  }
+  100% {
+    background-position:
+      0 0,
+      100% 50%;
+  }
+}
+/* 고르지 않은 간격으로 발광 세기·색이 바뀐다(불꽃 흔들림) */
+@keyframes blazeFlicker {
+  0% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 10px 2px #ffc23aaa,
+      0 -2px 14px 1px #ff8a1a55;
+  }
+  12% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 15px 4px #ffd54acc,
+      0 -3px 18px 2px #ff8a1a77;
+  }
+  27% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 9px 2px #ffb22e99,
+      0 -1px 12px 1px #ff7a1244;
+  }
+  41% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 17px 5px #ffe066bb,
+      0 -4px 20px 3px #ff8a1a66;
+  }
+  58% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 11px 3px #ffc23aaa,
+      0 -2px 15px 1px #ff7a1255;
+  }
+  73% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 16px 4px #ffd54acc,
+      0 -3px 19px 2px #ff8a1a77;
+  }
+  88% {
+    box-shadow:
+      inset 0 0 0 1px var(--recommend-gold),
+      0 0 10px 2px #ffb22eaa,
+      0 -1px 13px 1px #ff7a1244;
+  }
 }
 /* 그림이 카드 배경을 덮으므로 그라데이션은 그림 위 층에도 깐다(누름은 통과) */
 .card[data-recommended='true']::before {
@@ -123,19 +200,6 @@
   inset: 0;
   background: linear-gradient(180deg, #ffd54a38 0%, #ffd54a12 35%, transparent 60%);
   pointer-events: none;
-}
-@keyframes recommendGlow {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 0 0 1px var(--recommend-gold),
-      0 0 8px 1px #ffd54a77;
-  }
-  50% {
-    box-shadow:
-      inset 0 0 0 1px var(--recommend-gold),
-      0 0 18px 5px #ffd54acc;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .card[data-recommended='true'] {
@@ -151,20 +215,45 @@
   border-radius: calc(var(--radius-md) - 3px);
   pointer-events: none;
 }
-.recommend {
+/* 오른쪽 위 원형 표시(v0.26.7): 추천(별) 위, 보유 중(책) 그 아래 */
+.marks {
   position: absolute;
-  top: 4px;
-  left: 50%;
-  translate: -50% 0;
-  z-index: 1;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--recommend-gold);
-  color: #2a1d00;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  box-shadow: 0 1px 4px #000a;
+  top: 5px;
+  right: 5px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+.mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: #0d1119e6;
+  box-shadow: 0 1px 4px #000c;
+}
+.mark svg {
+  width: 13px;
+  height: 13px;
+}
+.mark[data-badge='recommend'] {
+  color: var(--recommend-gold);
+}
+.mark[data-badge='recommend'] svg {
+  fill: currentColor;
+}
+.mark[data-badge='owned'] {
+  color: var(--owned-teal);
+}
+.mark[data-badge='owned'] svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
 }
 .empty {
   border: 1px dashed #3c4257;
@@ -175,8 +264,9 @@
 }
 .preview {
   position: absolute;
-  top: 4px;
-  right: 6px;
+  /* 합성 예고 별: 오른쪽 위는 추천·보유 표시 자리라 왼쪽 코스트 아래로(v0.26.7) */
+  top: 22px;
+  left: 6px;
   color: #ffe08a;
   text-shadow: 0 1px 2px #000;
 }
@@ -193,15 +283,6 @@
 .tags {
   font-size: 9px;
   color: var(--color-muted);
-}
-.owned {
-  align-self: flex-start;
-  padding: 0 5px;
-  border: 1px solid var(--owned-teal);
-  border-radius: 999px;
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--owned-teal);
 }
 .cost {
   position: absolute;

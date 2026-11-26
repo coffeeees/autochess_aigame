@@ -103,3 +103,24 @@ test('썸네일: 대기석·영입 금테(v0.26.6 밝은 금+빛줄)·전장 아
   const home = fs.readFileSync('src/ui/components/Home.tsx', 'utf8');
   a(home.includes("openOverlay({ kind: 'codex', page: 'home' })"));
 });
+
+test('영입 카드(v0.26.7): 오른쪽 위 원형 표시(추천 별 위, 보유 중 책 아래 세로), 추천 테두리 이글거림, 금테 진한 선', () => {
+  const tsx = fs.readFileSync('src/ui/components/ShopPopover.tsx', 'utf8');
+  const rec = tsx.indexOf('data-badge="recommend"');
+  const own = tsx.indexOf('data-badge="owned"');
+  a(rec > 0 && own > rec, '추천이 먼저(위), 보유 중이 그 아래');
+  a(!tsx.includes('✓ 보유 중'), '이전 보유 중 글자 표시 없음');
+  const css = fs.readFileSync('src/ui/components/ShopPopover.module.css', 'utf8');
+  a(
+    /\.marks \{[^}]*top: 5px;[^}]*right: 5px;[^}]*flex-direction: column;/.test(css),
+    '오른쪽 위 세로',
+  );
+  a(/\.mark \{[^}]*border-radius: 50%;/.test(css), '원형');
+  a(css.includes('blazeFlow') && css.includes('blazeFlicker'), '추천 테두리 이글거림');
+  a(/prefers-reduced-motion[^}]*data-recommended='true'\] \{\s*animation: none;/.test(css));
+  const tokens = fs.readFileSync('src/ui/styles/tokens.css', 'utf8');
+  a(
+    tokens.includes('0 0 0 1px #7a5410') && tokens.includes('inset 0 0 0 1px #8a5f12'),
+    '금테 바깥·안쪽 선',
+  );
+});
