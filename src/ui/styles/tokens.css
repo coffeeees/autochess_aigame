@@ -9,6 +9,22 @@
 }
 
 :root {
+  /* 썸네일 금테(v0.26.6): 밝은 노란 금색 + 빛이 비치는 흰 줄(대각선) */
+  --gold-frame: linear-gradient(
+    135deg,
+    #fff6c4 0%,
+    #ffe164 14%,
+    #ffcf2e 32%,
+    #fff8dc 44%,
+    #ffffff 47%,
+    #ffe880 52%,
+    #ffcc26 68%,
+    #ffe57a 86%,
+    #fff2b0 100%
+  );
+  --gold-frame-glow: 0 0 6px #ffe06a77;
+  --field-ally: #4fa3ff;
+  --field-enemy: #c44d63;
   color-scheme: dark;
 
   /* 바탕과 글자 */
