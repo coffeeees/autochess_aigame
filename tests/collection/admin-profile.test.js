@@ -86,7 +86,7 @@ test('카드 코스트 숫자는 프레임과 같은 판(함께 움직임), 프�
 
 test('썸네일: 테두리 금색·안쪽 코스트 색 그라데이션, 컬렉션 45명 흑백(미보유), 시작 화면 도감 버튼', () => {
   const pawn = fs.readFileSync('src/ui/components/Pawn.module.css', 'utf8');
-  a(pawn.includes('border: 2px solid var(--thumb-gold)'));
+  a(pawn.includes('border: 3px solid var(--thumb-gold)'));
   const img = fs.readFileSync('src/ui/components/CharacterImage.module.css', 'utf8');
   a(img.includes('linear-gradient') && img.includes('var(--cost-color'));
   const field = fs.readFileSync('src/ui/render/battlefield.ts', 'utf8');

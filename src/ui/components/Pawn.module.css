@@ -7,11 +7,12 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  /* v0.26.4: 테두리는 금색, 코스트 색은 썸네일 안쪽 배경(CharacterImage)으로 */
-  border: 2px solid var(--thumb-gold);
+  /* v0.26.4: 테두리는 금색, 코스트 색은 썸네일 안쪽 배경(CharacterImage)으로. v0.26.5: 3px + 은은한 금빛 */
+  border: 3px solid var(--thumb-gold);
   border-radius: var(--radius-md);
   background: #161a26;
   overflow: hidden;
+  box-shadow: 0 0 6px #e2b84a66;
 }
 .pawn[data-enemy='true'] {
   border-color: #c44d63;
@@ -20,6 +21,10 @@
   box-shadow:
     0 0 0 2px #fff4c9,
     0 0 12px #ffe28a;
+}
+/* 적은 빨간 테두리라 금빛을 넣지 않는다 */
+.pawn[data-enemy='true'] {
+  box-shadow: none;
 }
 .stars {
   position: absolute;
