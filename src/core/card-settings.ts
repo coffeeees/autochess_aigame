@@ -106,7 +106,7 @@ export function imageWarnings(
   if (slot === 'frame') {
     if (Math.abs(info.width / info.height - 714 / 1000) > 0.01)
       out.push(
-        `기본 프레임(714×1000)과 비율이 다릅니다(${info.width}×${info.height}). 늘리지 않고 비율을 유지해 맞추므로 여백이 생깁니다.`,
+        `기본 프레임 비율(714:1000)과 다릅니다(${info.width}×${info.height}). 늘리지 않고 비율을 유지해 맞추므로 여백이 생깁니다.`,
       );
     if (info.format === 'jpeg')
       out.push('JPG는 투명 영역이 없어 카드 그림을 가립니다. 투명 PNG를 권장합니다.');

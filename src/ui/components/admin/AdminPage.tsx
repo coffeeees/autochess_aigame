@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { GameProps } from '../Game.tsx';
 import { adminModules } from './modules.ts';
-import { CharacterSettings } from './CharacterSettings.tsx';
+import { CharacterSettings, type CharacterControls } from './CharacterSettings.tsx';
 import { useCardAssets } from '../../cardAssetStore.ts';
 import { buildExportParts, download, exportFileName, ExportError } from '../../adminExport.ts';
 import { compressForExport } from '../../imageEncode.ts';
@@ -22,6 +22,12 @@ export function AdminPage({ ui, actions }: Props) {
   // 저장하지 않은 변경이 있는 메뉴는 guard가 false를 돌려주고 스스로 확인을 띄운다
   const guard = useRef<(() => boolean) | null>(null);
   const dirty = useRef(false);
+  // 캐릭터 설정의 한꺼번에 저장·취소(v0.26.3: 캐릭터마다 저장하지 않고 오른쪽 위에서 한 번에)
+  const controls = useRef<CharacterControls | null>(null);
+  const [pending, setPending] = useState<{ ids: string[]; busy: boolean }>({
+    ids: [],
+    busy: false,
+  });
   const assets = useCardAssets();
   const count = Object.keys(assets.byId).length;
   const [exportMsg, setExportMsg] = useState('');
@@ -72,6 +78,12 @@ export function AdminPage({ ui, actions }: Props) {
   };
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
+      // Ctrl+S(맥은 ⌘+S): 한꺼번에 저장
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        controls.current?.saveAll();
+        return;
+      }
       if (e.key !== 'Escape' || ui.overlay) return;
       const t = e.target as HTMLElement | null;
       if (t?.tagName === 'INPUT') return; // 입력 중 Esc는 입력 칸에 맡김
@@ -103,6 +115,24 @@ export function AdminPage({ ui, actions }: Props) {
           테스트용 로컬 관리 화면 · 설정은 <b>이 브라우저에만</b> 저장되며 다른 PC·브라우저·배포
           서버에는 반영되지 않습니다.
         </p>
+        <div class={styles.saveBar} aria-label="저장">
+          <button
+            data-variant="primary"
+            disabled={!pending.ids.length || pending.busy}
+            onClick={() => controls.current?.saveAll()}
+            title="고친 캐릭터를 모두 저장(Ctrl+S)"
+          >
+            {pending.busy
+              ? '저장 중…'
+              : `저장${pending.ids.length ? `(${pending.ids.length}명)` : ''}`}
+          </button>
+          <button
+            disabled={!pending.ids.length || pending.busy}
+            onClick={() => controls.current?.cancelAll()}
+          >
+            모두 취소
+          </button>
+        </div>
       </header>
       <div class={styles.layout}>
         <nav class={styles.nav} aria-label="관리 메뉴">
@@ -120,7 +150,13 @@ export function AdminPage({ ui, actions }: Props) {
         </nav>
         <div class={styles.panel}>
           {active === 'characters' && (
-            <CharacterSettings guard={guard} dirty={dirty} onLeave={() => actions.showHome()} />
+            <CharacterSettings
+              guard={guard}
+              dirty={dirty}
+              controls={controls}
+              onDirty={(ids, busy) => setPending({ ids, busy })}
+              onLeave={() => actions.showHome()}
+            />
           )}
         </div>
       </div>

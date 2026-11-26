@@ -132,47 +132,101 @@ async function readImage(
   };
 }
 
+/** 한 캐릭터 편집 내용 평가: 저장할 값·바뀐 곳·오류 */
+function evaluate(id: string, d: Draft, base?: CardSettings) {
+  const override = S.normalizeName(id, d.name);
+  const game = U.gameStats(id)!;
+  const baseStats = base?.stats ?? game;
+  const parsed = Object.fromEntries(
+    U.statKeys.map((k) => [k, U.parseStat(d.stats[k])]),
+  ) as UnitStats;
+  const statErrors = U.checkStats(parsed);
+  const statChanged = (k: StatKey) => !Object.is(parsed[k], baseStats[k]);
+  const statsDirty = U.statKeys.some(statChanged);
+  const dirty =
+    override !== (base?.displayNameOverride ?? null) ||
+    d.background !== (base?.backgroundImage ?? null) ||
+    d.character !== (base?.characterImage ?? null) ||
+    d.thumbnail !== (base?.thumbnailImage ?? null) ||
+    d.frame !== (base?.frameImage ?? null) ||
+    d.nameplate !== (base?.nameplateImage ?? null) ||
+    statsDirty;
+  return {
+    override,
+    game,
+    parsed,
+    statErrors,
+    statChanged,
+    statsDirty,
+    dirty,
+    invalid: Object.keys(statErrors).length > 0,
+  };
+}
+
+/** 관리자 상단에서 쓰는 한꺼번에 저장·취소(v0.26.3) */
+export interface CharacterControls {
+  saveAll: () => Promise<void>;
+  cancelAll: () => void;
+}
+
 export function CharacterSettings({
   guard,
   dirty: dirtyRef,
+  controls,
+  onDirty,
   onLeave,
 }: {
   guard: RefObject<(() => boolean) | null>;
   dirty?: RefObject<boolean>;
+  controls?: RefObject<CharacterControls | null>;
+  /** 저장하지 않은 캐릭터 목록이 바뀔 때(관리자 상단 「저장(N명)」) */
+  onDirty?: (ids: string[], busy: boolean) => void;
   onLeave: () => void;
 }) {
   const assets = useCardAssets();
   const [selected, setSelected] = useState('C01');
   const [query, setQuery] = useState('');
-  const saved = assets.byId[selected];
-  // 반영본(게임 파일)을 편집 출발점으로 받아 온 것. 브라우저 설정이 없으면 이것이 기준 상태다
-  const [baked, setBaked] = useState<{ id: string; settings: CardSettings | null } | null>(null);
-  const bakedBase = baked?.id === selected ? baked.settings : null;
-  const loadingBaked = (!!bakedCard(selected) || hasBakedStats(selected)) && baked?.id !== selected;
-  const base = saved ?? bakedBase ?? undefined;
-  const [draft, setDraft] = useState<Draft>(() => fromSaved(selected, saved));
+  // 반영본(게임 파일)을 편집 출발점으로 받아 온 것(캐릭터별, 반영본이 없으면 null)
+  const [bakedBases, setBakedBases] = useState<Record<string, CardSettings | null>>({});
+  // 저장하지 않은 편집(캐릭터별, v0.26.3). 다른 캐릭터로 옮겨도 남고 오른쪽 위 「저장」으로 한꺼번에 저장한다
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [warningsById, setWarningsById] = useState<
+    Record<string, Partial<Record<CardImageSlot, string[]>>>
+  >({});
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
   const [confirm, setConfirm] = useState<Confirm>(null);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
-  const [warnings, setWarnings] = useState<Partial<Record<CardImageSlot, string[]>>>({});
   const [busy, setBusy] = useState(false);
 
-  // 저장소를 처음 읽어 오면(또는 다른 캐릭터로 바꾸면) 그 캐릭터의 저장 상태로 편집을 시작
+  const baseOf = (id: string): CardSettings | undefined =>
+    assets.byId[id] ?? bakedBases[id] ?? undefined;
+  const needsBaked = (id: string) => !!bakedCard(id) || hasBakedStats(id);
+  const loadingBaked = needsBaked(selected) && !(selected in bakedBases);
+  const saved = assets.byId[selected];
+  const bakedBase = bakedBases[selected] ?? null;
+  const base = baseOf(selected);
+  const draft = drafts[selected] ?? fromSaved(selected, base);
+  /** 그 캐릭터의 편집 내용 바꾸기(업로드처럼 늦게 끝나도 시작한 캐릭터에 들어가게 id를 받음) */
+  const updateDraft = (id: string, fn: (d: Draft) => Draft) =>
+    setDrafts((all) => ({ ...all, [id]: fn(all[id] ?? fromSaved(id, baseOf(id))) }));
+  const setDraft = (d: Draft) => updateDraft(selected, () => d);
+  const warnings = warningsById[selected] ?? {};
+  const setWarningsFor = (id: string, w: Partial<Record<CardImageSlot, string[]>>) =>
+    setWarningsById((all) => ({ ...all, [id]: { ...(all[id] ?? {}), ...w } }));
+  const setWarnings = (w: Partial<Record<CardImageSlot, string[]>>) => setWarningsFor(selected, w);
+
+  // 반영본이 있는 캐릭터는 처음 고를 때 반영본 그림을 받아 와 편집 출발점으로 쓴다
+  // (오류 문구는 사용자가 캐릭터를 고를 때 pick에서 지운다 — 저장 막힘으로 이동할 때는 남겨 둠)
   useEffect(() => {
-    setDraft(fromSaved(selected, assets.byId[selected]));
-    setWarnings({});
-    setError('');
+    if (!needsBaked(selected) || selected in bakedBases) return;
     let live = true;
-    bakedSettings(selected)
-      .then((b) => {
-        if (!live) return;
-        setBaked({ id: selected, settings: b });
-        if (!assets.byId[selected] && b) setDraft(fromSaved(selected, b));
-      })
+    const id = selected;
+    bakedSettings(id)
+      .then((b) => live && setBakedBases((m) => ({ ...m, [id]: b })))
       .catch((e) => {
         if (!live) return;
-        setBaked({ id: selected, settings: null });
+        setBakedBases((m) => ({ ...m, [id]: null }));
         setError((e as Error).message);
       });
     return () => {
@@ -191,43 +245,36 @@ export function CharacterSettings({
     };
   }, [assets]);
 
-  const override = S.normalizeName(selected, draft.name);
-  const game = U.gameStats(selected)!;
+  const ev = evaluate(selected, draft, base);
+  const { override, game, parsed, statErrors, statChanged, statsDirty, invalid } = ev;
+  const dirty = !loadingBaked && ev.dirty;
   const source = U.sourceStats(selected)!;
-  const baseStats = base?.stats ?? game;
-  const parsed = Object.fromEntries(
-    U.statKeys.map((k) => [k, U.parseStat(draft.stats[k])]),
-  ) as UnitStats;
-  const statErrors = U.checkStats(parsed);
-  const statChanged = (k: StatKey) => !Object.is(parsed[k], baseStats[k]);
-  const statsDirty = U.statKeys.some(statChanged);
-  const dirty =
-    !loadingBaked &&
-    (override !== (base?.displayNameOverride ?? null) ||
-      draft.background !== (base?.backgroundImage ?? null) ||
-      draft.character !== (base?.characterImage ?? null) ||
-      draft.thumbnail !== (base?.thumbnailImage ?? null) ||
-      draft.frame !== (base?.frameImage ?? null) ||
-      draft.nameplate !== (base?.nameplateImage ?? null) ||
-      statsDirty);
-  const invalid = Object.keys(statErrors).length > 0;
+  const dirtyIds = roster
+    .map((u) => u.id)
+    .filter((id) => drafts[id] && evaluate(id, drafts[id], baseOf(id)).dirty);
 
-  if (dirtyRef) dirtyRef.current = dirty;
+  useEffect(() => {
+    onDirty?.(dirtyIds, busy);
+  }, [dirtyIds.join(','), busy]);
+
+  if (dirtyRef) dirtyRef.current = dirtyIds.length > 0;
   guard.current = () => {
-    if (!dirty) return true;
+    if (!dirtyIds.length) return true;
     setConfirm({ kind: 'leave' });
     return false;
   };
 
+  // 캐릭터를 바꿔도 편집 내용은 남는다(확인 없이 이동)
   const pick = (id: string) => {
     if (id === selected) return;
-    if (dirty) setConfirm({ kind: 'switch', to: id });
-    else setSelected(id);
+    setSelected(id);
     setStatus('');
+    setError('');
   };
 
   const upload = async (slot: CardImageSlot, file: File | undefined) => {
     if (!file) return;
+    const id = selected;
     setError('');
     setStatus('');
     const r = await readImage(file, slot);
@@ -235,44 +282,84 @@ export function CharacterSettings({
       setError(r.error);
       return;
     }
-    setDraft((d) => ({ ...d, [slot]: r.image }));
-    setWarnings((w) => ({ ...w, [slot]: r.warnings }));
+    updateDraft(id, (d) => ({ ...d, [slot]: r.image }));
+    setWarningsFor(id, { [slot]: r.warnings });
   };
 
-  const save = async () => {
-    if (invalid) {
-      setError('능력치 입력을 확인해 주세요: ' + Object.keys(statErrors).join(', '));
+  /** 오른쪽 위 「저장」: 바뀐 캐릭터 모두를 한꺼번에 저장. 능력치 오류가 있으면 아무것도 저장하지 않는다 */
+  const saveAll = async () => {
+    const ids = dirtyIds;
+    if (!ids.length) return;
+    const bad = ids.filter((id) => evaluate(id, drafts[id], baseOf(id)).invalid);
+    if (bad.length) {
+      setError(`능력치 입력 오류가 있어 저장하지 않았습니다: ${bad.join(', ')}`);
+      setSelected(bad[0]);
       return;
     }
     setBusy(true);
     setError('');
+    const done: string[] = [];
     try {
-      await cardAssets.save({
-        ...(base ?? S.emptySettings(selected)),
-        characterId: selected,
-        displayNameOverride: override,
-        backgroundImage: draft.background,
-        characterImage: draft.character,
-        thumbnailImage: draft.thumbnail,
-        frameImage: draft.frame,
-        nameplateImage: draft.nameplate,
-        // 지금 게임 값과 같으면 저장하지 않음(null = 게임 값 그대로)
-        stats: U.sameStats(parsed, game) ? null : { ...parsed },
-        updatedAt: Date.now(),
-      });
-      setStatus('저장했습니다. 새로고침해도 이 브라우저에 남습니다.');
+      for (const id of ids) {
+        const d = drafts[id];
+        const b = baseOf(id);
+        const e = evaluate(id, d, b);
+        await cardAssets.save({
+          ...(b ?? S.emptySettings(id)),
+          characterId: id,
+          displayNameOverride: e.override,
+          backgroundImage: d.background,
+          characterImage: d.character,
+          thumbnailImage: d.thumbnail,
+          frameImage: d.frame,
+          nameplateImage: d.nameplate,
+          // 지금 게임 값과 같으면 저장하지 않음(null = 게임 값 그대로)
+          stats: U.sameStats(e.parsed, e.game) ? null : { ...e.parsed },
+          updatedAt: Date.now(),
+        });
+        done.push(id);
+      }
+      setStatus(
+        `${done.length}명 저장했습니다(${done.join(', ')}). 새로고침해도 이 브라우저에 남습니다.`,
+      );
     } catch (e) {
-      setError((e as Error).message);
+      setError(
+        `저장 중 오류: ${(e as Error).message}` +
+          (done.length ? ` (${done.join(', ')}는 저장됨)` : ''),
+      );
     } finally {
+      setDrafts((all) => {
+        const next = { ...all };
+        for (const id of done) delete next[id];
+        return next;
+      });
+      setWarningsById((all) => {
+        const next = { ...all };
+        for (const id of done) delete next[id];
+        return next;
+      });
       setBusy(false);
     }
   };
 
-  const cancel = () => {
-    setDraft(fromSaved(selected, base));
-    setWarnings({});
+  const cancelAll = () => {
+    setDrafts({});
+    setWarningsById({});
     setError('');
-    setStatus('저장된 상태로 되돌렸습니다.');
+    setStatus('저장하지 않은 변경을 모두 되돌렸습니다.');
+  };
+  if (controls) controls.current = { saveAll, cancelAll };
+
+  /** 지금 캐릭터의 저장하지 않은 변경만 되돌림 */
+  const cancel = () => {
+    setDrafts((all) => {
+      const next = { ...all };
+      delete next[selected];
+      return next;
+    });
+    setWarningsById((all) => ({ ...all, [selected]: {} }));
+    setError('');
+    setStatus(`${selected}의 변경을 저장된 상태로 되돌렸습니다.`);
   };
 
   const reset = async () => {
@@ -280,8 +367,12 @@ export function CharacterSettings({
     setBusy(true);
     try {
       await cardAssets.reset(selected);
-      setDraft(fromSaved(selected, bakedBase ?? undefined));
-      setWarnings({});
+      setDrafts((all) => {
+        const next = { ...all };
+        delete next[selected];
+        return next;
+      });
+      setWarningsById((all) => ({ ...all, [selected]: {} }));
       setStatus(
         bakedBase
           ? '이 브라우저 설정을 지우고 게임 반영본으로 되돌렸습니다.'
@@ -346,18 +437,28 @@ export function CharacterSettings({
               >
                 <i aria-hidden="true" />
                 <span>
-                  <b>{assets.byId[u.id]?.displayNameOverride ?? u.name}</b>
+                  <b>
+                    {(drafts[u.id] && S.normalizeName(u.id, drafts[u.id].name)) ??
+                      assets.byId[u.id]?.displayNameOverride ??
+                      u.name}
+                  </b>
                   <small>
                     {u.id} · {u.cost}코스트
                   </small>
                 </span>
-                <StatusBadge status={statuses[u.id]} />
+                {dirtyIds.includes(u.id) ? (
+                  <em class={styles.badge} data-status="draft" title="저장하지 않은 변경 있음">
+                    ● 편집 중
+                  </em>
+                ) : (
+                  <StatusBadge status={statuses[u.id]} />
+                )}
               </button>
             </li>
           ))}
           {!list.length && <li class={styles.none}>검색 결과가 없습니다.</li>}
         </ul>
-        {same.length > 0 && !dirty && (
+        {same.length > 0 && !dirtyIds.length && (
           <button class={styles.clean} disabled={busy} onClick={cleanSame}>
             반영본과 같은 브라우저 설정 정리({same.length})
           </button>
@@ -418,7 +519,7 @@ export function CharacterSettings({
         <ImageField
           slot="frame"
           label="카드 프레임"
-          hint="이 캐릭터 카드에만 쓰는 외곽 프레임(투명 PNG 권장, 기본 714×1000). 비율을 유지해 카드에 맞추며, 체크무늬가 보이는 곳이 투명한 부분입니다."
+          hint="이 캐릭터 카드에만 쓰는 외곽 프레임(투명 PNG 권장, 기본 1060×1484 · 비율 714:1000). 비율을 유지해 카드에 맞추며, 체크무늬가 보이는 곳이 투명한 부분입니다."
           image={draft.frame}
           fallback={cardFrame}
           removeLabel="삭제(기본값으로 복구)"
@@ -545,7 +646,10 @@ export function CharacterSettings({
               </>
             ) : (
               <>
-                <span>저장하지 않은 변경이 있습니다. 버리고 이동할까요?</span>
+                <span>
+                  저장하지 않은 변경이 {dirtyIds.length}명({dirtyIds.join(', ')}) 있습니다. 버리고
+                  나갈까요?
+                </span>
                 <button
                   data-variant="danger"
                   onClick={() => {
@@ -562,21 +666,18 @@ export function CharacterSettings({
           </div>
         )}
         <div class={styles.actions}>
-          <button
-            data-variant="primary"
-            disabled={!dirty || busy || invalid || !!assets.error}
-            onClick={save}
-          >
-            저장
-          </button>
           <button disabled={!dirty || busy} onClick={cancel}>
-            취소
+            이 캐릭터 변경 취소
           </button>
           <button disabled={busy || !saved} onClick={() => setConfirm({ kind: 'reset' })}>
             {bakedBase ? '반영본으로 되돌리기' : '초기화'}
           </button>
           <span role="status">
-            {invalid ? '능력치 입력 오류' : dirty ? '저장하지 않은 변경 있음' : status}
+            {invalid
+              ? '능력치 입력 오류(고치기 전에는 저장되지 않음)'
+              : dirtyIds.length
+                ? `저장하지 않은 변경 ${dirtyIds.length}명 — 오른쪽 위 「저장」으로 한꺼번에 저장`
+                : status}
           </span>
         </div>
       </section>
