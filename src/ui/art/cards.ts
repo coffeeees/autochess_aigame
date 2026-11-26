@@ -18,6 +18,21 @@ export interface BakedImage {
   height: number;
   /** 같은 그림인지 비교용: [보낸 원본 sha256, 배포본 sha256] */
   sha256: string[];
+  /** 인게임 썸네일만(v0.26.8): 미리 줄인 사본 너비(px). 같은 폴더의 thumbnail-<너비>.webp */
+  variants?: number[];
+}
+
+/** 썸네일 줄인 사본 너비(tools/import-admin-export.py THUMB_WIDTHS와 같다) */
+export const thumbnailWidths = [128, 192, 288, 432] as const;
+
+/** 썸네일 srcset: 줄인 사본 + 원본(브라우저가 칸 크기·화면 배율에 맞는 것을 고른다) */
+export function thumbnailSrcset(img: BakedImage): string | undefined {
+  if (!img.variants?.length) return undefined;
+  const dir = img.src.slice(0, img.src.lastIndexOf('/') + 1);
+  return [
+    ...img.variants.map((w) => `${dir}thumbnail-${w}.webp ${w}w`),
+    `${img.src} ${img.width}w`,
+  ].join(', ');
 }
 export interface BakedCardArt {
   displayName?: string; // 카드 표시 이름(없으면 원래 이름)

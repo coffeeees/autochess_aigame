@@ -46,3 +46,49 @@ export async function compressForExport(
   if (!blob || blob.type !== 'image/webp' || blob.size >= img.size) return img;
   return { blob, format: 'webp', name: img.name, size: blob.size, width, height };
 }
+
+/**
+ * 인게임 썸네일 줄인 사본(v0.26.8, 관리자 미리보기용). 게임 반영본(가져오기 도구의 Lanczos 사본)과 같은 너비로,
+ * 반씩 여러 번 줄여 한 번에 크게 줄일 때 생기는 자글거림을 피한다. 원본보다 작은 너비만 만든다.
+ */
+export async function thumbnailVariantBlobs(
+  blob: Blob,
+  widths: readonly number[],
+): Promise<{ width: number; blob: Blob }[]> {
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(blob);
+  } catch {
+    return [];
+  }
+  const out: { width: number; blob: Blob }[] = [];
+  for (const w of widths) {
+    if (w >= bitmap.width) continue;
+    let src: CanvasImageSource = bitmap;
+    let sw = bitmap.width;
+    let sh = bitmap.height;
+    const h = Math.max(1, Math.round((bitmap.height * w) / bitmap.width));
+    while (true) {
+      const nw = sw / 2 >= w ? Math.round(sw / 2) : w;
+      const nh = sw / 2 >= w ? Math.round(sh / 2) : h;
+      const canvas = document.createElement('canvas');
+      canvas.width = nw;
+      canvas.height = nh;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) break;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(src, 0, 0, nw, nh);
+      src = canvas;
+      sw = nw;
+      sh = nh;
+      if (nw === w) {
+        const b = await toBlob(canvas, exportLimits.quality);
+        if (b) out.push({ width: w, blob: b });
+        break;
+      }
+    }
+  }
+  const width = bitmap.width;
+  bitmap.close();
+  return out.filter((x) => x.width < width);
+}

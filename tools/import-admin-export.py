@@ -8,6 +8,10 @@
 # - 결과: src/ui/art/card-art.generated.ts(이름·그림 경로·크기·해시), v2부터 기본 능력치는
 #   src/core/data/unit-stat-overrides.generated.js(원본과 다른 키만, 검사는 src/core/unit-stats.ts와 같은 규칙).
 #   ZIP에 든 캐릭터만 바꾸고 나머지는 그대로. v1(썸네일·능력치 항목 없음)은 그 둘을 바꾸지 않는다. 모르는 항목은 무시하고 알린다.
+# - 인게임 썸네일 줄인 사본(v0.26.8): 영입·대기석 칸은 100px 안팎이라 1000px 그림을 브라우저가 한 번에 줄이면 윤곽선이 자글자글하다.
+#   그래서 thumbnail-128·192·288·432.webp를 Lanczos(투명도 미리 곱함)로 미리 만들고 반영본 thumbnail.variants에 너비를 적는다.
+#   화면(CharacterImage)은 srcset으로 칸 크기·화면 배율에 맞는 사본을 고른다. 이미 반영된 썸네일만 다시 만들려면
+#   python3 tools/import-admin-export.py --thumbnails
 # 실행: pip install pillow (Prettier는 npx로 결과 파일만 정리)
 import hashlib, io, json, pathlib, re, subprocess, sys, zipfile
 from PIL import Image
@@ -29,6 +33,7 @@ KNOWN_CARD_KEYS = {'characterId', 'originalName', 'displayNameOverride', 'backgr
 SRC_DIR = ROOT / 'assets-src/images/cards'
 OUT_DIR = ROOT / 'public/assets/cards'
 MAX_BYTES = 10 * 1024 * 1024
+THUMB_WIDTHS = (128, 192, 288, 432)  # src/ui/art/cards.ts thumbnailWidths와 같아야 한다
 NAME_MAX = 12
 HEADER = """// 게임에 반영된 카드 꾸미기(관리자 내보내기 → tools/import-admin-export.py가 만든다). 손으로 고치지 않는다.
 // 캐릭터마다 표시 이름·배경·인물 그림(배포 경로)·원본/배포본 해시. 비어 있으면 모든 카드가 원래 이름·플레이스홀더.
@@ -106,9 +111,51 @@ def normalize_name(name, original):
     return None if not name or name == original else name
 
 
+def thumb_variants(cid, entry, dry, force=False):
+    """인게임 썸네일의 줄인 사본을 만들고 entry['variants']에 너비를 적는다(파일이 다 있으면 그대로)"""
+    folder = cid.lower()
+    widths = [w for w in THUMB_WIDTHS if w < entry['width']]
+    files = [OUT_DIR / folder / f'thumbnail-{w}.webp' for w in widths]
+    stale = [f for f in (OUT_DIR / folder).glob('thumbnail-*.webp') if f not in files]
+    if not force and entry.get('variants') == widths and all(f.exists() for f in files) and not stale:
+        return False
+    entry['variants'] = widths
+    if dry:
+        return True
+    for f in stale:
+        f.unlink()
+    srcs = sorted((SRC_DIR / folder).glob('thumbnail.*')) or [OUT_DIR / folder / 'thumbnail.webp']
+    im = Image.open(srcs[0])
+    im.load()
+    im = im.convert('RGBA').convert('RGBa')  # 투명 가장자리가 어둡게 번지지 않게 미리 곱한 알파로 줄인다
+    for w, f in zip(widths, files):
+        h = max(1, round(im.height * w / im.width))
+        small = im.resize((w, h), Image.LANCZOS, reducing_gap=3.0).convert('RGBA')
+        small.save(f, 'WEBP', quality=92, alpha_quality=100, method=6)
+    return True
+
+
+def refresh_thumbnails(baked, dry, force=False):
+    done = [cid for cid, e in sorted(baked.items()) if e.get('thumbnail') and thumb_variants(cid, e['thumbnail'], dry, force)]
+    return done
+
+
+def write_generated(baked):
+    ordered = {k: baked[k] for k in sorted(baked)}
+    GENERATED.write_text(HEADER + json.dumps(ordered, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
+    subprocess.run(['npx', 'prettier', '--write', str(GENERATED)], cwd=ROOT, check=True, capture_output=True)
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     dry = '--dry-run' in sys.argv
+    if '--thumbnails' in sys.argv and not args:
+        baked = read_generated()
+        done = refresh_thumbnails(baked, dry, force='--force' in sys.argv)
+        if done and not dry:
+            write_generated(baked)
+        print(f"{'(dry-run) ' if dry else ''}썸네일 줄인 사본 {len(done)}명: {', '.join(done) or '없음(모두 최신)'}")
+        return
     if not args:
         fail('사용법: python3 tools/import-admin-export.py <내보내기.zip> [더 많은 ZIP …] [--dry-run]')
     names = roster()
@@ -231,6 +278,9 @@ def main():
             else:
                 baked.pop(cid, None)
             report.append(' · '.join(lines))
+    thumbs = refresh_thumbnails(baked, dry)
+    if thumbs:
+        report.append(f"썸네일 줄인 사본 {', '.join(str(w) for w in THUMB_WIDTHS)}px: {', '.join(thumbs)}")
     ordered = {k: baked[k] for k in sorted(baked)}
     if not dry:
         GENERATED.write_text(HEADER + json.dumps(ordered, ensure_ascii=False, indent=2) + ';\n', encoding='utf-8')
