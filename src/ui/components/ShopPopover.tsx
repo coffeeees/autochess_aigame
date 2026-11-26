@@ -80,9 +80,36 @@ function Offer({
       <span class={styles.art}>
         <CharacterImage id={id} context="shop" />
       </span>
-      {recommended.length > 0 && (
-        <span class={styles.recommend} data-badge="recommend">
-          추천
+      {/* 오른쪽 위 원형 표시(v0.26.7): 추천 = 별, 보유 중 = 책. 둘 다면 추천 아래에 보유 중 */}
+      {(recommended.length > 0 || owned) && (
+        <span class={styles.marks}>
+          {recommended.length > 0 && (
+            <span
+              class={styles.mark}
+              data-badge="recommend"
+              role="img"
+              aria-label={`추천 ${recommended.join(', ')}`}
+              title={`추천 조합: ${recommended.join(', ')}`}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.6l2.9 6 6.5.8-4.8 4.5 1.2 6.5L12 17.3l-5.8 3.1 1.2-6.5L2.6 9.4l6.5-.8z" />
+              </svg>
+            </span>
+          )}
+          {owned && (
+            <span
+              class={styles.mark}
+              data-badge="owned"
+              role="img"
+              aria-label="보유 중"
+              title="보유 중"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 6.2C9.8 4.6 6.8 4.1 3.5 4.6v13.6c3.3-.5 6.3 0 8.5 1.6 2.2-1.6 5.2-2.1 8.5-1.6V4.6c-3.3-.5-6.3 0-8.5 1.6z" />
+                <path d="M12 6.2v13.6" />
+              </svg>
+            </span>
+          )}
         </span>
       )}
       {preview > 0 && (
@@ -93,7 +120,6 @@ function Offer({
       <span class={styles.info}>
         <b>{unit.name}</b>
         <span class={styles.tags}>{unit.bonds.join(' · ')}</span>
-        {owned && <span class={styles.owned}>✓ 보유 중</span>}
       </span>
       <span class={styles.cost} data-discount={price < unit.cost}>
         {price < unit.cost ? `${price}G 할인` : `${unit.cost}G`}

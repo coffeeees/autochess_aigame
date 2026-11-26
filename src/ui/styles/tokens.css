@@ -12,17 +12,19 @@
   /* 썸네일 금테(v0.26.6): 밝은 노란 금색 + 빛이 비치는 흰 줄(대각선) */
   --gold-frame: linear-gradient(
     135deg,
-    #fff6c4 0%,
-    #ffe164 14%,
-    #ffcf2e 32%,
-    #fff8dc 44%,
-    #ffffff 47%,
-    #ffe880 52%,
-    #ffcc26 68%,
-    #ffe57a 86%,
-    #fff2b0 100%
+    #fff2b0 0%,
+    #ffd23a 12%,
+    #e9a514 26%,
+    #ffd84d 38%,
+    #ffffff 46%,
+    #ffe57a 51%,
+    #f2b31c 64%,
+    #c98a0c 76%,
+    #ffd84d 88%,
+    #fff0a8 100%
   );
-  --gold-frame-glow: 0 0 6px #ffe06a77;
+  /* 금테 가장자리를 또렷하게(v0.26.7): 바깥·안쪽 진한 금갈색 선 + 은은한 금빛 */
+  --gold-frame-glow: 0 0 0 1px #7a5410, inset 0 0 0 1px #8a5f12, 0 0 6px #ffe06a77;
   --field-ally: #4fa3ff;
   --field-enemy: #c44d63;
   color-scheme: dark;
