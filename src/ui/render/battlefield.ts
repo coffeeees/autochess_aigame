@@ -180,8 +180,8 @@ class UnitView {
     this.art.anchor.set(0.5);
     this.body.addChild(this.frame, this.art, this.flash, this.stars, this.label);
     this.root.addChild(this.body, this.bars);
-    // v0.26.4: 아군 테두리는 금색, 코스트 색은 안쪽 배경 그라데이션
-    this.border = enemy ? '#c44d63' : '#e2b84a';
+    // 전투 화면 테두리: 아군 파랑·적 빨강(v0.26.6), 코스트 색은 안쪽 배경 그라데이션
+    this.border = enemy ? '#c44d63' : '#4fa3ff';
     this.fill = costColor(cost);
     void spriteFrames(unit.id)
       .then((s) => {
@@ -212,11 +212,7 @@ class UnitView {
         .rect(-half + 1, y0, size - 2, size / bands + 0.5)
         .fill({ color: this.fill, alpha: 0.88 - 0.62 * t }); // v0.26.5 진한 그라데이션
     }
-    // v0.26.5: 테두리 3px, 아군은 바깥에 은은한 금빛
-    if (this.unit.team !== 'enemy')
-      this.frame
-        .roundRect(-half - 2, -half - 2, size + 4, size + 4, 8)
-        .stroke({ width: 4, color: this.border, alpha: 0.22 });
+    // 전장에서는 광원 없이 테두리 3px(v0.26.6)
     this.frame.roundRect(-half, -half, size, size, 6).stroke({ width: 3, color: this.border });
     this.flash.clear();
     this.flash.roundRect(-half, -half, size, size, 6).fill({ color: '#ffffff' });

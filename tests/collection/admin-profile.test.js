@@ -84,13 +84,19 @@ test('카드 코스트 숫자는 프레임과 같은 판(함께 움직임), 프�
   a(/\.cost \{[^}]*left: 6\.04%;[^}]*top: 4\.25%;[^}]*width: 13\.77%;/.test(css));
 });
 
-test('썸네일: 테두리 금색·안쪽 코스트 색 그라데이션, 컬렉션 45명 흑백(미보유), 시작 화면 도감 버튼', () => {
+test('썸네일: 대기석·영입 금테(v0.26.6 밝은 금+빛줄)·전장 아군 파랑/적 빨강·안쪽 코스트 색 그라데이션, 컬렉션 45명 흑백(미보유), 시작 화면 도감 버튼', () => {
   const pawn = fs.readFileSync('src/ui/components/Pawn.module.css', 'utf8');
-  a(pawn.includes('border: 3px solid var(--thumb-gold)'));
+  a(
+    pawn.includes('var(--gold-frame) border-box') && pawn.includes('border: 4px solid transparent'),
+  );
+  a(
+    pawn.includes("[data-context='field']") && pawn.includes('var(--field-ally)'),
+    '전장은 아군 파랑',
+  );
   const img = fs.readFileSync('src/ui/components/CharacterImage.module.css', 'utf8');
   a(img.includes('linear-gradient') && img.includes('var(--cost-color'));
   const field = fs.readFileSync('src/ui/render/battlefield.ts', 'utf8');
-  a(field.includes("'#e2b84a'"));
+  a(field.includes("'#4fa3ff'") && field.includes("'#c44d63'"), '전투 화면 아군 파랑·적 빨강');
   const col = fs.readFileSync('src/ui/components/Collection.tsx', 'utf8');
   a(col.includes('data-owned={entry.owned}'));
   a(fs.readFileSync('src/ui/components/Collection.module.css', 'utf8').includes('grayscale(1)'));
